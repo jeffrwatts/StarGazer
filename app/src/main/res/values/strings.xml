@@ -4,4 +4,6 @@
     <string name="polar_title">Polar Alignment</string>
     <string name="info_title">Info</string>
     <string name="navigate">Navigate</string>
+    <string name="retry">Retry</string>
+    <string name="no_item_description">No objects</string>
 </resources>
