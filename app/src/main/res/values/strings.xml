@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Star Gazer</string>
+    <string name="sights_title">Sights</string>
+    <string name="polar_title">Polar Alignment</string>
+    <string name="info_title">Info</string>
+    <string name="navigate">Navigate</string>
+</resources>
