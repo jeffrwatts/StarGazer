@@ -21,7 +21,8 @@ class OfflineCelestialObjRepository (
         }
     }
 
-    override fun getAllStream(forceRefresh: Boolean): Flow<List<CelestialObj>> = dao.getAll()
+    override fun getAllStream(): Flow<List<CelestialObj>> = dao.getAll()
+    override fun getAllByTypeStream(type: ObjectType): Flow<List<CelestialObj>> = dao.getAllWithType(type)
     override fun getStream(id: Int): Flow<CelestialObj?> = dao.get(id)
     override suspend fun insert(celestialObj: CelestialObj) = dao.insert(celestialObj)
     override suspend fun delete(celestialObj: CelestialObj) = dao.delete(celestialObj)

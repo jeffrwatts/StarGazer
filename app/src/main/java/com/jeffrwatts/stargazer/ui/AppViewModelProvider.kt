@@ -13,7 +13,6 @@ object AppViewModelProvider {
 
         initializer {
             SightsViewModel(
-                this.createSavedStateHandle(),
                 starGazerApplication().container.celestialObjRepository
             )
         }

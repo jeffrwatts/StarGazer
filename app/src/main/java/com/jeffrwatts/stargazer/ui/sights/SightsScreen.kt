@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.ui.sights
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,11 +40,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjAltAzm
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
 import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.ui.theme.StarGazerTheme
+import com.jeffrwatts.stargazer.utils.ErrorScreen
+import com.jeffrwatts.stargazer.utils.LoadingScreen
+import com.jeffrwatts.stargazer.utils.SkyItem
+import com.jeffrwatts.stargazer.utils.SkyItemList
 import com.jeffrwatts.stargazer.utils.StarRating
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -57,7 +63,7 @@ fun SightsScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
-    val sightsUiState by viewModel.sightsUiState.collectAsState()
+    val sightsUiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -75,10 +81,10 @@ fun SightsScreen(
             }
             is SightsUiState.Success -> {
                 SightsBody(
-                    enhancedItemList = (sightsUiState as SightsUiState.Success).enhancedItemList,
+                    celestialObjs = (sightsUiState as SightsUiState.Success).data,
                     onItemClick = {_, _->},
                     onObservationStatusChanged = { item, newStatus ->
-                        viewModel.updateObservationStatus(item, newStatus)
+                        viewModel.updateObservationStatus(item.celestialObj, newStatus)
                     },
                     modifier = Modifier
                         .padding(innerPadding)
@@ -89,54 +95,26 @@ fun SightsScreen(
                 ErrorScreen(
                     message = (sightsUiState as SightsUiState.Error).message,
                     modifier = Modifier.fillMaxSize(),
-                    onRetryClick = { viewModel.refreshItems(forceRefresh = true) }
+                    onRetryClick = { viewModel.fetchObjects() }
                 )
             }
         }
     }
 }
 
-@Composable
-fun LoadingScreen(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
-}
 
 @Composable
-fun ErrorScreen(
-    message: String,
-    modifier: Modifier = Modifier,
-    onRetryClick: () -> Unit
-) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = message, color = MaterialTheme.colorScheme.onError)
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onRetryClick) {
-                Text(text = stringResource(R.string.retry))
-            }
-        }
-    }
-}
-@Composable
 private fun SightsBody(
-    enhancedItemList: List<EnhancedCelestialObj>,
+    celestialObjs: List<CelestialObjAltAzm>,
     onItemClick: (Int, String) -> Unit,
-    onObservationStatusChanged: (EnhancedCelestialObj, ObservationStatus) -> Unit,
+    onObservationStatusChanged: (CelestialObjAltAzm, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        if (enhancedItemList.isEmpty()) {
+        if (celestialObjs.isEmpty()) {
             Text(
                 text = stringResource(R.string.no_item_description),
                 textAlign = TextAlign.Center,
@@ -144,7 +122,7 @@ private fun SightsBody(
             )
         } else {
             SkyItemList(
-                enhancedItemList = enhancedItemList,
+                celestialObjs = celestialObjs,
                 onItemClick = { onItemClick(it.celestialObj.id, it.celestialObj.primaryName) },
                 onObservationStatusChanged = onObservationStatusChanged,
                 modifier = Modifier.padding(horizontal = 8.dp)
@@ -153,119 +131,12 @@ private fun SightsBody(
     }
 }
 
-@Composable
-private fun SkyItemList(
-    enhancedItemList: List<EnhancedCelestialObj>,
-    onItemClick: (EnhancedCelestialObj) -> Unit,
-    onObservationStatusChanged: (EnhancedCelestialObj, ObservationStatus) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(modifier = modifier) {
-        items(items = enhancedItemList, key = { it.celestialObj.id }) { item ->
-            SkyItem(item = item,
-                onObservationStatusChanged = onObservationStatusChanged,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clickable { onItemClick(item) })
-        }
-    }
-}
-
-@Composable
-private fun SkyItem(
-    item: EnhancedCelestialObj,
-    onObservationStatusChanged: (EnhancedCelestialObj, ObservationStatus) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .padding(8.dp)
-            .fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = item.celestialObj.primaryName,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                StarRating(
-                    observationStatus = item.celestialObj.observationStatus,
-                    onStatusChanged = { newStatus -> onObservationStatusChanged(item, newStatus) }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Content
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.Top,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = item.celestialObj.ngcId ?: "",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = LocalContentColor.current.copy(alpha = 0.6f)
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = item.celestialObj.type.name,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
-                Column(
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = "Alt: ${formatToDegreeAndMinutes(item.alt)}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = "Azm: ${formatToDegreeAndMinutes(item.azm)}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-        }
-    }
-}
-
-private fun formatToDegreeAndMinutes(angle: Double): String {
-    val degrees = angle.toInt()
-    val minutes = ((angle - degrees) * 60).roundTo(2)
-    return "$degrees° $minutes'"
-}
-
-private fun Double.roundTo(decimals: Int): Double {
-    val multiplier = 10.0.pow(decimals)
-    return (this * multiplier).roundToInt() / multiplier
-}
-
-
-fun Double.format(digits: Int) = "%.${digits}f".format(this)
-
-
 @Preview(showBackground = true)
 @Composable
 fun HomeBodyPreview() {
     StarGazerTheme {
         SightsBody(listOf(
-            EnhancedCelestialObj(
+            CelestialObjAltAzm(
                 celestialObj = CelestialObj(
                     id = 1,
                     primaryName = "M31",
@@ -280,7 +151,7 @@ fun HomeBodyPreview() {
                 alt = 45.6,
                 azm = 60.4
             ),
-            EnhancedCelestialObj(
+            CelestialObjAltAzm(
                 celestialObj = CelestialObj(
                     id = 2,
                     primaryName = "M42",
@@ -312,7 +183,7 @@ fun HomeBodyEmptyListPreview() {
 fun SkyItemPreview() {
     StarGazerTheme {
         SkyItem(
-            EnhancedCelestialObj(
+            CelestialObjAltAzm(
                 celestialObj = CelestialObj(
                     id = 1,
                     primaryName = "M31",
