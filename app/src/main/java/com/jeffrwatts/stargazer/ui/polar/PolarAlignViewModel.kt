@@ -1,6 +1,5 @@
-package com.jeffrwatts.stargazer.ui.sights
+package com.jeffrwatts.stargazer.ui.polar
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
@@ -16,14 +15,14 @@ import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-class SightsViewModel(private val repository: CelestialObjRepository) : ViewModel() {
+class PolarAlignViewModel(private val repository: CelestialObjRepository) : ViewModel() {
     companion object {
         const val LATITUDE = 19.639994  // Example: Kona's latitude
         const val LONGITUDE = -155.996926 // Example: Kona's longitude
     }
 
-    private val _uiState = MutableStateFlow<SightsUiState>(SightsUiState.Loading)
-    val uiState: StateFlow<SightsUiState> = _uiState
+    private val _uiState = MutableStateFlow<PolarAlignUiState>(PolarAlignUiState.Loading)
+    val uiState: StateFlow<PolarAlignUiState> = _uiState
 
     init {
         fetchObjects()
@@ -31,21 +30,26 @@ class SightsViewModel(private val repository: CelestialObjRepository) : ViewMode
 
     fun fetchObjects() {
         viewModelScope.launch {
-            _uiState.value = SightsUiState.Loading
+            _uiState.value = PolarAlignUiState.Loading
 
             runCatching {
-                val utcNow = OffsetDateTime.now(ZoneOffset.UTC).toLocalDateTime();
+                val utcNow = OffsetDateTime.now(ZoneOffset.UTC).toLocalDateTime()
                 val jdNow = Utils.calculateJulianDate(utcNow)
 
-                val objects = repository.getAllStream().first()
-                    .filterNot { it.type == ObjectType.STAR }
+                val objects = repository.getAllByTypeStream(ObjectType.STAR).first()
                 objects.map { obj ->
                     val (alt, azm) = Utils.calculateAltAzm(obj.ra, obj.dec, LATITUDE, LONGITUDE, jdNow)
-                    CelestialObjAltAzm(obj, alt, azm, false)
-                }.sortedByDescending { it.alt }
-            }.onSuccess { _uiState.value = SightsUiState.Success(it) }
-                .onFailure { _uiState.value = SightsUiState.Error(it.message ?: "Unknown error") }
+                    val polarAlignmentCandidate = Utils.isGoodForPolarAlignment(alt=alt, azm=azm, dec=obj.dec)
+                    CelestialObjAltAzm(obj, alt, azm, polarAlignmentCandidate)
+                }.sortedByDescending { it.polarAlignCandidate }  // Sort by polarAlignCandidate
+            }.onSuccess { _uiState.value = PolarAlignUiState.Success(it) }
+                .onFailure { _uiState.value = PolarAlignUiState.Error(it.message ?: "Unknown error") }
         }
+    }
+
+    // Function to check if the object meets the polar alignment criteria
+    private fun isGoodForPolarAlignment(alt: Double, azm: Double, dec: Double): Boolean {
+        return azm in 160.0..200.0 && dec in -20.0..20.0 && alt < 80.0
     }
 
     fun updateObservationStatus(celestialObj: CelestialObj, newObservationStatus: ObservationStatus) {
@@ -56,9 +60,8 @@ class SightsViewModel(private val repository: CelestialObjRepository) : ViewMode
     }
 }
 
-sealed class SightsUiState {
-    object Loading : SightsUiState()
-    data class Success(val data: List<CelestialObjAltAzm>) : SightsUiState()
-    data class Error(val message: String) : SightsUiState()
+sealed class PolarAlignUiState {
+    object Loading : PolarAlignUiState()
+    data class Success(val data: List<CelestialObjAltAzm>) : PolarAlignUiState()
+    data class Error(val message: String) : PolarAlignUiState()
 }
-

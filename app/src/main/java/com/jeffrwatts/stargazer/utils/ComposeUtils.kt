@@ -64,38 +64,17 @@ fun ErrorScreen(
         }
     }
 }
-@Composable
-fun SkyItemList(
-    celestialObjs: List<CelestialObjAltAzm>,
-    onItemClick: (CelestialObjAltAzm) -> Unit,
-    onObservationStatusChanged: (CelestialObjAltAzm, ObservationStatus) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(modifier = modifier) {
-        items(items = celestialObjs, key = { it.celestialObj.id }) { item ->
-            SkyItem(celestialObjAltAzm = item,
-                onObservationStatusChanged = onObservationStatusChanged,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clickable { onItemClick(item) })
-        }
-    }
-}
 
 @Composable
 fun SkyItem(
     celestialObjAltAzm: CelestialObjAltAzm,
+    highlight: Boolean,
     onObservationStatusChanged: (CelestialObjAltAzm, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isAboveHorizon = celestialObjAltAzm.alt > 10
     val backgroundColor = when {
-        isAboveHorizon -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+        highlight -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
         else -> MaterialTheme.colorScheme.background
-    }
-    val textColor = when {
-        isAboveHorizon -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.onBackground
     }
 
     Box(

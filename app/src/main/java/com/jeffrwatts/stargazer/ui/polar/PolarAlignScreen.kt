@@ -1,5 +1,4 @@
-package com.jeffrwatts.stargazer.ui.sights
-
+package com.jeffrwatts.stargazer.ui.polar
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +9,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,34 +28,34 @@ import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.SkyItem
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SightsScreen(
+fun PolarAlignScreen(
     openDrawer: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: SightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: PolarAlignViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val topAppBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
-    val sightsUiState by viewModel.uiState.collectAsState()
+    val polarAlignUiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             StarGazerTopAppBar(
-                title = stringResource(R.string.sights_title),
+                title = stringResource(R.string.polar_title),
                 openDrawer = openDrawer,
                 topAppBarState = topAppBarState
             )
         },
         modifier = modifier
     ) { innerPadding ->
-        when (sightsUiState) {
-            is SightsUiState.Loading -> {
+        when (polarAlignUiState) {
+            is PolarAlignUiState.Loading -> {
                 LoadingScreen(modifier = Modifier.fillMaxSize())
             }
-            is SightsUiState.Success -> {
-                SightsBody(
-                    celestialObjs = (sightsUiState as SightsUiState.Success).data,
+            is PolarAlignUiState.Success -> {
+                PolarAlignBody(
+                    celestialObjs = (polarAlignUiState as PolarAlignUiState.Success).data,
                     onObservationStatusChanged = { item, newStatus ->
                         viewModel.updateObservationStatus(item.celestialObj, newStatus)
                     },
@@ -66,9 +64,9 @@ fun SightsScreen(
                         .fillMaxSize()
                 )
             }
-            is SightsUiState.Error -> {
+            is PolarAlignUiState.Error -> {
                 ErrorScreen(
-                    message = (sightsUiState as SightsUiState.Error).message,
+                    message = (polarAlignUiState as PolarAlignUiState.Error).message,
                     modifier = Modifier.fillMaxSize(),
                     onRetryClick = { viewModel.fetchObjects() }
                 )
@@ -79,7 +77,7 @@ fun SightsScreen(
 
 
 @Composable
-private fun SightsBody(
+private fun PolarAlignBody(
     celestialObjs: List<CelestialObjAltAzm>,
     onObservationStatusChanged: (CelestialObjAltAzm, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
@@ -97,14 +95,12 @@ private fun SightsBody(
         } else {
             LazyColumn(modifier = modifier) {
                 items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
-                    val highlight = celestialObj.alt > 10
-                    SkyItem(
-                        celestialObjAltAzm = celestialObj,
+                    val highlight = celestialObj.polarAlignCandidate
+                    SkyItem(celestialObjAltAzm = celestialObj,
                         highlight = highlight,
                         onObservationStatusChanged = onObservationStatusChanged,
                         modifier = Modifier
-                            .padding(8.dp)
-                    )
+                            .padding(8.dp))
                 }
             }
         }

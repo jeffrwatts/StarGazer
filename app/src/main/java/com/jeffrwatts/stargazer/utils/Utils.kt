@@ -90,4 +90,7 @@ object Utils {
         return Pair(alt, azm)
     }
 
+    fun isGoodForPolarAlignment(alt: Double, azm: Double, dec: Double): Boolean {
+        return azm in 160.0..200.0 && dec in -20.0..20.0 && alt < 80.0
+    }
 }
