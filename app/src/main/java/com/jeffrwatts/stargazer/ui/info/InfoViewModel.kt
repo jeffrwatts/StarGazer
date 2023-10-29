@@ -1,6 +1,5 @@
 package com.jeffrwatts.stargazer.ui.info
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.utils.Utils
@@ -9,18 +8,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.ZoneOffset
 import java.util.Date
 import java.util.Locale
 
 class InfoViewModel : ViewModel() {
     private val _state = MutableStateFlow(InfoUiState("", "", "", "", 0.0, 0.0))
     val state: StateFlow<InfoUiState> = _state
-
-    var offset = 0.0
 
     companion object {
         const val LATITUDE = 19.639994  // Example: Kona's latitude
