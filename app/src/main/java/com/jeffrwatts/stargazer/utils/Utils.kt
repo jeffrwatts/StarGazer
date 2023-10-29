@@ -98,16 +98,15 @@ object Utils {
         // Also, stars too near the celestial pole are less accurate than those further away.
         // https://www.celestron.com/pages/all-star-polar-alignment
 
-        // LHA is 0 at the celestial meridian, allow for 15 deg on either side.
-        val nearMeridian = (lha in 0.0..15.0) || lha in 345.0..360.0
+        // LHA is 0 at the celestial meridian, allow for 30 deg on either side.
+        val nearMeridian = (lha in 0.0..30.0) || lha in 330.0..360.0
 
         // dec is 0 at the celestial equator, allow for 20 deg on either side.
         // Note this range also allows for preventing stars that are closet to the celestial pole.
         val closeToCelestialEquator = dec in -20.0..20.0 // Allow 20 deg within celestial equator
 
-        // Overhead is 90 deg so back off 15 to 75.  Also stay above 30 deg to not get too close to the
-        // horizon.
-        val overheadOrHorizon = alt in 30.0..75.0
+        // Experimented and shouldn't go over 60 deg.  Put 30 deg at the lower end for now.
+        val overheadOrHorizon = alt in 30.0..60.0
 
         return nearMeridian && closeToCelestialEquator && overheadOrHorizon
     }
