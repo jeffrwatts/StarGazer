@@ -1,19 +1,20 @@
 package com.jeffrwatts.stargazer.ui.info
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -26,6 +27,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
@@ -37,7 +39,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
-import com.jeffrwatts.stargazer.ui.polar.PolarAlignViewModel
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -66,35 +67,62 @@ fun InfoScreen(
             .padding(innerPadding)
             .nestedScroll(scrollBehavior.nestedScrollConnection)
 
-        Column(
+        LazyColumn(
             modifier = contentModifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // Current Time
-            InfoSectionHeader(title = "Current Time")
-            Text(text = uiState.currentTime, style = MaterialTheme.typography.bodyLarge)
+            item { InfoSectionHeader(title = "Current Time") }
+            item { Text(text = uiState.currentTime, style = MaterialTheme.typography.bodyLarge) }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // Current Date
-            InfoSectionHeader(title = "Current Date")
-            Text(text = uiState.currentDate, style = MaterialTheme.typography.bodyLarge)
+            item { InfoSectionHeader(title = "Current Date") }
+            item { Text(text = uiState.currentDate, style = MaterialTheme.typography.bodyLarge) }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // Current Location
-            InfoSectionHeader(title = "Current Location")
-            Text(text = "Latitude: ${uiState.latitude}", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "Longitude: ${uiState.longitude}", style = MaterialTheme.typography.bodyLarge)
+            item { InfoSectionHeader(title = "Current Location") }
+            item { Text(text = "Latitude: ${uiState.latitude}", style = MaterialTheme.typography.bodyLarge) }
+            item { Spacer(modifier = Modifier.height(4.dp)) }
+            item { Text(text = "Longitude: ${uiState.longitude}", style = MaterialTheme.typography.bodyLarge) }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // PolarView
-            InfoSectionHeader(title = "Polar View")
-            PolarView(polarisX = uiState.polarisX, polarisY = uiState.polarisY)
+            item { InfoSectionHeader(title = "Polar View") }
+            item { Spacer(modifier = Modifier.height(32.dp)) }
+            item {
+                PolarView(polarisX = uiState.polarisX, polarisY = uiState.polarisY,
+                    isHorizontalFlip = uiState.isHorizontalFlip,
+                    isVerticalFlip = uiState.isVerticalFlip)
+            }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Horizontal Flip
+                    Text("Horz. Flip", modifier = Modifier.align(Alignment.CenterVertically))
+                    Spacer(modifier = Modifier.width(8.dp)) // space between label and switch
+                    Switch(
+                        checked = uiState.isHorizontalFlip,
+                        onCheckedChange = { viewModel.toggleHorizontalFlip() }
+                    )
+
+                    Spacer(modifier = Modifier.width(32.dp)) // space between the two switch-label groups
+
+                    // Vertical Flip
+                    Text("Vert. Flip", modifier = Modifier.align(Alignment.CenterVertically))
+                    Spacer(modifier = Modifier.width(8.dp)) // space between label and switch
+                    Switch(
+                        checked = uiState.isVerticalFlip,
+                        onCheckedChange = { viewModel.toggleVerticalFlip() }
+                    )
+                }
+            }
         }
     }
 }
@@ -103,17 +131,17 @@ fun InfoScreen(
 fun InfoSectionHeader(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.headlineMedium.copy(textDecoration = TextDecoration.Underline)
+        style = MaterialTheme.typography.headlineSmall.copy(textDecoration = TextDecoration.Underline)
     )
     Spacer(modifier = Modifier.height(8.dp))
 }
 
 
 @Composable
-fun PolarView(polarisX: Double, polarisY: Double, circleColor: Color = MaterialTheme.colorScheme.primary) {
+fun PolarView(polarisX: Double, polarisY: Double, isHorizontalFlip: Boolean, isVerticalFlip: Boolean, circleColor: Color = MaterialTheme.colorScheme.primary) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
-    val desiredSize = screenWidth - 32.dp // Subtract padding
+    val desiredSize = screenWidth - 128.dp // Subtract padding
 
     // Adjust polarisX and polarisY based on desiredSize
     val scale = desiredSize.value / maxOf(abs(polarisX), abs(polarisY))
@@ -124,6 +152,10 @@ fun PolarView(polarisX: Double, polarisY: Double, circleColor: Color = MaterialT
     Canvas(
         modifier = Modifier
             .size(desiredSize)
+            .graphicsLayer(
+                scaleX = if (isHorizontalFlip) -1f else 1f,
+                scaleY = if (isVerticalFlip) -1f else 1f
+            )
             .onGloballyPositioned {
                 // Handle the positioning here if needed
             },
@@ -166,5 +198,5 @@ fun DrawScope.drawPolarContent(polarisX: Double, polarisY: Double, circleColor: 
 @Preview
 @Composable
 fun PolarViewPreview() {
-    PolarView(polarisX = -0.2, polarisY = 0.0)
+    PolarView(polarisX = -0.2, polarisY = 0.0, isHorizontalFlip = true, isVerticalFlip = false)
 }

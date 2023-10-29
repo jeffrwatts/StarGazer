@@ -63,6 +63,14 @@ class InfoViewModel : ViewModel() {
         }
     }
 
+    fun toggleHorizontalFlip() {
+        _state.value = _state.value.copy(isHorizontalFlip = !_state.value.isHorizontalFlip)
+    }
+
+    fun toggleVerticalFlip() {
+        _state.value = _state.value.copy(isVerticalFlip = !_state.value.isVerticalFlip)
+    }
+
     private fun getCurrentTime(): String {
         val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
         return timeFormat.format(Date())
@@ -93,5 +101,7 @@ data class InfoUiState(
     val latitude: String,
     val longitude: String,
     val polarisX: Double,
-    val polarisY: Double
+    val polarisY: Double,
+    val isHorizontalFlip: Boolean = true,
+    val isVerticalFlip: Boolean = false
 )
