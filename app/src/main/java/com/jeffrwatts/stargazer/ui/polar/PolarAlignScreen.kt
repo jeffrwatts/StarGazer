@@ -1,10 +1,15 @@
 package com.jeffrwatts.stargazer.ui.polar
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -24,12 +29,13 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
 import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
+import com.jeffrwatts.stargazer.ui.sights.SightsUiState
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.SkyItem
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun PolarAlignScreen(
     openDrawer: () -> Unit,
@@ -38,6 +44,8 @@ fun PolarAlignScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val polarAlignUiState by viewModel.uiState.collectAsState()
+    val isRefreshing = polarAlignUiState is PolarAlignUiState.Loading
+    val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
 
     Scaffold(
         topBar = {
@@ -49,28 +57,33 @@ fun PolarAlignScreen(
         },
         modifier = modifier
     ) { innerPadding ->
-        when (polarAlignUiState) {
-            is PolarAlignUiState.Loading -> {
-                LoadingScreen(modifier = Modifier.fillMaxSize())
+        Box(Modifier.pullRefresh(pullRefreshState)) {
+            when (polarAlignUiState) {
+                is PolarAlignUiState.Loading -> {
+                    LoadingScreen(modifier = Modifier.fillMaxSize())
+                }
+
+                is PolarAlignUiState.Success -> {
+                    PolarAlignBody(
+                        celestialObjs = (polarAlignUiState as PolarAlignUiState.Success).data,
+                        onObservationStatusChanged = { item, newStatus ->
+                            viewModel.updateObservationStatus(item.celestialObj, newStatus)
+                        },
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                    )
+                }
+
+                is PolarAlignUiState.Error -> {
+                    ErrorScreen(
+                        message = (polarAlignUiState as PolarAlignUiState.Error).message,
+                        modifier = Modifier.fillMaxSize(),
+                        onRetryClick = { viewModel.fetchObjects() }
+                    )
+                }
             }
-            is PolarAlignUiState.Success -> {
-                PolarAlignBody(
-                    celestialObjs = (polarAlignUiState as PolarAlignUiState.Success).data,
-                    onObservationStatusChanged = { item, newStatus ->
-                        viewModel.updateObservationStatus(item.celestialObj, newStatus)
-                    },
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize()
-                )
-            }
-            is PolarAlignUiState.Error -> {
-                ErrorScreen(
-                    message = (polarAlignUiState as PolarAlignUiState.Error).message,
-                    modifier = Modifier.fillMaxSize(),
-                    onRetryClick = { viewModel.fetchObjects() }
-                )
-            }
+            PullRefreshIndicator(isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
         }
     }
 }
