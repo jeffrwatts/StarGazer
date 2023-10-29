@@ -88,7 +88,7 @@ class InfoViewModel : ViewModel() {
 
         // Adjust polaris azimuth to be zero based.
         val polarisX = if (azmPolaris<180.0) azmPolaris else azmPolaris-360.0
-        val polarisY = altPolaris-altCNP
+        val polarisY = altCNP-altPolaris
 
         return Pair(polarisX, polarisY)
     }
