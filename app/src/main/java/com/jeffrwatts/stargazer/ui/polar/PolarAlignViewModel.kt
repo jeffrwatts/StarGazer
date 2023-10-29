@@ -3,7 +3,7 @@ package com.jeffrwatts.stargazer.ui.polar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjAltAzm
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
@@ -34,13 +34,9 @@ class PolarAlignViewModel(private val repository: CelestialObjRepository) : View
 
             runCatching {
                 val utcNow = OffsetDateTime.now(ZoneOffset.UTC).toLocalDateTime()
-                val jdNow = Utils.calculateJulianDate(utcNow)
-
                 val objects = repository.getAllByTypeStream(ObjectType.STAR).first()
                 objects.map { obj ->
-                    val (alt, azm) = Utils.calculateAltAzm(obj.ra, obj.dec, LATITUDE, LONGITUDE, jdNow)
-                    val polarAlignmentCandidate = Utils.isGoodForPolarAlignment(alt=alt, azm=azm, dec=obj.dec)
-                    CelestialObjAltAzm(obj, alt, azm, polarAlignmentCandidate)
+                    CelestialObjPos.fromCelestialObj(obj, datetime = utcNow, lat = LATITUDE, lon = LONGITUDE)
                 }.sortedByDescending { it.polarAlignCandidate }  // Sort by polarAlignCandidate
             }.onSuccess { _uiState.value = PolarAlignUiState.Success(it) }
                 .onFailure { _uiState.value = PolarAlignUiState.Error(it.message ?: "Unknown error") }
@@ -62,6 +58,6 @@ class PolarAlignViewModel(private val repository: CelestialObjRepository) : View
 
 sealed class PolarAlignUiState {
     object Loading : PolarAlignUiState()
-    data class Success(val data: List<CelestialObjAltAzm>) : PolarAlignUiState()
+    data class Success(val data: List<CelestialObjPos>) : PolarAlignUiState()
     data class Error(val message: String) : PolarAlignUiState()
 }

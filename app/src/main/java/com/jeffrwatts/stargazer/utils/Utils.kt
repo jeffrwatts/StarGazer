@@ -62,17 +62,18 @@ object Utils {
         return lst
     }
 
-    fun calculateHourAngle(lst: Double, ra: Double): Double {
+    fun calculateLocalHourAngle(lst: Double, ra: Double): Double {
         var ha = lst - ra
         if (ha < 0) ha += 360.0
         return ha
     }
 
-    fun calculateAltAzm(ra: Double, dec: Double, latitude: Double, longitude: Double, julianDate: Double) : Pair<Double, Double> {
+    fun calculatePosition(ra: Double, dec: Double, latitude: Double, longitude: Double, julianDate: Double) : Triple<Double, Double, Double> {
         val latRad = Math.toRadians(latitude)
         val decRad = Math.toRadians(dec)
         val lst = calculateLocalSiderealTime(longitude, julianDate)
-        val haRad = Math.toRadians(calculateHourAngle(lst, ra))
+        val lha = calculateLocalHourAngle(lst, ra)
+        val haRad = Math.toRadians(lha)
 
         val sinAlt = sin(decRad) * sin(latRad) + cos(decRad) * cos(latRad) * cos(haRad)
         val altRad = asin(sinAlt)
@@ -87,10 +88,27 @@ object Utils {
             azm = 360.0 - azm
         }
 
-        return Pair(alt, azm)
+        return Triple(alt, azm, lha)
     }
 
-    fun isGoodForPolarAlignment(alt: Double, azm: Double, dec: Double): Boolean {
-        return azm in 160.0..200.0 && dec in -20.0..20.0 && alt < 80.0
+    fun isGoodForPolarAlignment(alt: Double, dec: Double, lha: Double): Boolean {
+        // Celestron website makes the following recommnedation for a star that is good for polar alignment.
+        // Choose a star that is near the meridian, preferably close to the celestial equator.
+        // Try to avoid stars too near the west/east horizon or directly overhead.
+        // Also, stars too near the celestial pole are less accurate than those further away.
+        // https://www.celestron.com/pages/all-star-polar-alignment
+
+        // LHA is 0 at the celestial meridian, allow for 15 deg on either side.
+        val nearMeridian = (lha in 0.0..15.0) || lha in 345.0..360.0
+
+        // dec is 0 at the celestial equator, allow for 20 deg on either side.
+        // Note this range also allows for preventing stars that are closet to the celestial pole.
+        val closeToCelestialEquator = dec in -20.0..20.0 // Allow 20 deg within celestial equator
+
+        // Overhead is 90 deg so back off 15 to 75.  Also stay above 30 deg to not get too close to the
+        // horizon.
+        val overheadOrHorizon = alt in 30.0..75.0
+
+        return nearMeridian && closeToCelestialEquator && overheadOrHorizon
     }
 }

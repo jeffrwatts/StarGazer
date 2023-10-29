@@ -11,13 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -26,11 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.jeffrwatts.stargazer.R
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjAltAzm
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -67,9 +63,9 @@ fun ErrorScreen(
 
 @Composable
 fun SkyItem(
-    celestialObjAltAzm: CelestialObjAltAzm,
+    celestialObjPos: CelestialObjPos,
     highlight: Boolean,
-    onObservationStatusChanged: (CelestialObjAltAzm, ObservationStatus) -> Unit,
+    onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = when {
@@ -94,12 +90,12 @@ fun SkyItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = celestialObjAltAzm.celestialObj.primaryName,
+                    text = celestialObjPos.celestialObj.primaryName,
                     style = MaterialTheme.typography.bodyLarge
                 )
                 StarRating(
-                    observationStatus = celestialObjAltAzm.celestialObj.observationStatus,
-                    onStatusChanged = { newStatus -> onObservationStatusChanged(celestialObjAltAzm, newStatus) }
+                    observationStatus = celestialObjPos.celestialObj.observationStatus,
+                    onStatusChanged = { newStatus -> onObservationStatusChanged(celestialObjPos, newStatus) }
                 )
             }
 
@@ -115,7 +111,7 @@ fun SkyItem(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = celestialObjAltAzm.celestialObj.ngcId ?: "",
+                        text = celestialObjPos.celestialObj.ngcId ?: "",
                         style = MaterialTheme.typography.bodyMedium,
                         color = LocalContentColor.current.copy(alpha = 0.6f)
                     )
@@ -123,7 +119,7 @@ fun SkyItem(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = celestialObjAltAzm.celestialObj.type.name,
+                        text = celestialObjPos.celestialObj.type.name,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -133,11 +129,11 @@ fun SkyItem(
                     horizontalAlignment = Alignment.End
                 ) {
                     Text(
-                        text = "Alt: ${formatToDegreeAndMinutes(celestialObjAltAzm.alt)}",
+                        text = "Alt: ${formatToDegreeAndMinutes(celestialObjPos.alt)}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = "Azm: ${formatToDegreeAndMinutes(celestialObjAltAzm.azm)}",
+                        text = "Azm: ${formatToDegreeAndMinutes(celestialObjPos.azm)}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

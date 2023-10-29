@@ -1,14 +1,12 @@
 package com.jeffrwatts.stargazer.ui.sights
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjAltAzm
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
-import com.jeffrwatts.stargazer.utils.Utils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -35,13 +33,11 @@ class SightsViewModel(private val repository: CelestialObjRepository) : ViewMode
 
             runCatching {
                 val utcNow = OffsetDateTime.now(ZoneOffset.UTC).toLocalDateTime();
-                val jdNow = Utils.calculateJulianDate(utcNow)
 
                 val objects = repository.getAllStream().first()
                     .filterNot { it.type == ObjectType.STAR }
                 objects.map { obj ->
-                    val (alt, azm) = Utils.calculateAltAzm(obj.ra, obj.dec, LATITUDE, LONGITUDE, jdNow)
-                    CelestialObjAltAzm(obj, alt, azm, false)
+                    CelestialObjPos.fromCelestialObj(obj, datetime = utcNow, lat = LATITUDE, lon = LONGITUDE)
                 }.sortedByDescending { it.alt }
             }.onSuccess { _uiState.value = SightsUiState.Success(it) }
                 .onFailure { _uiState.value = SightsUiState.Error(it.message ?: "Unknown error") }
@@ -58,7 +54,7 @@ class SightsViewModel(private val repository: CelestialObjRepository) : ViewMode
 
 sealed class SightsUiState {
     object Loading : SightsUiState()
-    data class Success(val data: List<CelestialObjAltAzm>) : SightsUiState()
+    data class Success(val data: List<CelestialObjPos>) : SightsUiState()
     data class Error(val message: String) : SightsUiState()
 }
 

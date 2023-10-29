@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jeffrwatts.stargazer.R
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjAltAzm
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
 import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
@@ -38,7 +38,6 @@ fun SightsScreen(
     viewModel: SightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val topAppBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val sightsUiState by viewModel.uiState.collectAsState()
 
     Scaffold(
@@ -80,8 +79,8 @@ fun SightsScreen(
 
 @Composable
 private fun SightsBody(
-    celestialObjs: List<CelestialObjAltAzm>,
-    onObservationStatusChanged: (CelestialObjAltAzm, ObservationStatus) -> Unit,
+    celestialObjs: List<CelestialObjPos>,
+    onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -99,7 +98,7 @@ private fun SightsBody(
                 items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
                     val highlight = celestialObj.alt > 10
                     SkyItem(
-                        celestialObjAltAzm = celestialObj,
+                        celestialObjPos = celestialObj,
                         highlight = highlight,
                         onObservationStatusChanged = onObservationStatusChanged,
                         modifier = Modifier

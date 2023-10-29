@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jeffrwatts.stargazer.R
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjAltAzm
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
 import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
@@ -78,8 +78,8 @@ fun PolarAlignScreen(
 
 @Composable
 private fun PolarAlignBody(
-    celestialObjs: List<CelestialObjAltAzm>,
-    onObservationStatusChanged: (CelestialObjAltAzm, ObservationStatus) -> Unit,
+    celestialObjs: List<CelestialObjPos>,
+    onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -96,7 +96,7 @@ private fun PolarAlignBody(
             LazyColumn(modifier = modifier) {
                 items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
                     val highlight = celestialObj.polarAlignCandidate
-                    SkyItem(celestialObjAltAzm = celestialObj,
+                    SkyItem(celestialObjPos = celestialObj,
                         highlight = highlight,
                         onObservationStatusChanged = onObservationStatusChanged,
                         modifier = Modifier
