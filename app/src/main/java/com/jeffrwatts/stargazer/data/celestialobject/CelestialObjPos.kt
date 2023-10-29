@@ -11,8 +11,7 @@ data class CelestialObjPos(
     val polarAlignCandidate: Boolean
 ) {
     companion object {
-        fun fromCelestialObj(obj: CelestialObj, datetime: LocalDateTime, lat: Double, lon: Double): CelestialObjPos {
-            val julianDate = Utils.calculateJulianDate(datetime)
+        fun fromCelestialObj(obj: CelestialObj, julianDate: Double, lat: Double, lon: Double): CelestialObjPos {
             val (alt, azm, lha) = Utils.calculatePosition(obj.ra, obj.dec, lat, lon, julianDate)
             var polarAlignCandidate = false
 

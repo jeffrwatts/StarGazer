@@ -3,6 +3,7 @@ package com.jeffrwatts.stargazer.ui.info
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -27,10 +30,14 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jeffrwatts.stargazer.R
+import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
+import com.jeffrwatts.stargazer.ui.polar.PolarAlignViewModel
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -39,9 +46,11 @@ import kotlin.math.sqrt
 fun InfoScreen(
     openDrawer: () -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: InfoViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
+    val uiState by viewModel.state.collectAsState()
 
     Scaffold(
         topBar = {
@@ -58,33 +67,50 @@ fun InfoScreen(
             .nestedScroll(scrollBehavior.nestedScrollConnection)
 
         Column(
-            modifier = contentModifier,
-            horizontalAlignment = Alignment.CenterHorizontally // Center children horizontally
+            modifier = contentModifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp)) // Add some space at the top
+            Spacer(modifier = Modifier.height(16.dp))
 
-            PolarView(polarisX = -0.2f, polarisY = 0.0f) // Your PolarView
+            // Current Time
+            InfoSectionHeader(title = "Current Time")
+            Text(text = uiState.currentTime, style = MaterialTheme.typography.bodyLarge)
 
-            Spacer(modifier = Modifier.height(16.dp)) // Add some space between PolarView and LazyColumn
+            Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth() // Fill the maximum width for LazyColumn
-            ) {
-                val items = List(50) { "Info #$it" }
+            // Current Date
+            InfoSectionHeader(title = "Current Date")
+            Text(text = uiState.currentDate, style = MaterialTheme.typography.bodyLarge)
 
-                items(items) { item ->
-                    Text(text = item, modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp))
-                    Divider(thickness = 1.dp)
-                }
-            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Current Location
+            InfoSectionHeader(title = "Current Location")
+            Text(text = "Latitude: ${uiState.latitude}", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = "Longitude: ${uiState.longitude}", style = MaterialTheme.typography.bodyLarge)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // PolarView
+            InfoSectionHeader(title = "Polar View")
+            PolarView(polarisX = uiState.polarisX, polarisY = uiState.polarisY)
         }
     }
 }
 
 @Composable
-fun PolarView(polarisX: Float, polarisY: Float, circleColor: Color = MaterialTheme.colorScheme.primary) {
+fun InfoSectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.headlineMedium.copy(textDecoration = TextDecoration.Underline)
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+}
+
+
+@Composable
+fun PolarView(polarisX: Double, polarisY: Double, circleColor: Color = MaterialTheme.colorScheme.primary) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val desiredSize = screenWidth - 32.dp // Subtract padding
@@ -107,19 +133,19 @@ fun PolarView(polarisX: Float, polarisY: Float, circleColor: Color = MaterialThe
     )
 }
 
-fun DrawScope.drawPolarContent(polarisX: Float, polarisY: Float, circleColor: Color) {
+fun DrawScope.drawPolarContent(polarisX: Double, polarisY: Double, circleColor: Color) {
     val center = Offset(size.width / 2, size.height / 2)
     val radius = sqrt(polarisX * polarisX + polarisY * polarisY)
 
     drawCircle(
         color = circleColor,
         center = center,
-        radius = radius,
+        radius = radius.toFloat(),
         style = Stroke(width = 4f)
     )
     drawCircle(
         color = Color.Blue,
-        center = center + Offset(polarisX, polarisY),
+        center = center + Offset(polarisX.toFloat(), polarisY.toFloat()),
         radius = 10f,
         style = Stroke(width = 10f)
     )
@@ -140,5 +166,5 @@ fun DrawScope.drawPolarContent(polarisX: Float, polarisY: Float, circleColor: Co
 @Preview
 @Composable
 fun PolarViewPreview() {
-    PolarView(polarisX = -0.2f, polarisY = 0.0f)
+    PolarView(polarisX = -0.2, polarisY = 0.0)
 }

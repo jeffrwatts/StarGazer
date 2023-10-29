@@ -7,6 +7,7 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
+import com.jeffrwatts.stargazer.utils.Utils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -32,12 +33,12 @@ class SightsViewModel(private val repository: CelestialObjRepository) : ViewMode
             _uiState.value = SightsUiState.Loading
 
             runCatching {
-                val utcNow = OffsetDateTime.now(ZoneOffset.UTC).toLocalDateTime();
+                val jdNow = Utils.calculateJulianDateNow();
 
                 val objects = repository.getAllStream().first()
                     .filterNot { it.type == ObjectType.STAR }
                 objects.map { obj ->
-                    CelestialObjPos.fromCelestialObj(obj, datetime = utcNow, lat = LATITUDE, lon = LONGITUDE)
+                    CelestialObjPos.fromCelestialObj(obj, julianDate = jdNow, lat = LATITUDE, lon = LONGITUDE)
                 }.sortedByDescending { it.alt }
             }.onSuccess { _uiState.value = SightsUiState.Success(it) }
                 .onFailure { _uiState.value = SightsUiState.Error(it.message ?: "Unknown error") }

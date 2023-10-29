@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.jeffrwatts.stargazer.StarGazerApplication
+import com.jeffrwatts.stargazer.ui.info.InfoViewModel
 import com.jeffrwatts.stargazer.ui.polar.PolarAlignViewModel
 import com.jeffrwatts.stargazer.ui.sights.SightsViewModel
 
@@ -22,6 +23,10 @@ object AppViewModelProvider {
             PolarAlignViewModel(
                 starGazerApplication().container.celestialObjRepository
             )
+        }
+
+        initializer {
+            InfoViewModel( )
         }
     }
 }

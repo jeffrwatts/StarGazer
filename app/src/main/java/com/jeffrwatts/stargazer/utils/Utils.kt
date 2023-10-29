@@ -1,6 +1,7 @@
 package com.jeffrwatts.stargazer.utils
 
 import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.asin
@@ -25,11 +26,11 @@ object Utils {
         return "%02dh %02dm %.2fs".format(hours, minutes, seconds)
     }
 
-    fun decimalToDMS(decimal: Double): String {
+    fun decimalToDMS(decimal: Double, dirPos: String, dirNeg: String): String {
         val degrees = decimal.toInt()
         val minutes = ((decimal - degrees) * 60).toInt()
         val seconds = (((decimal - degrees) * 60 - minutes) * 60)
-        val direction = if (decimal >= 0) "N" else "S"
+        val direction = if (decimal >= 0) dirPos else dirNeg
         return "%02d°%02d'%05.2f\"%s".format(abs(degrees), abs(minutes), abs(seconds), direction)
     }
 
@@ -50,6 +51,14 @@ object Utils {
         val d = day + (hour + minute / 60.0 + second / 3600.0) / 24.0
 
         return (365.25*(adjustedYear+4716)).toInt() + (30.6001*(adjustedMonth+1)).toInt() + d + b - 1524.5
+    }
+
+    fun calculateJulianDateNow():Double {
+        val currentTime = LocalDateTime.now()
+        val zonedDateTime = currentTime.atZone(ZoneId.systemDefault())
+        val utcZonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"))
+        val utcNow = utcZonedDateTime.toLocalDateTime()
+        return calculateJulianDate(utcNow)
     }
 
     fun calculateLocalSiderealTime(longitude: Double, julianDate: Double): Double {

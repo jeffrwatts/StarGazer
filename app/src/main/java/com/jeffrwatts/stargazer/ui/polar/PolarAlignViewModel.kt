@@ -33,19 +33,14 @@ class PolarAlignViewModel(private val repository: CelestialObjRepository) : View
             _uiState.value = PolarAlignUiState.Loading
 
             runCatching {
-                val utcNow = OffsetDateTime.now(ZoneOffset.UTC).toLocalDateTime()
+                val jdNow = Utils.calculateJulianDateNow()
                 val objects = repository.getAllByTypeStream(ObjectType.STAR).first()
                 objects.map { obj ->
-                    CelestialObjPos.fromCelestialObj(obj, datetime = utcNow, lat = LATITUDE, lon = LONGITUDE)
+                    CelestialObjPos.fromCelestialObj(obj, julianDate = jdNow, lat = LATITUDE, lon = LONGITUDE)
                 }.sortedByDescending { it.polarAlignCandidate }  // Sort by polarAlignCandidate
             }.onSuccess { _uiState.value = PolarAlignUiState.Success(it) }
                 .onFailure { _uiState.value = PolarAlignUiState.Error(it.message ?: "Unknown error") }
         }
-    }
-
-    // Function to check if the object meets the polar alignment criteria
-    private fun isGoodForPolarAlignment(alt: Double, azm: Double, dec: Double): Boolean {
-        return azm in 160.0..200.0 && dec in -20.0..20.0 && alt < 80.0
     }
 
     fun updateObservationStatus(celestialObj: CelestialObj, newObservationStatus: ObservationStatus) {
