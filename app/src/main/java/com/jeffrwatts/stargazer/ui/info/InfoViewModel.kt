@@ -2,18 +2,24 @@ package com.jeffrwatts.stargazer.ui.info
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class InfoViewModel : ViewModel() {
+class InfoViewModel (
+    private val locationRepository: LocationRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(InfoUiState("", "", "", "", 0.0, 0.0))
     val state: StateFlow<InfoUiState> = _state
+
+    val locationFlow = locationRepository.locationFlow
 
     companion object {
         const val LATITUDE = 19.639994  // Example: Kona's latitude
@@ -26,12 +32,15 @@ class InfoViewModel : ViewModel() {
         val CELESTIAL_NORTH_POLE_DEC = 90.0
     }
     init {
-        updateDateTime()
+        observeDateTimeUpdates()
+        observeLocationUpdates()
         updateLocationAndPolarCoords()
+        locationRepository.startLocationUpdates(viewModelScope)
     }
 
+
     // Updates the time every second
-    private fun updateDateTime() {
+    private fun observeDateTimeUpdates() {
         viewModelScope.launch {
             while (true) {
                 _state.value = _state.value.copy(
@@ -43,13 +52,37 @@ class InfoViewModel : ViewModel() {
         }
     }
 
+    // Observes location updates
+    private fun observeLocationUpdates() {
+        viewModelScope.launch {
+            locationRepository.locationFlow.collect { location ->
+                location?.let {
+                    it.accuracy
+                    // Update the UI state with the new location data
+                    val newLatitude = Utils.decimalToDMS(it.latitude, "N", "S")
+                    val newLongitude = Utils.decimalToDMS(it.longitude, "E", "W")
+
+                    _state.update { currentState ->
+                        currentState.copy(
+                            latitude = newLatitude,
+                            longitude = newLongitude,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     // Updates the polar coordinates and location every minute
     private fun updateLocationAndPolarCoords() {
         viewModelScope.launch {
             while (true) {
                 // Placeholder logic for lat, lon, polarisX, and polarisY
-                val newLatitude = Utils.decimalToDMS(LATITUDE, "N", "S")
-                val newLongitude = Utils.decimalToDMS(LONGITUDE, "E", "W")
+                val lat = locationFlow.value?.latitude ?: 0.0
+                val lon = locationFlow.value?.longitude ?: 0.0
+
+                val newLatitude = Utils.decimalToDMS(lat, "N", "S")
+                val newLongitude = Utils.decimalToDMS(lon, "E", "W")
                 val (polarisX, polarisY) = updatePolarisCoords()
 
                 _state.value = _state.value.copy(
@@ -92,6 +125,11 @@ class InfoViewModel : ViewModel() {
         val polarisY = altCNP-altPolaris
 
         return Pair(polarisX, polarisY)
+    }
+
+    override fun onCleared() {
+        locationRepository.stopLocationUpdates()
+        super.onCleared()
     }
 }
 

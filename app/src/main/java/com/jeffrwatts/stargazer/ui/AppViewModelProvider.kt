@@ -1,7 +1,7 @@
 package com.jeffrwatts.stargazer.ui
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -26,7 +26,9 @@ object AppViewModelProvider {
         }
 
         initializer {
-            InfoViewModel( )
+            InfoViewModel(
+                starGazerApplication().container.locationRepository
+            )
         }
     }
 }
