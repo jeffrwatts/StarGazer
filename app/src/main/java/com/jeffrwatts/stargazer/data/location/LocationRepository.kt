@@ -31,7 +31,6 @@ class LocationRepository(private val context: Context) {
 
     fun startLocationUpdates(scope: CoroutineScope) {
         val locationRequest = LocationRequest.Builder(10000L).apply {
-            setIntervalMillis(5000L)
             setPriority(PRIORITY_HIGH_ACCURACY)
         }.build()
 

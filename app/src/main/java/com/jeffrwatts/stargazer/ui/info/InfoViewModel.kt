@@ -19,12 +19,7 @@ class InfoViewModel (
     private val _state = MutableStateFlow(InfoUiState("", "", "", "", 0.0, 0.0))
     val state: StateFlow<InfoUiState> = _state
 
-    val locationFlow = locationRepository.locationFlow
-
     companion object {
-        const val LATITUDE = 19.639994  // Example: Kona's latitude
-        const val LONGITUDE = -155.996926 // Example: Kona's longitude
-
         val POLARIS_RA = Utils.hmsToDegrees(2, 41, 39.0)
         val POLARIS_DEC = Utils.dmsToDegrees(89, 15, 51.0)
 
@@ -34,7 +29,6 @@ class InfoViewModel (
     init {
         observeDateTimeUpdates()
         observeLocationUpdates()
-        updateLocationAndPolarCoords()
         locationRepository.startLocationUpdates(viewModelScope)
     }
 
@@ -57,41 +51,18 @@ class InfoViewModel (
         viewModelScope.launch {
             locationRepository.locationFlow.collect { location ->
                 location?.let {
-                    it.accuracy
                     // Update the UI state with the new location data
-                    val newLatitude = Utils.decimalToDMS(it.latitude, "N", "S")
-                    val newLongitude = Utils.decimalToDMS(it.longitude, "E", "W")
+                    val (polarisX, polarisY) = updatePolarisCoords(it.latitude, it.longitude)
 
                     _state.update { currentState ->
                         currentState.copy(
-                            latitude = newLatitude,
-                            longitude = newLongitude,
+                            latitude = Utils.decimalToDMS(it.latitude, "N", "S"),
+                            longitude = Utils.decimalToDMS(it.longitude, "E", "W"),
+                            polarisX = polarisX,
+                            polarisY = polarisY
                         )
                     }
                 }
-            }
-        }
-    }
-
-    // Updates the polar coordinates and location every minute
-    private fun updateLocationAndPolarCoords() {
-        viewModelScope.launch {
-            while (true) {
-                // Placeholder logic for lat, lon, polarisX, and polarisY
-                val lat = locationFlow.value?.latitude ?: 0.0
-                val lon = locationFlow.value?.longitude ?: 0.0
-
-                val newLatitude = Utils.decimalToDMS(lat, "N", "S")
-                val newLongitude = Utils.decimalToDMS(lon, "E", "W")
-                val (polarisX, polarisY) = updatePolarisCoords()
-
-                _state.value = _state.value.copy(
-                    latitude = newLatitude,
-                    longitude = newLongitude,
-                    polarisX = polarisX,
-                    polarisY = polarisY
-                )
-                delay(60_000) // Delay for a minute
             }
         }
     }
@@ -114,11 +85,11 @@ class InfoViewModel (
         return dateFormat.format(Date())
     }
 
-    private fun updatePolarisCoords(): Pair<Double, Double> {
+    private fun updatePolarisCoords(lat: Double, lon: Double): Pair<Double, Double> {
         val jdNow = Utils.calculateJulianDateNow()
 
-        val (altPolaris, azmPolaris, _) = Utils.calculatePosition(POLARIS_RA, POLARIS_DEC, LATITUDE, LONGITUDE, jdNow)
-        val (altCNP, _, _) = Utils.calculatePosition(CELESTIAL_NORTH_POLE_RA, CELESTIAL_NORTH_POLE_DEC, LATITUDE, LONGITUDE, jdNow)
+        val (altPolaris, azmPolaris, _) = Utils.calculatePosition(POLARIS_RA, POLARIS_DEC, lat, lon, jdNow)
+        val (altCNP, _, _) = Utils.calculatePosition(CELESTIAL_NORTH_POLE_RA, CELESTIAL_NORTH_POLE_DEC, lat, lon, jdNow)
 
         // Adjust polaris azimuth to be zero based.
         val polarisX = if (azmPolaris<180.0) azmPolaris else azmPolaris-360.0

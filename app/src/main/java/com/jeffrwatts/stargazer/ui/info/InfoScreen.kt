@@ -139,6 +139,9 @@ fun InfoSectionHeader(title: String) {
 
 @Composable
 fun PolarView(polarisX: Double, polarisY: Double, isHorizontalFlip: Boolean, isVerticalFlip: Boolean, circleColor: Color = MaterialTheme.colorScheme.primary) {
+    if (polarisX == 0.0 && polarisY == 0.0)
+        return
+
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val desiredSize = screenWidth - 128.dp // Subtract padding
