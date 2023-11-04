@@ -70,7 +70,11 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.4")
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
+    // Google Play Services for Location.
     implementation ("com.google.android.gms:play-services-location:21.0.1")
+
+    //
+    implementation ("com.google.accompanist:accompanist-permissions:0.32.0")
 
     // Serialization
     implementation("com.google.code.gson:gson:2.9.0")
