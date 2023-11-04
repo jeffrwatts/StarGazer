@@ -2,8 +2,10 @@ package com.jeffrwatts.stargazer.data.celestialobject
 
 data class CelestialObjJson(
     val id: Int,
-    val primaryName: String,
+    val friendlyName: String,
     val ngcId: String?,
+    val messierId: String?,
+    val caldwellId: String?,
     val ra: Double,
     val dec: Double,
     val mag: Double?,
@@ -15,8 +17,10 @@ data class CelestialObjJson(
 fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
     return CelestialObj(
         id = this.id,
-        primaryName = this.primaryName,
+        friendlyName = this.friendlyName,
         ngcId = this.ngcId,
+        messierId = this.messierId,
+        caldwellId = this.caldwellId,
         ra = this.ra,
         dec = this.dec,
         mag = this.mag,

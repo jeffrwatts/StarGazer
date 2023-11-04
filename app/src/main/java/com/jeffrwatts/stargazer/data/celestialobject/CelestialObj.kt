@@ -32,8 +32,10 @@ class Converters {
 @TypeConverters(Converters::class)
 data class CelestialObj(
     @PrimaryKey(autoGenerate = true) val id: Int,
-    val primaryName: String,
+    val friendlyName: String,
     val ngcId: String?,
+    val messierId: String?,
+    val caldwellId: String?,
     val ra: Double,
     val dec: Double,
     val mag: Double?,

@@ -90,7 +90,7 @@ fun SkyItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = celestialObjPos.celestialObj.primaryName,
+                    text = celestialObjPos.celestialObj.friendlyName,
                     style = MaterialTheme.typography.bodyLarge
                 )
                 StarRating(
