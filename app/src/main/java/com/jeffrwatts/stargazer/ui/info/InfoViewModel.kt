@@ -16,7 +16,7 @@ import java.util.Locale
 class InfoViewModel (
     private val locationRepository: LocationRepository
 ) : ViewModel() {
-    private val _state = MutableStateFlow(InfoUiState("", "", "", "", 0.0, 0.0))
+    private val _state = MutableStateFlow(InfoUiState("", "", "", "", "", 0.0, 0.0))
     val state: StateFlow<InfoUiState> = _state
 
     companion object {
@@ -58,6 +58,7 @@ class InfoViewModel (
                         currentState.copy(
                             latitude = Utils.decimalToDMS(it.latitude, "N", "S"),
                             longitude = Utils.decimalToDMS(it.longitude, "E", "W"),
+                            accuracy = "${it.accuracy} meters",
                             polarisX = polarisX,
                             polarisY = polarisY
                         )
@@ -109,6 +110,7 @@ data class InfoUiState(
     val currentDate: String,
     val latitude: String,
     val longitude: String,
+    val accuracy: String,
     val polarisX: Double,
     val polarisY: Double,
     val isHorizontalFlip: Boolean = true,
