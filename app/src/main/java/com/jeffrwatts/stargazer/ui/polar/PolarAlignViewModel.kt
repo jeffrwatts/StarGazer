@@ -8,9 +8,13 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
 import com.jeffrwatts.stargazer.data.location.LocationRepository
+import com.jeffrwatts.stargazer.ui.sights.SightsUiState
 import com.jeffrwatts.stargazer.utils.Utils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -18,10 +22,6 @@ class PolarAlignViewModel(
     private val repository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
-    companion object {
-        const val LATITUDE = 19.639994  // Example: Kona's latitude
-        const val LONGITUDE = -155.996926 // Example: Kona's longitude
-    }
 
     private val _uiState = MutableStateFlow<PolarAlignUiState>(PolarAlignUiState.Loading)
     val uiState: StateFlow<PolarAlignUiState> = _uiState
@@ -32,16 +32,30 @@ class PolarAlignViewModel(
 
     fun fetchObjects() {
         viewModelScope.launch {
-            _uiState.value = PolarAlignUiState.Loading
-
-            runCatching {
-                val jdNow = Utils.calculateJulianDateNow()
-                val objects = repository.getAllByTypeStream(ObjectType.STAR).first()
-                objects.map { obj ->
-                    CelestialObjPos.fromCelestialObj(obj, julianDate = jdNow, lat = LATITUDE, lon = LONGITUDE)
-                }.sortedByDescending { it.polarAlignCandidate }  // Sort by polarAlignCandidate
-            }.onSuccess { _uiState.value = PolarAlignUiState.Success(it) }
-                .onFailure { _uiState.value = PolarAlignUiState.Error(it.message ?: "Unknown error") }
+            repository.getAllByTypeStream(ObjectType.STAR)
+                .combine(locationRepository.locationFlow) { objects, location ->
+                    // Check if location is not null and proceed
+                    if (location != null) {
+                        val jdNow = Utils.calculateJulianDateNow()
+                        objects.map { obj ->
+                                CelestialObjPos.fromCelestialObj(obj, julianDate = jdNow, lat = location.latitude, lon = location.longitude)
+                            }.sortedByDescending { it.polarAlignCandidate }
+                    } else {
+                        // Emit a Loading state if the location is not yet available
+                        _uiState.value = PolarAlignUiState.Loading
+                        return@combine emptyList<CelestialObjPos>()
+                    }
+                }
+                .distinctUntilChanged() // To avoid redundant UI updates
+                .catch { e ->
+                    _uiState.value = PolarAlignUiState.Error(e.message ?: "Unknown error")
+                }
+                .collect { celestialObjPosList ->
+                    // If location is still not available (null), keep the Loading state
+                    if (celestialObjPosList.isNotEmpty() || locationRepository.locationFlow.value != null) {
+                        _uiState.value = PolarAlignUiState.Success(celestialObjPosList)
+                    }
+                }
         }
     }
 

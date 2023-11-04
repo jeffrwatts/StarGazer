@@ -19,7 +19,7 @@ fun StarGazerNavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     openDrawer: () -> Unit = {},
-    startDestination: String = StarGazerDestinations.INFO_ROUTE,
+    startDestination: String = StarGazerDestinations.POLAR_ROUTE,
 ) {
     NavHost(
         navController = navController,
