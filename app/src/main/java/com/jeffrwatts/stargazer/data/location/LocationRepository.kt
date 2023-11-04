@@ -10,12 +10,14 @@ import kotlinx.coroutines.launch
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Looper
+import android.util.Log
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
 
 class LocationRepository(private val context: Context) {
+    private val TAG = LocationRepository::class.java.simpleName
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
     private val _locationFlow = MutableStateFlow<Location?>(null)
@@ -24,14 +26,16 @@ class LocationRepository(private val context: Context) {
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
             locationResult.lastLocation?.let {
+                Log.d(TAG, "Location result: ${it.accuracy}, ${it.isComplete}")
                 _locationFlow.value = it
             }
         }
     }
 
     fun startLocationUpdates(scope: CoroutineScope) {
-        val locationRequest = LocationRequest.Builder(10000L).apply {
+        val locationRequest = LocationRequest.Builder(5000L).apply {
             setPriority(PRIORITY_HIGH_ACCURACY)
+            setMinUpdateDistanceMeters(25f)
         }.build()
 
 
