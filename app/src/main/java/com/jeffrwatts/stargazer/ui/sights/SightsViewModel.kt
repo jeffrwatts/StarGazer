@@ -7,15 +7,17 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
+import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
-class SightsViewModel(private val repository: CelestialObjRepository) : ViewModel() {
+class SightsViewModel(
+    private val repository: CelestialObjRepository,
+    private val locationRepository: LocationRepository
+) : ViewModel() {
     companion object {
         const val LATITUDE = 19.639994  // Example: Kona's latitude
         const val LONGITUDE = -155.996926 // Example: Kona's longitude

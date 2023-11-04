@@ -19,21 +19,21 @@ fun StarGazerNavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     openDrawer: () -> Unit = {},
-    startDestination: String = StarGazerDestinations.SIGHTS_ROUTE,
+    startDestination: String = StarGazerDestinations.INFO_ROUTE,
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier
     ) {
-        composable(route = StarGazerDestinations.SIGHTS_ROUTE) {
-            SightsScreen(openDrawer = openDrawer)
+        composable(StarGazerDestinations.INFO_ROUTE) {
+            InfoScreen(openDrawer = openDrawer)
         }
         composable(StarGazerDestinations.POLAR_ROUTE) {
             PolarAlignScreen(openDrawer = openDrawer)
         }
-        composable(StarGazerDestinations.INFO_ROUTE) {
-            InfoScreen(openDrawer = openDrawer)
+        composable(route = StarGazerDestinations.SIGHTS_ROUTE) {
+            SightsScreen(openDrawer = openDrawer)
         }
     }
 }

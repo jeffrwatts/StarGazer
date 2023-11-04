@@ -1,6 +1,5 @@
 package com.jeffrwatts.stargazer.ui
 
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
@@ -12,21 +11,20 @@ import com.jeffrwatts.stargazer.ui.sights.SightsViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
-
-        initializer {
-            SightsViewModel(
-                starGazerApplication().container.celestialObjRepository
-            )
-        }
-
-        initializer {
-            PolarAlignViewModel(
-                starGazerApplication().container.celestialObjRepository
-            )
-        }
-
         initializer {
             InfoViewModel(
+                starGazerApplication().container.locationRepository
+            )
+        }
+        initializer {
+            PolarAlignViewModel(
+                starGazerApplication().container.celestialObjRepository,
+                starGazerApplication().container.locationRepository
+            )
+        }
+        initializer {
+            SightsViewModel(
+                starGazerApplication().container.celestialObjRepository,
                 starGazerApplication().container.locationRepository
             )
         }
