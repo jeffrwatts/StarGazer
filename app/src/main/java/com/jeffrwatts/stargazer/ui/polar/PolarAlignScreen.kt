@@ -1,7 +1,6 @@
 package com.jeffrwatts.stargazer.ui.polar
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,7 +28,6 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
 import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
-import com.jeffrwatts.stargazer.ui.sights.SightsUiState
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.SkyItem
@@ -57,10 +55,14 @@ fun PolarAlignScreen(
         },
         modifier = modifier
     ) { innerPadding ->
+        val contentModifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize()
+
         Box(Modifier.pullRefresh(pullRefreshState)) {
             when (polarAlignUiState) {
                 is PolarAlignUiState.Loading -> {
-                    LoadingScreen(modifier = Modifier.fillMaxSize())
+                    LoadingScreen(modifier = contentModifier)
                 }
 
                 is PolarAlignUiState.Success -> {
@@ -69,16 +71,14 @@ fun PolarAlignScreen(
                         onObservationStatusChanged = { item, newStatus ->
                             viewModel.updateObservationStatus(item.celestialObj, newStatus)
                         },
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()
+                        modifier = contentModifier
                     )
                 }
 
                 is PolarAlignUiState.Error -> {
                     ErrorScreen(
                         message = (polarAlignUiState as PolarAlignUiState.Error).message,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = contentModifier,
                         onRetryClick = { viewModel.fetchObjects() }
                     )
                 }
@@ -95,26 +95,21 @@ private fun PolarAlignBody(
     onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-        if (celestialObjs.isEmpty()) {
-            Text(
-                text = stringResource(R.string.no_item_description),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge
-            )
-        } else {
-            LazyColumn(modifier = modifier) {
-                items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
-                    val highlight = celestialObj.polarAlignCandidate
-                    SkyItem(celestialObjPos = celestialObj,
-                        highlight = highlight,
-                        onObservationStatusChanged = onObservationStatusChanged,
-                        modifier = Modifier
-                            .padding(8.dp))
-                }
+    if (celestialObjs.isEmpty()) {
+        Text(
+            text = stringResource(R.string.no_item_description),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleLarge
+        )
+    } else {
+        LazyColumn(modifier = modifier) {
+            items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
+                val highlight = celestialObj.polarAlignCandidate
+                SkyItem(celestialObjPos = celestialObj,
+                    highlight = highlight,
+                    onObservationStatusChanged = onObservationStatusChanged,
+                    modifier = Modifier
+                        .padding(8.dp))
             }
         }
     }

@@ -127,15 +127,11 @@ fun InfoContent(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Time
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-        item { InfoSectionHeader(title = "Current Time") }
-        item { Text(text = uiState.currentTime, style = MaterialTheme.typography.bodyLarge) }
-
-        // Date
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-        item { InfoSectionHeader(title = "Current Date") }
-        item { Text(text = uiState.currentDate, style = MaterialTheme.typography.bodyLarge) }
+        // Date and Time
+        item { InfoSectionHeader(title = "Current Date & Time") }
+        item { Text(text = "Time: ${uiState.currentTime}", style = MaterialTheme.typography.bodyLarge) }
+        item { Spacer(modifier = Modifier.height(4.dp)) }
+        item { Text(text = "Date: ${uiState.currentDate}", style = MaterialTheme.typography.bodyLarge) }
 
         // Location
         item { Spacer(modifier = Modifier.height(16.dp)) }
@@ -145,6 +141,8 @@ fun InfoContent(
         item { Text(text = "Longitude: ${uiState.longitude}", style = MaterialTheme.typography.bodyLarge) }
         item { Spacer(modifier = Modifier.height(4.dp)) }
         item { Text(text = "Accuracy: ${uiState.accuracy}", style = MaterialTheme.typography.bodyLarge) }
+        item { Spacer(modifier = Modifier.height(4.dp)) }
+        item { Text(text = "Altitude: ${uiState.altitude}", style = MaterialTheme.typography.bodyLarge) }
 
         // Polar View
         item { Spacer(modifier = Modifier.height(16.dp)) }

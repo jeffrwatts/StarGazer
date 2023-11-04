@@ -17,7 +17,14 @@ class InfoViewModel (
     private val locationRepository: LocationRepository
 ) : ViewModel() {
     private var locationUpdating = false
-    private val _state = MutableStateFlow(InfoUiState("", "", "", "", "", 0.0, 0.0))
+    private val _state = MutableStateFlow(InfoUiState(currentTime = "",
+        currentDate = "",
+        latitude = "",
+        longitude = "",
+        accuracy = "",
+        altitude = "",
+        polarisX = 0.0,
+        polarisY = 0.0))
     val state: StateFlow<InfoUiState> = _state
 
     companion object {
@@ -77,7 +84,8 @@ class InfoViewModel (
                         currentState.copy(
                             latitude = Utils.decimalToDMS(it.latitude, "N", "S"),
                             longitude = Utils.decimalToDMS(it.longitude, "E", "W"),
-                            accuracy = "${it.accuracy} meters",
+                            accuracy = String.format("%.1f feet", it.accuracy * 3.28084),
+                            altitude = String.format("%.1f feet", it.altitude * 3.28084),
                             polarisX = polarisX,
                             polarisY = polarisY
                         )
@@ -119,6 +127,7 @@ data class InfoUiState(
     val latitude: String,
     val longitude: String,
     val accuracy: String,
+    val altitude: String,
     val polarisX: Double,
     val polarisY: Double,
     val isHorizontalFlip: Boolean = true,

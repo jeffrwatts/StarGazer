@@ -13,7 +13,6 @@ import androidx.compose.material3.TopAppBarState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,7 +25,6 @@ fun StarGazerTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior? =
         TopAppBarDefaults.enterAlwaysScrollBehavior(topAppBarState)
 ) {
-    val context = LocalContext.current
     CenterAlignedTopAppBar(
         title = {
             Text(title,

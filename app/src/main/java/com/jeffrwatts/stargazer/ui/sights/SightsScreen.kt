@@ -2,7 +2,6 @@ package com.jeffrwatts.stargazer.ui.sights
 
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,7 +14,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -57,10 +55,14 @@ fun SightsScreen(
         },
         modifier = modifier
     ) { innerPadding ->
+        val contentModifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize()
+
         Box(Modifier.pullRefresh(pullRefreshState)) {
             when (sightsUiState) {
                 is SightsUiState.Loading -> {
-                    LoadingScreen(modifier = Modifier.fillMaxSize())
+                    LoadingScreen(modifier = contentModifier)
                 }
                 is SightsUiState.Success -> {
                     SightsBody(
@@ -68,15 +70,12 @@ fun SightsScreen(
                         onObservationStatusChanged = { item, newStatus ->
                             viewModel.updateObservationStatus(item.celestialObj, newStatus)
                         },
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()
-                    )
+                        modifier = contentModifier)
                 }
                 is SightsUiState.Error -> {
                     ErrorScreen(
                         message = (sightsUiState as SightsUiState.Error).message,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = contentModifier,
                         onRetryClick = { viewModel.fetchObjects() }
                     )
                 }
@@ -93,28 +92,23 @@ private fun SightsBody(
     onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-        if (celestialObjs.isEmpty()) {
-            Text(
-                text = stringResource(R.string.no_item_description),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge
-            )
-        } else {
-            LazyColumn(modifier = modifier) {
-                items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
-                    val highlight = celestialObj.alt > 10
-                    SkyItem(
-                        celestialObjPos = celestialObj,
-                        highlight = highlight,
-                        onObservationStatusChanged = onObservationStatusChanged,
-                        modifier = Modifier
-                            .padding(8.dp)
-                    )
-                }
+    if (celestialObjs.isEmpty()) {
+        Text(
+            text = stringResource(R.string.no_item_description),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleLarge
+        )
+    } else {
+        LazyColumn(modifier = modifier) {
+            items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
+                val highlight = celestialObj.alt > 10
+                SkyItem(
+                    celestialObjPos = celestialObj,
+                    highlight = highlight,
+                    onObservationStatusChanged = onObservationStatusChanged,
+                    modifier = Modifier
+                        .padding(8.dp)
+                )
             }
         }
     }

@@ -2,12 +2,10 @@ package com.jeffrwatts.stargazer.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navDeepLink
 import com.jeffrwatts.stargazer.data.AppContainer
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
 import com.jeffrwatts.stargazer.ui.polar.PolarAlignScreen
@@ -27,13 +25,13 @@ fun StarGazerNavGraph(
         modifier = modifier
     ) {
         composable(StarGazerDestinations.INFO_ROUTE) {
-            InfoScreen(openDrawer = openDrawer)
+            InfoScreen(openDrawer = openDrawer, modifier = modifier)
         }
         composable(StarGazerDestinations.POLAR_ROUTE) {
-            PolarAlignScreen(openDrawer = openDrawer)
+            PolarAlignScreen(openDrawer = openDrawer, modifier = modifier)
         }
         composable(route = StarGazerDestinations.SIGHTS_ROUTE) {
-            SightsScreen(openDrawer = openDrawer)
+            SightsScreen(openDrawer = openDrawer, modifier = modifier)
         }
     }
 }
