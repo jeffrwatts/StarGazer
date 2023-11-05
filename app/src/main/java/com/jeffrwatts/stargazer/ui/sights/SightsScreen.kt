@@ -68,7 +68,7 @@ fun SightsScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val sightsUiState by viewModel.uiState.collectAsState()
-    var currentFilter by remember { mutableStateOf<ObservationStatus?>(null) }
+    val currentFilter by viewModel.selectedFilter.collectAsState()
     val isRefreshing = sightsUiState is SightsUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
 
@@ -78,7 +78,6 @@ fun SightsScreen(
                 title = stringResource(R.string.sights_title),
                 openDrawer = openDrawer,
                 onFilterSelected = { newFilter ->
-                    currentFilter = newFilter
                     viewModel.setObservationStatusFilter(newFilter)
                 },
                 currentFilter = currentFilter,
