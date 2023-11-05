@@ -12,6 +12,9 @@ class SightsViewModel(
     private val locationRepository: LocationRepository
 ) : ViewModel() {
 
+    private val _filterStatus = MutableStateFlow<ObservationStatus?>(null) // null will represent 'Show All'
+    val filterStatus: StateFlow<ObservationStatus?> = _filterStatus
+
     private val _uiState = MutableStateFlow<SightsUiState>(SightsUiState.Loading)
     val uiState: StateFlow<SightsUiState> = _uiState
 
@@ -20,6 +23,10 @@ class SightsViewModel(
         fetchObjects()
     }
 
+    fun setObservationStatusFilter(status: ObservationStatus?) {
+        _filterStatus.value = status
+        fetchObjects()
+    }
     fun fetchObjects() {
         viewModelScope.launch {
             repository.getAllStream()
@@ -28,6 +35,7 @@ class SightsViewModel(
                     if (location != null) {
                         val jdNow = Utils.calculateJulianDateNow()
                         objects.filterNot { it.type == ObjectType.STAR }
+                            .filter { filterStatus.value == null || it.observationStatus == filterStatus.value }
                             .map { obj ->
                                 CelestialObjPos.fromCelestialObj(obj, julianDate = jdNow, lat = location.latitude, lon = location.longitude)
                             }.sortedWith(
