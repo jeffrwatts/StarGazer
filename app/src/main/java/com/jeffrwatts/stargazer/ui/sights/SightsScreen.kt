@@ -1,6 +1,8 @@
 package com.jeffrwatts.stargazer.ui.sights
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
@@ -157,6 +160,9 @@ fun SightItem(
     val prominenceAlpha = if (celestialObjPos.alt >= 20) 1f else 0.6f  // More prominent if alt >= 20
     val textColor = MaterialTheme.colorScheme.onSurface.copy(alpha = prominenceAlpha)
 
+    var expanded by remember { mutableStateOf(false) }
+    val observationalStatusOptions = ObservationStatus.values()
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -167,7 +173,7 @@ fun SightItem(
         Image(
             painter = painterResource(id = celestialObjPos.celestialObj.getImageResource()),
             contentDescription = "Celestial Object",
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(72.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
@@ -179,7 +185,10 @@ fun SightItem(
                 color = textColor
             )
             Text(
-                text = listOfNotNull(celestialObjPos.celestialObj.ngcId, celestialObjPos.celestialObj.catalogId)
+                text = listOfNotNull(
+                    celestialObjPos.celestialObj.ngcId,
+                    celestialObjPos.celestialObj.catalogId
+                )
                     .joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,
                 overflow = TextOverflow.Ellipsis,
@@ -187,15 +196,44 @@ fun SightItem(
                 color = textColor
             )
             Text(
-                text = "Alt: ${formatToDegreeAndMinutes(celestialObjPos.alt)}, Azm: ${formatToDegreeAndMinutes(celestialObjPos.azm)}",
+                text = "Alt: ${formatToDegreeAndMinutes(celestialObjPos.alt)}, Azm: ${
+                    formatToDegreeAndMinutes(
+                        celestialObjPos.azm
+                    )
+                }",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
-            Text(
-                text = "Status: ${celestialObjPos.celestialObj.observationStatus}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = textColor
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Obs: ",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Text(text = celestialObjPos.celestialObj.observationStatus.name,
+                    modifier = Modifier.clickable { expanded = true })
+
+                IconButton(onClick = { expanded = true }) {
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Change Status")
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    observationalStatusOptions.forEach { status ->
+                        DropdownMenuItem(
+                            text = { Text(text = status.name) },
+                            onClick = {
+                                onObservationStatusChanged(celestialObjPos, status)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }
