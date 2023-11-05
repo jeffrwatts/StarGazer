@@ -36,8 +36,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jeffrwatts.stargazer.R
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
+import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
 import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.utils.ErrorScreen
@@ -145,9 +147,8 @@ fun SightItem(
             .alpha(prominenceAlpha), // Apply the alpha here
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Placeholder image, replace with actual resource
         Image(
-            painter = painterResource(id = R.drawable.star), // replace with actual drawable resource
+            painter = painterResource(id = celestialObjPos.celestialObj.getImageResource()), // replace with actual drawable resource
             contentDescription = "Celestial Object",
             modifier = Modifier.size(48.dp)
         )
@@ -168,15 +169,15 @@ fun SightItem(
                 maxLines = 1,
                 color = textColor
             )
-            celestialObjPos.celestialObj.desc?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 2,
-                    color = textColor
-                )
-            }
+            //celestialObjPos.celestialObj.desc?.let {
+            //    Text(
+            //        text = it,
+            //        style = MaterialTheme.typography.bodyMedium,
+            //        overflow = TextOverflow.Ellipsis,
+            //        maxLines = 2,
+            //        color = textColor
+            //    )
+            //}
             Text(
                 text = "Alt: ${formatToDegreeAndMinutes(celestialObjPos.alt)}, Azm: ${formatToDegreeAndMinutes(celestialObjPos.azm)}",
                 style = MaterialTheme.typography.bodyMedium,

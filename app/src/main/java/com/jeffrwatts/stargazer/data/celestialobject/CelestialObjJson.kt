@@ -11,6 +11,7 @@ data class CelestialObjJson(
     val desc: String?,
     val constellation: String,
     val type: String,
+    val defaultImage: String,
     val observationStatus: String
 )
 
@@ -26,6 +27,7 @@ fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
         desc = this.desc,
         constellation = this.constellation,
         type = ObjectType.values().find { it.name.equals(this.type, true) } ?: ObjectType.UNKNOWN,
+        defaultImage = this.defaultImage,
         observationStatus = ObservationStatus.values().find { it.name.equals(this.observationStatus, true) } ?: ObservationStatus.NOT_OBSERVED
     )
 }

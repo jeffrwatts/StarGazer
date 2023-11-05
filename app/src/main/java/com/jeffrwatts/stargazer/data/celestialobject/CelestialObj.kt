@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.jeffrwatts.stargazer.R
 
 enum class ObjectType {
     STAR, MESSIER, CALDWELL, UNKNOWN
@@ -41,5 +42,16 @@ data class CelestialObj(
     val desc: String?,
     val constellation: String,
     val type: ObjectType,
+    val defaultImage: String,
     val observationStatus: ObservationStatus
 )
+
+fun CelestialObj.getImageResource(): Int {
+    return when (this.defaultImage) {
+        "star" -> R.drawable.star
+        "galaxy" -> R.drawable.galaxy
+        "nebula" -> R.drawable.nebula
+        "cluster" -> R.drawable.cluster
+        else -> R.drawable.star
+    }
+}
