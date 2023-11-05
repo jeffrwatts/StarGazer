@@ -4,14 +4,14 @@ data class CelestialObjJson(
     val id: Int,
     val friendlyName: String,
     val ngcId: String?,
-    val messierId: String?,
-    val caldwellId: String?,
+    val catalogId: String?,
     val ra: Double,
     val dec: Double,
     val mag: Double?,
-    val type: String,  // To handle transformations if needed
+    val desc: String?,
     val constellation: String,
-    val observationStatus: String  // To handle transformations if needed
+    val type: String,
+    val observationStatus: String
 )
 
 fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
@@ -19,13 +19,13 @@ fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
         id = this.id,
         friendlyName = this.friendlyName,
         ngcId = this.ngcId,
-        messierId = this.messierId,
-        caldwellId = this.caldwellId,
+        catalogId = this.catalogId,
         ra = this.ra,
         dec = this.dec,
         mag = this.mag,
-        type = ObjectType.values().find { it.name.equals(this.type, true) } ?: ObjectType.UNKNOWN,
+        desc = this.desc,
         constellation = this.constellation,
+        type = ObjectType.values().find { it.name.equals(this.type, true) } ?: ObjectType.UNKNOWN,
         observationStatus = ObservationStatus.values().find { it.name.equals(this.observationStatus, true) } ?: ObservationStatus.NOT_OBSERVED
     )
 }

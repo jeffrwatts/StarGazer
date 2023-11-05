@@ -6,7 +6,7 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 
 enum class ObjectType {
-    STAR, GALAXY, NEBULA, OPEN_CLUSTER, GLOBULAR_CLUSTER, PLANETARY_NEBULA, SUPERNOVA_REMNANT, BRIGHT_NEBULA, DARK_NEBULA, ASTERISM, UNKNOWN
+    STAR, MESSIER, CALDWELL, UNKNOWN
 }
 
 enum class ObservationStatus {
@@ -34,12 +34,12 @@ data class CelestialObj(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val friendlyName: String,
     val ngcId: String?,
-    val messierId: String?,
-    val caldwellId: String?,
+    val catalogId: String?,
     val ra: Double,
     val dec: Double,
     val mag: Double?,
-    val type: ObjectType,
+    val desc: String?,
     val constellation: String,
+    val type: ObjectType,
     val observationStatus: ObservationStatus
 )
