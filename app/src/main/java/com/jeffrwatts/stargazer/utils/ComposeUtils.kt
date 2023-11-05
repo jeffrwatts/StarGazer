@@ -142,7 +142,7 @@ fun SkyItem(
     }
 }
 
-private fun formatToDegreeAndMinutes(angle: Double): String {
+fun formatToDegreeAndMinutes(angle: Double): String {
     val degrees = angle.toInt()
     val minutes = ((angle - degrees) * 60).roundTo(2)
     return "$degrees° $minutes'"
