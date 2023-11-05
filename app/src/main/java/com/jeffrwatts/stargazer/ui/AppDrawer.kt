@@ -1,26 +1,24 @@
 package com.jeffrwatts.stargazer.ui
 
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jeffrwatts.stargazer.R
 
@@ -64,16 +62,19 @@ fun AppDrawer(
 
 @Composable
 private fun StarGazerHeader(modifier: Modifier = Modifier) {
-    Row(modifier = modifier) {
-        Icon(
-            imageVector = Icons.Filled.Menu,
-            contentDescription = "Localized description"
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            stringResource(id = R.string.app_name),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp), // Adjust padding as needed
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Replace "logo_placeholder" with your actual logo resource name
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = stringResource(R.string.app_name),
+            // Modifier to center the Image and add padding
+            modifier = Modifier.padding(8.dp)
         )
     }
 }
+
