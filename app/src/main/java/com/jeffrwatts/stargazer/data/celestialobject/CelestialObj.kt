@@ -10,8 +10,11 @@ enum class ObjectType {
     STAR, MESSIER, CALDWELL, UNKNOWN
 }
 
-enum class ObservationStatus {
-    NOT_OBSERVED, POOR, GOOD, GREAT
+enum class ObservationStatus(val priority: Int) {
+    GREAT(1),
+    SUGGESTED(2),
+    NOT_OBSERVED(3),
+    POOR(4);
 }
 
 class Converters {

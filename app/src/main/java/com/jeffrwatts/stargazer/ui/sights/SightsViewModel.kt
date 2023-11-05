@@ -30,7 +30,10 @@ class SightsViewModel(
                         objects.filterNot { it.type == ObjectType.STAR }
                             .map { obj ->
                                 CelestialObjPos.fromCelestialObj(obj, julianDate = jdNow, lat = location.latitude, lon = location.longitude)
-                            }.sortedByDescending { it.alt }
+                            }.sortedWith(
+                                compareByDescending<CelestialObjPos> { it.alt >= 20 }
+                                    .thenBy { it.celestialObj.observationStatus.priority }
+                            )
                     } else {
                         // Emit a Loading state if the location is not yet available
                         _uiState.value = SightsUiState.Loading

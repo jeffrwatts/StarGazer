@@ -178,14 +178,20 @@ fun SightItem(
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
-            StarRating(
-                observationStatus = celestialObjPos.celestialObj.observationStatus,
-                onStatusChanged = { newStatus -> onObservationStatusChanged(celestialObjPos, newStatus) }
+            Text(
+                text = "Status: ${celestialObjPos.celestialObj.observationStatus}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = textColor
             )
+            //StarRating(
+            //    observationStatus = celestialObjPos.celestialObj.observationStatus,
+            //    onStatusChanged = { newStatus -> onObservationStatusChanged(celestialObjPos, newStatus) }
+            //)
         }
     }
 }
 
+/*
 @Composable
 fun StarRating(
     observationStatus: ObservationStatus,
@@ -215,4 +221,4 @@ fun StarRating(
             )
         }
     }
-}
+}*/
