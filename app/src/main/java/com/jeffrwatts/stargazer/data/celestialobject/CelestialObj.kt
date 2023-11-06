@@ -46,6 +46,7 @@ data class CelestialObj(
     val constellation: String,
     val type: ObjectType,
     val defaultImage: String,
+    val hasNotes: Boolean,
     val observationStatus: ObservationStatus
 )
 
