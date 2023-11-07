@@ -7,6 +7,7 @@ object StarGazerDestinations {
     const val INFO_ROUTE = "info"
     const val POLAR_ROUTE = "polar"
     const val SIGHTS_ROUTE = "sights"
+    const val SIGHT_DETAIL_ROUTE = "sightDetail"
 }
 
 /**
@@ -46,5 +47,9 @@ class StarGazerNavigationActions(navController: NavHostController) {
             launchSingleTop = true
             restoreState = true
         }
+    }
+
+    val navigateToSightDetail: (Int) -> Unit = { sightId ->
+        navController.navigate("${StarGazerDestinations.SIGHT_DETAIL_ROUTE}/$sightId")
     }
 }

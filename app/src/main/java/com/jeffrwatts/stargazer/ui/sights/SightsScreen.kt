@@ -66,6 +66,7 @@ import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 @Composable
 fun SightsScreen(
     openDrawer: () -> Unit,
+    onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
@@ -104,6 +105,7 @@ fun SightsScreen(
                         onObservationStatusChanged = { item, newStatus ->
                             viewModel.updateObservationStatus(item.celestialObj, newStatus)
                         },
+                        onSightClick = onSightClick,
                         modifier = contentModifier)
                 }
                 is SightsUiState.Error -> {
@@ -123,6 +125,7 @@ fun SightsScreen(
 @Composable
 private fun SightsBody(
     celestialObjs: List<CelestialObjPos>,
+    onSightClick: (Int) -> Unit,
     onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -138,6 +141,7 @@ private fun SightsBody(
                 val highlight = celestialObj.alt > 10
                 SightItem(
                     celestialObjPos = celestialObj,
+                    onItemClick = {onSightClick(celestialObj.celestialObj.id)},
                     onObservationStatusChanged = onObservationStatusChanged,
                     modifier = Modifier
                         .padding(8.dp)
@@ -154,6 +158,7 @@ private fun SightsBody(
 @Composable
 fun SightItem(
     celestialObjPos: CelestialObjPos,
+    onItemClick:() -> Unit,
     onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -167,7 +172,8 @@ fun SightItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .alpha(prominenceAlpha), // Apply the alpha here
+            .alpha(prominenceAlpha)
+            .clickable(onClick = onItemClick), // Apply the alpha here
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
