@@ -38,11 +38,18 @@ fun StarGazerNavGraph(
                 onSightClick = actions.navigateToSightDetail,
                 modifier = modifier)
         }
-        composable("${StarGazerDestinations.SIGHT_DETAIL_ROUTE}/{sightId}") { backStackEntry ->
-            // You can retrieve the sightId from the backStackEntry.arguments
-            val sightId = backStackEntry.arguments?.getString("sightId")
-            // Use sightId to get the details and pass it to the SightDetailScreen
-            SightDetailScreen(sightId = sightId!!) { navController.popBackStack() }
+        composable("${StarGazerDestinations.SIGHT_DETAIL_ROUTE}/{sightId}/{sightName}") { backStackEntry ->
+            // Safely retrieve the sightId and sightName from the backStackEntry.arguments
+            val sightId = backStackEntry.arguments?.getString("sightId")?.toIntOrNull()
+            val sightName = backStackEntry.arguments?.getString("sightName")
+
+            // Only navigate to the detail screen if both sightId and sightName are not null
+            if (sightId != null && sightName != null) {
+                SightDetailScreen(
+                    sightId = sightId,
+                    sightName = sightName,
+                    onNavigateBack = { navController.popBackStack() })
+            }
         }
     }
 }

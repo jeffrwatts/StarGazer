@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.jeffrwatts.stargazer.StarGazerApplication
 import com.jeffrwatts.stargazer.ui.info.InfoViewModel
 import com.jeffrwatts.stargazer.ui.polar.PolarAlignViewModel
+import com.jeffrwatts.stargazer.ui.sightdetail.SightDetailViewModel
 import com.jeffrwatts.stargazer.ui.sights.SightsViewModel
 
 object AppViewModelProvider {
@@ -26,6 +27,11 @@ object AppViewModelProvider {
             SightsViewModel(
                 starGazerApplication().container.celestialObjRepository,
                 starGazerApplication().container.locationRepository
+            )
+        }
+        initializer {
+            SightDetailViewModel(
+                starGazerApplication().container.celestialObjRepository
             )
         }
     }

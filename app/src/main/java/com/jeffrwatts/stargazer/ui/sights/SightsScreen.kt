@@ -2,7 +2,6 @@ package com.jeffrwatts.stargazer.ui.sights
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -66,7 +65,7 @@ import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 @Composable
 fun SightsScreen(
     openDrawer: () -> Unit,
-    onSightClick: (Int) -> Unit,
+    onSightClick: (Int, String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
@@ -125,7 +124,7 @@ fun SightsScreen(
 @Composable
 private fun SightsBody(
     celestialObjs: List<CelestialObjPos>,
-    onSightClick: (Int) -> Unit,
+    onSightClick: (Int, String) -> Unit,
     onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -141,7 +140,8 @@ private fun SightsBody(
                 val highlight = celestialObj.alt > 10
                 SightItem(
                     celestialObjPos = celestialObj,
-                    onItemClick = {onSightClick(celestialObj.celestialObj.id)},
+                    onItemClick = {onSightClick(celestialObj.celestialObj.id,
+                        celestialObj.celestialObj.friendlyName)},
                     onObservationStatusChanged = onObservationStatusChanged,
                     modifier = Modifier
                         .padding(8.dp)

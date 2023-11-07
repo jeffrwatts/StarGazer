@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.ui.sightdetail
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -17,30 +18,68 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.TopAppBarState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.jeffrwatts.stargazer.R
+import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
+import com.jeffrwatts.stargazer.ui.polar.PolarAlignUiState
+import com.jeffrwatts.stargazer.ui.polar.PolarAlignViewModel
+import com.jeffrwatts.stargazer.utils.ErrorScreen
+import com.jeffrwatts.stargazer.utils.LoadingScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SightDetailScreen(sightId: String, onNavigateBack: () -> Unit) {
+fun SightDetailScreen(
+    sightId: Int,
+    sightName: String,
+    onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: SightDetailViewModel = viewModel(factory = AppViewModelProvider.Factory),
+) {
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(sightId) {
+        viewModel.fetchSightDetail(sightId)
+    }
+
     Scaffold(
         topBar = {
             SightDetailTopAppBar(
-                title = sightId,
+                title = sightName,
                 onNavigateBack = onNavigateBack
             )
         },
     ) { innerPadding ->
+        val contentModifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize()
+
         // Your content here
-        Text(
-            text = "Detail of $sightId",
-            modifier = Modifier.padding(innerPadding),
-        )
+        when (val state = uiState) {
+            is SightDetailUiState.Loading -> {
+                LoadingScreen(modifier = contentModifier)
+            }
+            is SightDetailUiState.Success -> {
+                val celestialObj = (uiState as SightDetailUiState.Success).data
+                Text(text = celestialObj.friendlyName)
+            }
+            is SightDetailUiState.Error -> {
+                ErrorScreen(
+                    message = (uiState as SightDetailUiState.Error).message,
+                    modifier = contentModifier,
+                    onRetryClick = { viewModel.fetchSightDetail(sightId) }
+                )
+            }
+        }
     }
 }
 
