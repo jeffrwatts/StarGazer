@@ -21,6 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -39,7 +42,6 @@ import com.jeffrwatts.stargazer.utils.LoadingScreen
 @Composable
 fun SightDetailScreen(
     sightId: Int,
-    sightName: String,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SightDetailViewModel = viewModel(factory = AppViewModelProvider.Factory),
@@ -51,10 +53,19 @@ fun SightDetailScreen(
         viewModel.fetchSightDetail(sightId)
     }
 
+    // Update the title when uiState changes
+    var title by remember { mutableStateOf("Loading...") } // default title
+
+    LaunchedEffect(uiState) {
+        if (uiState is SightDetailUiState.Success) {
+            title = (uiState as SightDetailUiState.Success).data.friendlyName
+        }
+    }
+
     Scaffold(
         topBar = {
             SightDetailTopAppBar(
-                title = sightName,
+                title = title,
                 onNavigateBack = onNavigateBack
             )
         },
@@ -64,7 +75,7 @@ fun SightDetailScreen(
             .fillMaxSize()
 
         // Your content here
-        when (val state = uiState) {
+        when (uiState) {
             is SightDetailUiState.Loading -> {
                 LoadingScreen(modifier = contentModifier)
             }

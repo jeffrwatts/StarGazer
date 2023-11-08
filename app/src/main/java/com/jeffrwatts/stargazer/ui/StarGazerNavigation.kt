@@ -49,7 +49,7 @@ class StarGazerNavigationActions(navController: NavHostController) {
         }
     }
 
-    val navigateToSightDetail: (Int, String) -> Unit = { sightId, sightName ->
-        navController.navigate("${StarGazerDestinations.SIGHT_DETAIL_ROUTE}/$sightId/$sightName")
+    val navigateToSightDetail: (Int) -> Unit = { sightId ->
+        navController.navigate("${StarGazerDestinations.SIGHT_DETAIL_ROUTE}/$sightId")
     }
 }

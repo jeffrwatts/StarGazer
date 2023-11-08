@@ -65,7 +65,7 @@ import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 @Composable
 fun SightsScreen(
     openDrawer: () -> Unit,
-    onSightClick: (Int, String) -> Unit,
+    onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SightsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
@@ -124,7 +124,7 @@ fun SightsScreen(
 @Composable
 private fun SightsBody(
     celestialObjs: List<CelestialObjPos>,
-    onSightClick: (Int, String) -> Unit,
+    onSightClick: (Int) -> Unit,
     onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -140,8 +140,7 @@ private fun SightsBody(
                 val highlight = celestialObj.alt > 10
                 SightItem(
                     celestialObjPos = celestialObj,
-                    onItemClick = {onSightClick(celestialObj.celestialObj.id,
-                        celestialObj.celestialObj.friendlyName)},
+                    onItemClick = {onSightClick(celestialObj.celestialObj.id)},
                     onObservationStatusChanged = onObservationStatusChanged,
                     modifier = Modifier
                         .padding(8.dp)
