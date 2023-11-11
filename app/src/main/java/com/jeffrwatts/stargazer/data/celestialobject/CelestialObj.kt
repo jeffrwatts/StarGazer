@@ -68,6 +68,12 @@ fun CelestialObj.getImageResource(): Int {
         "M57" -> R.drawable.m57
         "M81" -> R.drawable.m81
         "M82" -> R.drawable.m82
+        "M104" -> R.drawable.m104
+        "Caldwell 14" -> R.drawable.caldwell14
+        "Caldwell 33" -> R.drawable.caldwell33
+        "Caldwell 34" -> R.drawable.caldwell33 // intentionally the same.
+        "Caldwell 49" -> R.drawable.caldwell49
+        "Caldwell 64" -> R.drawable.caldwell64
         else -> when (this.type) {
             ObjectType.STAR -> R.drawable.star
             ObjectType.GALAXY -> R.drawable.galaxy
