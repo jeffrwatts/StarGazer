@@ -50,11 +50,30 @@ data class CelestialObj(
 )
 
 fun CelestialObj.getImageResource(): Int {
-    return when (this.type) {
-        ObjectType.STAR -> R.drawable.star
-        ObjectType.GALAXY -> R.drawable.galaxy
-        ObjectType.NEBULA -> R.drawable.nebula
-        ObjectType.CLUSTER -> R.drawable.cluster
-        else -> R.drawable.star
+    return when (this.catalogId) {
+        "M1" -> R.drawable.m1
+        "M6" -> R.drawable.m6
+        "M7" -> R.drawable.m7
+        "M8" -> R.drawable.m8
+        "M11" -> R.drawable.m11
+        "M13" -> R.drawable.m13
+        "M16" -> R.drawable.m16
+        "M17" -> R.drawable.m17
+        "M22" -> R.drawable.m22
+        "M27" -> R.drawable.m27
+        "M31" -> R.drawable.m31
+        "M42" -> R.drawable.m42
+        "M45" -> R.drawable.m45
+        "M51" -> R.drawable.m51
+        "M57" -> R.drawable.m57
+        "M81" -> R.drawable.m81
+        "M82" -> R.drawable.m82
+        else -> when (this.type) {
+            ObjectType.STAR -> R.drawable.star
+            ObjectType.GALAXY -> R.drawable.galaxy
+            ObjectType.NEBULA -> R.drawable.nebula
+            ObjectType.CLUSTER -> R.drawable.cluster
+            else -> R.drawable.star
+        }
     }
 }
