@@ -1,7 +1,15 @@
 package com.jeffrwatts.stargazer.ui.sightdetail
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
@@ -24,13 +32,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.jeffrwatts.stargazer.R
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
+import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
 import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.ui.polar.PolarAlignUiState
@@ -74,14 +88,13 @@ fun SightDetailScreen(
             .padding(innerPadding)
             .fillMaxSize()
 
-        // Your content here
         when (uiState) {
             is SightDetailUiState.Loading -> {
                 LoadingScreen(modifier = contentModifier)
             }
             is SightDetailUiState.Success -> {
                 val celestialObj = (uiState as SightDetailUiState.Success).data
-                Text(text = celestialObj.friendlyName)
+                SightDetailContent(celestialObj = celestialObj, modifier = contentModifier)
             }
             is SightDetailUiState.Error -> {
                 ErrorScreen(
@@ -91,6 +104,66 @@ fun SightDetailScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SightDetailContent(celestialObj: CelestialObj, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        // Banner Image
+        Image(
+            painter = painterResource(id = celestialObj.getImageResource()),
+            contentDescription = "Banner image for ${celestialObj.friendlyName}",
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .fillMaxWidth()
+                .height(200.dp),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Data Fields
+        LabeledField(label = "Catalog ID", value = celestialObj.catalogId ?: "N/A")
+        LabeledField(label = "NGC ID", value = celestialObj.ngcId ?: "N/A")
+        LabeledField(label = "Subtype", value = celestialObj.subType ?: "N/A")
+        LabeledField(label = "Constellation", value = celestialObj.constellation)
+        LabeledField(label = "Magnitude", value = celestialObj.magnitude?.toString() ?: "N/A")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Observation Notes",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        )
+        Text(
+            text = celestialObj.observationNotes ?: "No notes available.",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                .verticalScroll(rememberScrollState())
+        )
+    }
+}
+
+@Composable
+fun LabeledField(label: String, value: String, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$label: ",
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(2f)
+        )
     }
 }
 

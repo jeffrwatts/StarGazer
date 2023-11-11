@@ -7,7 +7,7 @@ import androidx.room.TypeConverters
 import com.jeffrwatts.stargazer.R
 
 enum class ObjectType {
-    STAR, MESSIER, CALDWELL, UNKNOWN
+    STAR, GALAXY, NEBULA, CLUSTER, UNKNOWN
 }
 
 enum class ObservationStatus(val priority: Int) {
@@ -37,25 +37,24 @@ class Converters {
 data class CelestialObj(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val friendlyName: String,
-    val ngcId: String?,
     val catalogId: String?,
+    val ngcId: String?,
     val ra: Double,
     val dec: Double,
-    val mag: Double?,
-    val desc: String?,
-    val constellation: String,
     val type: ObjectType,
-    val defaultImage: String,
-    val hasNotes: Boolean,
+    val subType: String?,
+    val constellation: String,
+    val magnitude: Double?,
+    val observationNotes: String?,
     val observationStatus: ObservationStatus
 )
 
 fun CelestialObj.getImageResource(): Int {
-    return when (this.defaultImage) {
-        "star" -> R.drawable.star
-        "galaxy" -> R.drawable.galaxy
-        "nebula" -> R.drawable.nebula
-        "cluster" -> R.drawable.cluster
+    return when (this.type) {
+        ObjectType.STAR -> R.drawable.star
+        ObjectType.GALAXY -> R.drawable.galaxy
+        ObjectType.NEBULA -> R.drawable.nebula
+        ObjectType.CLUSTER -> R.drawable.cluster
         else -> R.drawable.star
     }
 }
