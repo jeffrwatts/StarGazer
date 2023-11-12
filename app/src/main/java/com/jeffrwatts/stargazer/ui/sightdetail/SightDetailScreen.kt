@@ -12,7 +12,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -20,7 +19,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.TopAppBarState
@@ -34,21 +32,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
 import com.jeffrwatts.stargazer.ui.AppViewModelProvider
-import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
-import com.jeffrwatts.stargazer.ui.polar.PolarAlignUiState
-import com.jeffrwatts.stargazer.ui.polar.PolarAlignViewModel
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 
@@ -127,7 +118,7 @@ fun SightDetailContent(celestialObj: CelestialObj, modifier: Modifier = Modifier
         LabeledField(label = "Catalog ID", value = celestialObj.catalogId ?: "N/A")
         LabeledField(label = "NGC ID", value = celestialObj.ngcId ?: "N/A")
         LabeledField(label = "Subtype", value = celestialObj.subType ?: "N/A")
-        LabeledField(label = "Constellation", value = celestialObj.constellation)
+        LabeledField(label = "Constellation", value = celestialObj.constellation ?: "N/A")
         LabeledField(label = "Magnitude", value = celestialObj.magnitude?.toString() ?: "N/A")
 
         Spacer(modifier = Modifier.height(16.dp))

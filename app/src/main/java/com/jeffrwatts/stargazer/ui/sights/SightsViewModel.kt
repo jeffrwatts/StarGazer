@@ -3,13 +3,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.*
 import com.jeffrwatts.stargazer.data.location.LocationRepository
+import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class SightsViewModel(
-    private val repository: CelestialObjRepository,
-    private val locationRepository: LocationRepository
+    private val celestialObjRepository: CelestialObjRepository,
+    private val locationRepository: LocationRepository,
+    private val planetPosRepository: PlanetPosRepository
 ) : ViewModel() {
 
     private val _selectedFilter = MutableStateFlow<ObservationStatus?>(null) // null will represent 'Show All'
@@ -29,7 +31,7 @@ class SightsViewModel(
     }
     fun fetchObjects() {
         viewModelScope.launch {
-            repository.getAllStream()
+            celestialObjRepository.getAllStream()
                 .combine(locationRepository.locationFlow) { objects, location ->
                     // Check if location is not null and proceed
                     if (location != null) {
@@ -64,7 +66,7 @@ class SightsViewModel(
     fun updateObservationStatus(celestialObj: CelestialObj, newObservationStatus: ObservationStatus) {
         viewModelScope.launch {
             val updatedItem = celestialObj.copy(observationStatus = newObservationStatus)
-            repository.update(updatedItem)
+            celestialObjRepository.update(updatedItem)
         }
     }
 

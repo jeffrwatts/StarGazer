@@ -6,10 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
+import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPos
+import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosDao
 
-@Database(entities = [CelestialObj::class], version = 1, exportSchema = false)
+@Database(entities = [CelestialObj::class, PlanetPos::class], version = 1, exportSchema = false)
 abstract class StarGazerDatabase : RoomDatabase() {
     abstract fun celestialObjDao(): CelestialObjDao
+    abstract fun planetPosDao(): PlanetPosDao
 
     companion object {
         @Volatile
