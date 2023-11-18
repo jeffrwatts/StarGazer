@@ -14,7 +14,7 @@ enum class ObservationStatus(val priority: Int) {
     GREAT(1),
     SUGGESTED(2),
     NOT_OBSERVED(3),
-    POOR(4);
+    OBSERVED(4);
 }
 
 class Converters {
