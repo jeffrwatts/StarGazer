@@ -10,8 +10,7 @@ import kotlinx.coroutines.launch
 
 class SightsViewModel(
     private val celestialObjRepository: CelestialObjRepository,
-    private val locationRepository: LocationRepository,
-    private val planetPosRepository: PlanetPosRepository
+    private val locationRepository: LocationRepository
 ) : ViewModel() {
 
     private val _selectedFilter = MutableStateFlow<ObservationStatus?>(null) // null will represent 'Show All'
@@ -39,14 +38,9 @@ class SightsViewModel(
                         objects.filterNot { it.type == ObjectType.STAR }
                             .filter { selectedFilter.value == null || it.observationStatus == selectedFilter.value }
                             .map { obj ->
-                                var celestialObj = obj
-                                if (obj.type == ObjectType.PLANET) {
-                                    val planetPos = planetPosRepository.getPlanetPositionForDate(obj.friendlyName, jdNow).first()
-                                    celestialObj = obj.copy(ra = planetPos.ra, dec = planetPos.dec)
-                                }
-                                CelestialObjPos.fromCelestialObj(celestialObj, julianDate = jdNow, lat = location.latitude, lon = location.longitude)
+                                CelestialObjPos.fromCelestialObj(obj, julianDate = jdNow, lat = location.latitude, lon = location.longitude)
                             }.sortedWith(
-                                compareByDescending<CelestialObjPos> { it.alt >= 20 }
+                                compareByDescending<CelestialObjPos> { it.observable }
                                     .thenBy { it.celestialObj.observationStatus.priority }
                             )
                     } else {

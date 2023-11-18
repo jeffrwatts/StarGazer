@@ -26,8 +26,7 @@ object AppViewModelProvider {
         initializer {
             SightsViewModel(
                 starGazerApplication().container.celestialObjRepository,
-                starGazerApplication().container.locationRepository,
-                starGazerApplication().container.planetPosRepository
+                starGazerApplication().container.locationRepository
             )
         }
         initializer {

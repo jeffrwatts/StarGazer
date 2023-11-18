@@ -17,7 +17,8 @@ class AppContainerImpl (private val context: Context) : AppContainer {
     override val celestialObjRepository: CelestialObjRepository by lazy {
         OfflineCelestialObjRepository(
             context = context,
-            dao = StarGazerDatabase.getDatabase(context).celestialObjDao())
+            dao = StarGazerDatabase.getDatabase(context).celestialObjDao(),
+            planetPosRepository)
     }
 
     override val locationRepository: LocationRepository by lazy {

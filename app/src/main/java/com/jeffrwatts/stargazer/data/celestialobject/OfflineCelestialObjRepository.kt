@@ -5,14 +5,20 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.jeffrwatts.stargazer.R
+import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosRepository
+import com.jeffrwatts.stargazer.utils.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class OfflineCelestialObjRepository (
     private val context: Context,
-    private val dao: CelestialObjDao
+    private val dao: CelestialObjDao,
+    private val planetPosRepository: PlanetPosRepository
 ) : CelestialObjRepository {
 
     init {
@@ -21,9 +27,42 @@ class OfflineCelestialObjRepository (
         }
     }
 
-    override fun getAllStream(): Flow<List<CelestialObj>> = dao.getAll()
-    override fun getAllByTypeStream(type: ObjectType): Flow<List<CelestialObj>> = dao.getAllWithType(type)
-    override fun getStream(id: Int): Flow<CelestialObj?> = dao.get(id)
+    override fun getAllStream(): Flow<List<CelestialObj>> {
+        val jdNow = Utils.calculateJulianDateNow()
+        return dao.getAll().map { list ->
+            list.map { obj ->
+                if (obj.type == ObjectType.PLANET) {
+                    updatePlanetPosition (obj, jdNow)
+                } else {
+                    obj
+                }
+            }
+        }
+    }
+
+    override fun getAllByTypeStream(type: ObjectType): Flow<List<CelestialObj>> {
+        val jdNow = Utils.calculateJulianDateNow()
+        return dao.getAllWithType(type).map { list ->
+            list.map { obj ->
+                if (obj.type == ObjectType.PLANET) {
+                    updatePlanetPosition (obj, jdNow)
+                } else {
+                    obj
+                }
+            }
+        }
+    }
+
+    override fun getStream(id: Int): Flow<CelestialObj?> {
+        val jdNow = Utils.calculateJulianDateNow()
+        return dao.get(id).map { obj->
+            if (obj.type == ObjectType.PLANET) {
+                updatePlanetPosition (obj, jdNow)
+            } else {
+                obj
+            }
+        }
+    }
     override suspend fun insert(celestialObj: CelestialObj) = dao.insert(celestialObj)
     override suspend fun delete(celestialObj: CelestialObj) = dao.delete(celestialObj)
     override suspend fun update(celestialObj: CelestialObj) = dao.update(celestialObj)
@@ -35,6 +74,16 @@ class OfflineCelestialObjRepository (
             val jsonItems = parseJson(jsonString)
             val items = convertJsonToItems(jsonItems)
             dao.insertAll(items)
+        }
+    }
+
+    private suspend fun updatePlanetPosition(celestialObj: CelestialObj, jdNow: Double): CelestialObj {
+        return try {
+            val planetPos = planetPosRepository.getPlanetPositionForDate(celestialObj.friendlyName, jdNow).firstOrNull()
+            planetPos?.let { celestialObj.copy(ra = it.ra, dec = it.dec) } ?: celestialObj
+        } catch (e: Exception) {
+            Log.e("OfflineCelestialObjRepo", "Error updating planet position", e)
+            celestialObj
         }
     }
 

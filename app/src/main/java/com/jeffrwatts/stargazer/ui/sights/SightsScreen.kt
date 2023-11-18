@@ -137,7 +137,6 @@ private fun SightsBody(
     } else {
         LazyColumn(modifier = modifier) {
             items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
-                val highlight = celestialObj.alt > 10
                 SightItem(
                     celestialObjPos = celestialObj,
                     onItemClick = {onSightClick(celestialObj.celestialObj.id)},
@@ -161,7 +160,7 @@ fun SightItem(
     onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val prominenceAlpha = if (celestialObjPos.alt >= 20) 1f else 0.6f  // More prominent if alt >= 20
+    val prominenceAlpha = if (celestialObjPos.observable) 1f else 0.6f
     val textColor = MaterialTheme.colorScheme.onSurface.copy(alpha = prominenceAlpha)
 
     var expanded by remember { mutableStateOf(false) }
