@@ -11,8 +11,8 @@ interface PlanetPosDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(planetPos: List<PlanetPos>)
 
-    @Query("SELECT * FROM ephemeris WHERE planetName = :planetName AND :date >= dateLow AND :date < dateHigh LIMIT 1")
-    fun getPlanetPositionForDate(planetName: String, date: Double): Flow<PlanetPos>
+    @Query("SELECT * FROM ephemeris WHERE planetName = :planetName ORDER BY ABS(time - :time) ASC, time DESC LIMIT 1")
+    fun getPlanetPosition(planetName: String, time: Double): Flow<PlanetPos>
 
     @Query("SELECT COUNT(*) FROM celestial_objects")
     fun getCount(): Int

@@ -10,7 +10,7 @@ import com.jeffrwatts.stargazer.utils.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
+
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -77,9 +77,9 @@ class OfflineCelestialObjRepository (
         }
     }
 
-    private suspend fun updatePlanetPosition(celestialObj: CelestialObj, jdNow: Double): CelestialObj {
+    private suspend fun updatePlanetPosition(celestialObj: CelestialObj, time: Double): CelestialObj {
         return try {
-            val planetPos = planetPosRepository.getPlanetPositionForDate(celestialObj.friendlyName, jdNow).firstOrNull()
+            val planetPos = planetPosRepository.getPlanetPosition(celestialObj.friendlyName, time).firstOrNull()
             planetPos?.let { celestialObj.copy(ra = it.ra, dec = it.dec) } ?: celestialObj
         } catch (e: Exception) {
             Log.e("OfflineCelestialObjRepo", "Error updating planet position", e)

@@ -7,8 +7,7 @@ import androidx.room.PrimaryKey
 data class PlanetPos(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val planetName: String,
-    val dateLow: Double,
-    val dateHigh: Double,
+    val time: Double,
     val ra: Double,
     val dec: Double,
 )

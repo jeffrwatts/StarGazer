@@ -20,8 +20,7 @@ class OfflinePlanetPosRepository (
         }
     }
 
-    override fun getPlanetPositionForDate(planetName: String, date: Double): Flow<PlanetPos>
-    = dao.getPlanetPositionForDate(planetName, date)
+    override fun getPlanetPosition(planetName: String, time: Double): Flow<PlanetPos> = dao.getPlanetPosition(planetName, time)
 
     private suspend fun populateDatabaseIfEmpty() {
         val count = dao.getCount()
