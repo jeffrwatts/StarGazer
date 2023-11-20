@@ -1,12 +1,22 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "1.9.10-1.0.13"
 }
 
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.jeffrwatts.stargazer"
     compileSdk = 34
+
+    val apiUrl = localProperties.getProperty("api_base_url", "https://default.api.url/")
 
     defaultConfig {
         applicationId = "com.jeffrwatts.stargazer"
@@ -21,6 +31,11 @@ android {
         }
     }
 
+    buildFeatures {
+        // Enable custom BuildConfig fields
+        buildConfig = true
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -28,6 +43,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "API_BASE_URL", apiUrl)
+        }
+
+        debug {
+            buildConfigField("String", "API_BASE_URL", apiUrl)
         }
     }
     compileOptions {
@@ -78,6 +98,12 @@ dependencies {
 
     // Serialization
     implementation("com.google.code.gson:gson:2.9.0")
+
+    // retrofit for networking
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.10.0")
 
     //Room
     implementation("androidx.room:room-runtime:2.6.0")

@@ -16,4 +16,13 @@ interface PlanetPosDao {
 
     @Query("SELECT COUNT(*) FROM celestial_objects")
     fun getCount(): Int
+
+    @Query("SELECT MIN(time) FROM ephemeris")
+    suspend fun getEphemerisStartTime(): Double?
+
+    @Query("SELECT MAX(time) FROM ephemeris")
+    suspend fun getEphemerisEndTime(): Double?
+
+    @Query("DELETE FROM ephemeris")
+    suspend fun deleteAll()
 }
