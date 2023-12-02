@@ -4,6 +4,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "1.9.10-1.0.13"
+    id("com.google.dagger.hilt.android")
 }
 
 val localProperties = Properties()
@@ -93,7 +94,11 @@ dependencies {
     // Google Play Services for Location.
     implementation ("com.google.android.gms:play-services-location:21.0.1")
 
-    //
+    // Dependency Injection
+    implementation ("com.google.dagger:hilt-android:2.48")
+    implementation ("androidx.hilt:hilt-navigation-compose:1.1.0")
+    ksp ("com.google.dagger:hilt-compiler:2.44.2")
+
     implementation ("com.google.accompanist:accompanist-permissions:0.32.0")
 
     // Serialization
@@ -107,9 +112,8 @@ dependencies {
 
     //Room
     implementation("androidx.room:room-runtime:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-
+    ksp("androidx.room:room-compiler:2.6.1")
 
     testImplementation("junit:junit:4.13.2")
 
