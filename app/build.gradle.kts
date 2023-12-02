@@ -73,7 +73,7 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
 
-    implementation("androidx.activity:activity-compose:1.8.0")
+    implementation("androidx.activity:activity-compose:1.8.1")
     implementation(platform("androidx.compose:compose-bom:2023.06.01"))
 
     implementation("androidx.compose.material3:material3")
@@ -87,7 +87,7 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
-    implementation("androidx.navigation:navigation-compose:2.7.4")
+    implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     // Google Play Services for Location.
