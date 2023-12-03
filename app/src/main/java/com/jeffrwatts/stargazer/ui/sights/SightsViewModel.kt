@@ -5,10 +5,13 @@ import com.jeffrwatts.stargazer.data.celestialobject.*
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosRepository
 import com.jeffrwatts.stargazer.utils.Utils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SightsViewModel(
+@HiltViewModel
+class SightsViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {

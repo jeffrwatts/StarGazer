@@ -33,12 +33,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
 import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
-import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
@@ -50,7 +49,7 @@ import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 fun PolarAlignScreen(
     openDrawer: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: PolarAlignViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: PolarAlignViewModel = hiltViewModel()
 ) {
     val topAppBarState = rememberTopAppBarState()
     val polarAlignUiState by viewModel.uiState.collectAsState()

@@ -15,8 +15,12 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
-class LocationRepository(private val context: Context) {
+class LocationRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
+) {
     private val TAG = LocationRepository::class.java.simpleName
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 

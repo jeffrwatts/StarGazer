@@ -36,10 +36,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
-import com.jeffrwatts.stargazer.ui.AppViewModelProvider
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 
@@ -49,7 +48,7 @@ fun SightDetailScreen(
     sightId: Int,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: SightDetailViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: SightDetailViewModel = hiltViewModel(),
 ) {
 
     val uiState by viewModel.uiState.collectAsState()

@@ -6,7 +6,10 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosRepository
+import com.jeffrwatts.stargazer.di.IoDispatcher
 import com.jeffrwatts.stargazer.utils.Utils
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -14,15 +17,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class OfflineCelestialObjRepository (
-    private val context: Context,
+class OfflineCelestialObjRepository @Inject constructor (
+    @ApplicationContext private val context: Context,
     private val dao: CelestialObjDao,
-    private val planetPosRepository: PlanetPosRepository
+    private val planetPosRepository: PlanetPosRepository,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : CelestialObjRepository {
 
     init {
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(ioDispatcher).launch {
             populateDatabaseIfEmpty()
         }
     }

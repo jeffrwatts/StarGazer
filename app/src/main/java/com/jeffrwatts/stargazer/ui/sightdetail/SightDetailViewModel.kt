@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SightDetailViewModel(
+@HiltViewModel
+class SightDetailViewModel @Inject constructor(
     private val repository: CelestialObjRepository
 ) : ViewModel() {
 

@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.data.planetaryposition
 
+import com.jeffrwatts.stargazer.di.IoDispatcher
 import com.jeffrwatts.stargazer.network.EphemerisApi
 import com.jeffrwatts.stargazer.utils.Utils
 import kotlinx.coroutines.CoroutineDispatcher
@@ -9,11 +10,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class DefaultPlanetPosRepository(
+class DefaultPlanetPosRepository @Inject constructor(
     private val dao: PlanetPosDao,
     private val ephemerisApi: EphemerisApi,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ):PlanetPosRepository {
     companion object {
         const val JULIAN_DAY = 1.0

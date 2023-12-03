@@ -10,15 +10,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.jeffrwatts.stargazer.data.AppContainer
 import com.jeffrwatts.stargazer.ui.theme.StarGazerTheme
 import kotlinx.coroutines.launch
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun StarGazerApp(
-    appContainer: AppContainer
-) {
+fun StarGazerApp() {
     StarGazerTheme {
         val navController = rememberNavController()
         val navigationActions = remember(navController) {
@@ -45,7 +42,6 @@ fun StarGazerApp(
             drawerState = drawerState
         ) {
             StarGazerNavGraph(
-                appContainer = appContainer,
                 navController = navController,
                 openDrawer = { coroutineScope.launch { drawerState.open() } },
             )

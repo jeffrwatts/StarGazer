@@ -10,6 +10,7 @@ import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.ui.sights.SightsUiState
 import com.jeffrwatts.stargazer.utils.Utils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -17,8 +18,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class PolarAlignViewModel(
+@HiltViewModel
+class PolarAlignViewModel @Inject constructor(
     private val repository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
