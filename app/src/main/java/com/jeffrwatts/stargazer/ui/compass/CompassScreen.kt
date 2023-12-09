@@ -27,10 +27,10 @@ fun CompassScreen(
     modifier: Modifier = Modifier,
     viewModel: CompassViewModel = hiltViewModel()
 ) {
-    val compassData = viewModel.compassDirection.collectAsState().value
+    val uiState = viewModel.uiState.collectAsState().value
     val topAppBarState = rememberTopAppBarState()
 
-    val accuracyDescription = when (compassData.accuracy) {
+    val accuracyDescription = when (uiState.compassData.accuracy) {
         SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> "High"
         SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> "Medium"
         SensorManager.SENSOR_STATUS_ACCURACY_LOW -> "Low"
@@ -54,7 +54,13 @@ fun CompassScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "Compass Direction: ${String.format("%.1f", compassData.direction)}°", style = MaterialTheme.typography.bodyLarge)
+            if (uiState.isMagDeclinationValid) {
+                Text(text = "True Heading: ${String.format("%.1f", uiState.compassData.direction + uiState.magDeclination)}°", style = MaterialTheme.typography.bodyLarge)
+            } else {
+                Text(text = "True Heading: Not Available", style = MaterialTheme.typography.bodyLarge)
+            }
+            Text(text = "Magnetic Heading: ${String.format("%.1f", uiState.compassData.direction)}°", style = MaterialTheme.typography.bodyLarge)
+            Text(text = if (uiState.isMagDeclinationValid) "Declination: ${String.format("%.1f", uiState.magDeclination)}°" else "Declination: Not Available", style = MaterialTheme.typography.bodyLarge)
             Text(text = "Accuracy: $accuracyDescription", style = MaterialTheme.typography.bodyLarge)
         }
     }
