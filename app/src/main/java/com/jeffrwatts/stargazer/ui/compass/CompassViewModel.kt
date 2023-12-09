@@ -31,15 +31,6 @@ class CompassViewModel @Inject constructor(
         CompassUIState(compassData, declination, isDeclinationValid)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CompassUIState(CompassData(0.0, SensorManager.SENSOR_STATUS_UNRELIABLE), 0f, false))
 
-    fun setupSensors() {
-        if (!sensorsStarted) {
-            compassRepository.setupSensors()
-            // Should already be started from app launch, but should make this more elegant.
-            //locationRepository.startLocationUpdates(viewModelScope)
-            sensorsStarted = true
-        }
-    }
-
     private fun calculateDeclination(location: Location): Float {
         val geomagneticField = GeomagneticField(
             location.latitude.toFloat(),

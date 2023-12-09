@@ -19,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
+import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,18 +50,19 @@ fun CompassScreen(
         },
         modifier = modifier
     ) { innerPadding ->
-        viewModel.setupSensors()
         Column(
             modifier = Modifier.padding(innerPadding).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            val magHeading = uiState.compassData.direction
             if (uiState.isMagDeclinationValid) {
-                Text(text = "True Heading: ${String.format("%.1f", uiState.compassData.direction + uiState.magDeclination)}°", style = MaterialTheme.typography.bodyLarge)
+                val trueHeading = (((magHeading + uiState.magDeclination) % 360) + 360) % 360
+                Text(text = "True Heading: ${trueHeading.roundToInt()}°", style = MaterialTheme.typography.bodyLarge)
             } else {
                 Text(text = "True Heading: Not Available", style = MaterialTheme.typography.bodyLarge)
             }
-            Text(text = "Magnetic Heading: ${String.format("%.1f", uiState.compassData.direction)}°", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Magnetic Heading: ${magHeading.roundToInt()}°", style = MaterialTheme.typography.bodyLarge)
             Text(text = if (uiState.isMagDeclinationValid) "Declination: ${String.format("%.1f", uiState.magDeclination)}°" else "Declination: Not Available", style = MaterialTheme.typography.bodyLarge)
             Text(text = "Accuracy: $accuracyDescription", style = MaterialTheme.typography.bodyLarge)
         }
