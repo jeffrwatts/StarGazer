@@ -5,7 +5,6 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -14,13 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.transform
 import javax.inject.Inject
-import kotlin.math.PI
-import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
-import kotlin.math.roundToInt
 import kotlin.math.sin
 
 class CompassRepository @Inject constructor(
@@ -39,7 +34,7 @@ class CompassRepository @Inject constructor(
     private val _accuracyFlow = MutableStateFlow(SensorManager.SENSOR_STATUS_UNRELIABLE)
     val accuracyFlow: Flow<Int> = _accuracyFlow.asStateFlow()
 
-    val compassData: Flow<CompassData> = callbackFlow<Float> {
+    val compassData: Flow<CompassData> = callbackFlow {
         val sensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
                 when (event.sensor.type) {

@@ -21,7 +21,6 @@ class CompassViewModel @Inject constructor(
     private val compassRepository: CompassRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
-    private var sensorsStarted = false
     private val compassDataFlow = compassRepository.compassData
     private val locationFlow = locationRepository.locationFlow
 
