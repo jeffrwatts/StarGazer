@@ -6,4 +6,6 @@
     <string name="navigate">Navigate</string>
     <string name="retry">Retry</string>
     <string name="no_item_description">No objects</string>
+    <string name="sights_compass">Compass</string>
+    <string name="compass_title">Compass</string>
 </resources>

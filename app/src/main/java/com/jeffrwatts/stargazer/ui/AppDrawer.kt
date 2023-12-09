@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.Star
@@ -29,6 +30,7 @@ fun AppDrawer(
     navigateToSights: () -> Unit,
     navigateToPolar: () -> Unit,
     navigateToInfo: () -> Unit,
+    navigateToCompass: () -> Unit,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -55,6 +57,13 @@ fun AppDrawer(
             icon = { Icon(Icons.Filled.Radar, null) },
             selected = currentRoute == StarGazerDestinations.SIGHTS_ROUTE,
             onClick = { navigateToSights(); closeDrawer() },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+        NavigationDrawerItem(
+            label = { Text(stringResource(id = R.string.sights_compass)) },
+            icon = { Icon(Icons.Filled.AddCircleOutline, null) },
+            selected = currentRoute == StarGazerDestinations.COMPASS_ROUTE,
+            onClick = { navigateToCompass(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
     }
