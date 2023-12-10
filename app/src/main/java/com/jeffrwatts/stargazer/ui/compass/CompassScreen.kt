@@ -1,9 +1,18 @@
 package com.jeffrwatts.stargazer.ui.compass
 
+import android.graphics.Paint
 import android.hardware.SensorManager
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.LinearLayout
+import androidx.camera.view.LifecycleCameraController
+import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -12,10 +21,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LifecycleOwner
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import kotlin.math.roundToInt
@@ -50,7 +69,9 @@ fun CompassScreen(
         modifier = modifier
     ) { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding).fillMaxSize(),
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -58,12 +79,91 @@ fun CompassScreen(
             if (uiState.isMagDeclinationValid) {
                 val trueHeading = (((magHeading + uiState.magDeclination) % 360) + 360) % 360
                 Text(text = "True Heading: ${trueHeading.roundToInt()}°", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "Magnetic Heading: ${magHeading.roundToInt()}°", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "Declination: ${String.format("%.1f", uiState.magDeclination)}°", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "Accuracy: $accuracyDescription", style = MaterialTheme.typography.bodyLarge)
+                Box(
+                    modifier = Modifier.padding(innerPadding).fillMaxSize()
+                ) {
+                    // CameraPreview with weight modifier
+                    CameraPreview(modifier = Modifier.fillMaxWidth())
+
+                    // CompassOverlay on top of CameraPreview
+                    CompassRulerOverlay(heading = trueHeading.toInt())
+                }
             } else {
                 Text(text = "True Heading: Not Available", style = MaterialTheme.typography.bodyLarge)
             }
-            Text(text = "Magnetic Heading: ${magHeading.roundToInt()}°", style = MaterialTheme.typography.bodyLarge)
-            Text(text = if (uiState.isMagDeclinationValid) "Declination: ${String.format("%.1f", uiState.magDeclination)}°" else "Declination: Not Available", style = MaterialTheme.typography.bodyLarge)
-            Text(text = "Accuracy: $accuracyDescription", style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+}
+
+@Composable
+fun CameraPreview(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+    val cameraController: LifecycleCameraController = remember { LifecycleCameraController(context) }
+
+    AndroidView(
+        modifier = modifier, // Use the passed modifier for sizing
+        factory = {
+            PreviewView(context).apply {
+                setBackgroundColor(Color.Black.toArgb())
+                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                scaleType = PreviewView.ScaleType.FILL_START
+                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+            }.also { previewView ->
+                previewView.controller = cameraController
+                cameraController.bindToLifecycle(lifecycleOwner)
+            }
+        },
+        onRelease = {
+            cameraController.unbind()
+        }
+    )
+}
+
+@Composable
+fun CompassRulerOverlay(heading: Int, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.fillMaxWidth().height(150.dp)) {
+        val canvasWidth = size.width
+        val tickSpacing = 20f
+        val center = canvasWidth / 2
+
+        val startDegree = heading - 30
+        val endDegree = heading + 30
+
+        for (i in startDegree..endDegree) {
+            val xPosition = center + (i - heading) * tickSpacing
+
+            val isZeroDegree = i % 360 == 0 // Check if the degree is zero
+            val tickHeight = if (i % 10 == 0 || isZeroDegree) 90f else 45f
+            val tickColor = if (isZeroDegree) Color.Red else Color.Blue
+            val strokeWidth = if (isZeroDegree) 8f else if (i % 10 == 0) 4f else 2f
+
+            // Extend the 0-degree line full height if it's the zero degree
+            val startY = if (isZeroDegree) 0f else size.height - tickHeight
+
+            drawLine(
+                color = tickColor,
+                start = Offset(xPosition, startY),
+                end = Offset(xPosition, size.height),
+                strokeWidth = strokeWidth
+            )
+
+            // Draw degree number for long ticks, skip for 0 as it will be obvious
+            if (i % 10 == 0 && !isZeroDegree) {
+                drawContext.canvas.nativeCanvas.drawText(
+                    "$i°",
+                    xPosition,
+                    size.height - 100f,
+                    Paint().apply {
+                        color = android.graphics.Color.BLUE
+                        textSize = 60f
+                        textAlign = Paint.Align.CENTER
+                    }
+                )
+            }
         }
     }
 }

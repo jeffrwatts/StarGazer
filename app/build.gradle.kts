@@ -92,6 +92,14 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.5")
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
+    // CameraX
+    implementation ("androidx.camera:camera-camera2:1.3.0")
+    implementation ("androidx.camera:camera-lifecycle:1.3.0")
+    implementation ("androidx.camera:camera-view:1.4.0-alpha02")
+    implementation ("androidx.camera:camera-extensions:$1.4.0-alpha02")
+
+
+
     // Google Play Services for Location.
     implementation ("com.google.android.gms:play-services-location:21.0.1")
 
@@ -100,6 +108,7 @@ dependencies {
     implementation ("androidx.hilt:hilt-navigation-compose:1.1.0")
     kapt ("com.google.dagger:hilt-compiler:2.48")
 
+    // Permissions
     implementation ("com.google.accompanist:accompanist-permissions:0.32.0")
 
     // Serialization
