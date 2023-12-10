@@ -50,7 +50,7 @@ fun CompassScreen(
     val uiState = viewModel.uiState.collectAsState().value
     val topAppBarState = rememberTopAppBarState()
 
-    val accuracyDescription = when (uiState.compassData.accuracy) {
+    val accuracyDescription = when (uiState.orientationData.accuracy) {
         SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> "High"
         SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> "Medium"
         SensorManager.SENSOR_STATUS_ACCURACY_LOW -> "Low"
@@ -75,25 +75,24 @@ fun CompassScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            val magHeading = uiState.compassData.direction
-            if (uiState.isMagDeclinationValid) {
-                val trueHeading = (((magHeading + uiState.magDeclination) % 360) + 360) % 360
-                Text(text = "True Heading: ${trueHeading.roundToInt()}°", style = MaterialTheme.typography.bodyLarge)
-                Text(text = "Magnetic Heading: ${magHeading.roundToInt()}°", style = MaterialTheme.typography.bodyLarge)
-                Text(text = "Declination: ${String.format("%.1f", uiState.magDeclination)}°", style = MaterialTheme.typography.bodyLarge)
-                Text(text = "Accuracy: $accuracyDescription", style = MaterialTheme.typography.bodyLarge)
-                Box(
-                    modifier = Modifier.padding(innerPadding).fillMaxSize()
-                ) {
-                    // CameraPreview with weight modifier
-                    CameraPreview(modifier = Modifier.fillMaxWidth())
+            val azimuth = uiState.orientationData.azimuth.roundToInt()
+            val altitude = uiState.orientationData.altitude.roundToInt()
 
-                    // CompassOverlay on top of CameraPreview
-                    CompassRulerOverlay(heading = trueHeading.toInt())
-                }
-            } else {
-                Text(text = "True Heading: Not Available", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Azimuth: ${azimuth}°", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Altitude: ${altitude}°", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Declination: ${String.format("%.1f", uiState.magDeclination)}°", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Accuracy: $accuracyDescription", style = MaterialTheme.typography.bodyLarge)
+            Box(
+                modifier = Modifier.padding(innerPadding).fillMaxSize()
+            ) {
+                // CameraPreview with weight modifier
+                CameraPreview(modifier = Modifier.fillMaxWidth())
+
+                // CompassOverlay on top of CameraPreview
+                CompassRulerOverlay(azimuth = azimuth, magDeclination = uiState.magDeclination)
             }
+
+
         }
     }
 }
@@ -124,17 +123,20 @@ fun CameraPreview(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun CompassRulerOverlay(heading: Int, modifier: Modifier = Modifier) {
+fun CompassRulerOverlay(azimuth: Int, magDeclination: Float, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier.fillMaxWidth().height(150.dp)) {
         val canvasWidth = size.width
         val tickSpacing = 20f
         val center = canvasWidth / 2
 
-        val startDegree = heading - 30
-        val endDegree = heading + 30
+        // Adjust heading for true north
+        val trueNorthHeading = (azimuth + magDeclination).roundToInt()
+
+        val startDegree = trueNorthHeading - 30
+        val endDegree = trueNorthHeading + 30
 
         for (i in startDegree..endDegree) {
-            val xPosition = center + (i - heading) * tickSpacing
+            val xPosition = center + (i - trueNorthHeading) * tickSpacing
 
             val isZeroDegree = i % 360 == 0 // Check if the degree is zero
             val tickHeight = if (i % 10 == 0 || isZeroDegree) 90f else 45f

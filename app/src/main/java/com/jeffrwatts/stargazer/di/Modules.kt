@@ -1,13 +1,12 @@
 package com.jeffrwatts.stargazer.di
 
-import android.app.Application
 import android.content.Context
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.OfflineCelestialObjRepository
-import com.jeffrwatts.stargazer.data.compass.CompassRepository
+import com.jeffrwatts.stargazer.data.orientation.OrientationRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.data.planetaryposition.DefaultPlanetPosRepository
 import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosDao
@@ -115,10 +114,10 @@ object RepositoryModule {
 
     @Singleton
     @Provides
-    fun provideCompassRepository(
+    fun provideOrientationRepository(
         @ApplicationContext context: Context
-    ): CompassRepository {
-        return CompassRepository(context)
+    ): OrientationRepository {
+        return OrientationRepository(context)
     }
 }
 
