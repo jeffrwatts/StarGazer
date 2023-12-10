@@ -24,11 +24,24 @@ class CompassViewModel @Inject constructor(
     private val orientationDataFlow = orientationRepository.orientationData
     private val locationFlow = locationRepository.locationFlow
 
-    val uiState: StateFlow<CompassUIState> = combine(orientationDataFlow, locationFlow) { orientationData, location ->
+    val uiState: StateFlow<CompassUIState> = combine(
+        orientationDataFlow,
+        locationFlow
+    ) { orientationData, location ->
         val declination = location?.let { calculateDeclination(it) } ?: 0f
-        val isDeclinationValid = location != null
-        CompassUIState(orientationData, declination, isDeclinationValid)
+        val adjustedAzimuth = normalizeAzimuth(orientationData.azimuth + declination)
+        CompassUIState(
+            orientationData.copy(azimuth = adjustedAzimuth),
+            declination,
+            location != null
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CompassUIState(OrientationData(0.0, 0.0, SensorManager.SENSOR_STATUS_UNRELIABLE), 0f, false))
+
+    private fun normalizeAzimuth(azimuth: Double): Double {
+        var normalizedAzimuth = azimuth % 360
+        if (normalizedAzimuth < 0) normalizedAzimuth += 360
+        return normalizedAzimuth
+    }
 
     private fun calculateDeclination(location: Location): Float {
         val geomagneticField = GeomagneticField(

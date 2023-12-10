@@ -125,7 +125,7 @@ fun CameraPreview(modifier: Modifier = Modifier) {
 fun CompassOverlay(azimuth: Int, altitude: Int, magDeclination: Float, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize()) {
         // Align AzimuthRulerOverlay horizontally within the Box
-        AzimuthRulerOverlay(azimuth, magDeclination, modifier.align(Alignment.Center))
+        AzimuthRulerOverlay(azimuth, modifier.align(Alignment.Center))
 
         // Align AltitudeRulerOverlay vertically within the Box
         AltitudeRulerOverlay(altitude, modifier.align(Alignment.Center))
@@ -137,20 +137,17 @@ fun CompassOverlay(azimuth: Int, altitude: Int, magDeclination: Float, modifier:
 
 
 @Composable
-fun AzimuthRulerOverlay(azimuth: Int, magDeclination: Float, modifier: Modifier = Modifier) {
+fun AzimuthRulerOverlay(azimuth: Int, modifier: Modifier = Modifier) {
     Canvas(modifier = modifier.fillMaxWidth().height(100.dp)) {
         val canvasWidth = size.width
         val tickSpacing = 20f
         val center = canvasWidth / 2
 
-        // Adjust azimuth for true north
-        val trueNorthAzimuth = (azimuth + magDeclination).roundToInt()
-
-        val startDegree = trueNorthAzimuth - 30
-        val endDegree = trueNorthAzimuth + 30
+        val startDegree = azimuth - 30
+        val endDegree = azimuth + 30
 
         for (i in startDegree..endDegree) {
-            val xPosition = center + (i - trueNorthAzimuth) * tickSpacing
+            val xPosition = center + (i - azimuth) * tickSpacing
 
             val tickHeight = if (i % 10 == 0) 60f else 30f
             val strokeWidth = if (i % 10 == 0) 4f else 2f
