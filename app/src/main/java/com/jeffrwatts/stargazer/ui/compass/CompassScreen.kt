@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -38,7 +39,6 @@ import androidx.lifecycle.LifecycleOwner
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import kotlin.math.roundToInt
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,17 +82,16 @@ fun CompassScreen(
             Text(text = "Altitude: ${altitude}°", style = MaterialTheme.typography.bodyLarge)
             Text(text = "Declination: ${String.format("%.1f", uiState.magDeclination)}°", style = MaterialTheme.typography.bodyLarge)
             Text(text = "Accuracy: $accuracyDescription", style = MaterialTheme.typography.bodyLarge)
+
             Box(
-                modifier = Modifier.padding(innerPadding).fillMaxSize()
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
             ) {
-                // CameraPreview with weight modifier
                 CameraPreview(modifier = Modifier.fillMaxWidth())
 
-                // CompassOverlay on top of CameraPreview
-                CompassRulerOverlay(azimuth = azimuth, magDeclination = uiState.magDeclination)
+                CompassOverlay(azimuth = azimuth, altitude = altitude, Modifier.align(Alignment.Center))
             }
-
-
         }
     }
 }
@@ -121,47 +120,52 @@ fun CameraPreview(modifier: Modifier = Modifier) {
         }
     )
 }
+@Composable
+fun CompassOverlay(azimuth: Int, altitude: Int, modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxSize()) {
+        // Align AzimuthRulerOverlay horizontally within the Box
+        AzimuthRulerOverlay(azimuth, modifier.align(Alignment.Center))
+
+        // Align AltitudeRulerOverlay vertically within the Box
+        AltitudeRulerOverlay(altitude, modifier.align(Alignment.Center))
+
+        // Add ReferenceLines
+        ReferenceLines(modifier = Modifier.align(Alignment.Center))
+    }
+}
+
 
 @Composable
-fun CompassRulerOverlay(azimuth: Int, magDeclination: Float, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.fillMaxWidth().height(150.dp)) {
+fun AzimuthRulerOverlay(azimuth: Int, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.fillMaxWidth().height(100.dp)) {
         val canvasWidth = size.width
         val tickSpacing = 20f
         val center = canvasWidth / 2
 
-        // Adjust heading for true north
-        val trueNorthHeading = (azimuth + magDeclination).roundToInt()
-
-        val startDegree = trueNorthHeading - 30
-        val endDegree = trueNorthHeading + 30
+        val startDegree = azimuth - 30
+        val endDegree = azimuth + 30
 
         for (i in startDegree..endDegree) {
-            val xPosition = center + (i - trueNorthHeading) * tickSpacing
+            val xPosition = center + (i - azimuth) * tickSpacing
 
-            val isZeroDegree = i % 360 == 0 // Check if the degree is zero
-            val tickHeight = if (i % 10 == 0 || isZeroDegree) 90f else 45f
-            val tickColor = if (isZeroDegree) Color.Red else Color.Blue
-            val strokeWidth = if (isZeroDegree) 8f else if (i % 10 == 0) 4f else 2f
-
-            // Extend the 0-degree line full height if it's the zero degree
-            val startY = if (isZeroDegree) 0f else size.height - tickHeight
+            val tickHeight = if (i % 10 == 0) 60f else 30f
+            val strokeWidth = if (i % 10 == 0) 4f else 2f
 
             drawLine(
-                color = tickColor,
-                start = Offset(xPosition, startY),
+                color = Color.White,
+                start = Offset(xPosition, size.height - tickHeight),
                 end = Offset(xPosition, size.height),
                 strokeWidth = strokeWidth
             )
 
-            // Draw degree number for long ticks, skip for 0 as it will be obvious
-            if (i % 10 == 0 && !isZeroDegree) {
+            if (i % 10 == 0) {
                 drawContext.canvas.nativeCanvas.drawText(
                     "$i°",
                     xPosition,
-                    size.height - 100f,
+                    size.height - 70f,
                     Paint().apply {
-                        color = android.graphics.Color.BLUE
-                        textSize = 60f
+                        color = android.graphics.Color.WHITE
+                        textSize = 40f
                         textAlign = Paint.Align.CENTER
                     }
                 )
@@ -169,3 +173,67 @@ fun CompassRulerOverlay(azimuth: Int, magDeclination: Float, modifier: Modifier 
         }
     }
 }
+
+@Composable
+fun AltitudeRulerOverlay(altitude: Int, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.width(100.dp)) {
+        val canvasHeight = size.height
+        val tickSpacing = 20f
+        val center = canvasHeight / 2
+
+        val startDegree = altitude - 45
+        val endDegree = altitude + 45
+
+        for (i in startDegree..endDegree) {
+            val yPosition = center + (i - altitude) * tickSpacing
+
+            val tickWidth = if (i % 15 == 0) 60f else 30f
+            val strokeWidth = if (i % 15 == 0) 4f else 2f
+
+            drawLine(
+                color = Color.White,
+                start = Offset(size.width - tickWidth, yPosition),
+                end = Offset(size.width, yPosition),
+                strokeWidth = strokeWidth
+            )
+
+            if (i % 15 == 0) {
+                drawContext.canvas.nativeCanvas.drawText(
+                    "$i°",
+                    size.width - 70f,
+                    yPosition,
+                    Paint().apply {
+                        color = android.graphics.Color.WHITE
+                        textSize = 40f
+                        textAlign = Paint.Align.RIGHT
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ReferenceLines(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val center = Offset(size.width / 2, size.height / 2)
+        val strokeWidth = 4f
+
+        // Vertical line
+        drawLine(
+            color = Color.Red,
+            start = Offset(center.x, 0f),
+            end = Offset(center.x, size.height),
+            strokeWidth = strokeWidth
+        )
+
+        // Horizontal line
+        drawLine(
+            color = Color.Red,
+            start = Offset(0f, center.y),
+            end = Offset(size.width, center.y),
+            strokeWidth = strokeWidth
+        )
+    }
+}
+
