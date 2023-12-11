@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.ui.sights
 
+import android.Manifest
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -37,6 +38,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.TopAppBarState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +54,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
@@ -60,7 +64,9 @@ import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    ExperimentalPermissionsApi::class
+)
 @Composable
 fun SightsScreen(
     openDrawer: () -> Unit,
@@ -73,6 +79,14 @@ fun SightsScreen(
     val currentFilter by viewModel.selectedFilter.collectAsState()
     val isRefreshing = sightsUiState is SightsUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
+
+    val permissionsState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.CAMERA
+        )
+    )
 
     Scaffold(
         topBar = {
@@ -91,6 +105,12 @@ fun SightsScreen(
         val contentModifier = Modifier
             .padding(innerPadding)
             .fillMaxSize()
+
+        LaunchedEffect(key1 = permissionsState) {
+            if (!permissionsState.allPermissionsGranted) {
+                permissionsState.launchMultiplePermissionRequest()
+            }
+        }
 
         Box(Modifier.pullRefresh(pullRefreshState)) {
             when (sightsUiState) {

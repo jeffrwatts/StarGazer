@@ -39,20 +39,6 @@ fun AppDrawer(
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 24.dp)
         )
         NavigationDrawerItem(
-            label = { Text(stringResource(id = R.string.info_title)) },
-            icon = { Icon(Icons.Filled.Navigation, null) },
-            selected = currentRoute == StarGazerDestinations.INFO_ROUTE,
-            onClick = { navigateToInfo(); closeDrawer() },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-        NavigationDrawerItem(
-            label = { Text(stringResource(id = R.string.polar_title)) },
-            icon = { Icon(Icons.Filled.Star, null) },
-            selected = currentRoute == StarGazerDestinations.POLAR_ROUTE,
-            onClick = { navigateToPolar(); closeDrawer() },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-        NavigationDrawerItem(
             label = { Text(stringResource(id = R.string.sights_title)) },
             icon = { Icon(Icons.Filled.Radar, null) },
             selected = currentRoute == StarGazerDestinations.SIGHTS_ROUTE,
@@ -60,10 +46,24 @@ fun AppDrawer(
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(
+            label = { Text(stringResource(id = R.string.info_title)) },
+            icon = { Icon(Icons.Filled.Navigation, null) },
+            selected = currentRoute == StarGazerDestinations.INFO_ROUTE,
+            onClick = { navigateToInfo(); closeDrawer() },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+        NavigationDrawerItem(
             label = { Text(stringResource(id = R.string.sights_compass)) },
             icon = { Icon(Icons.Filled.AddCircleOutline, null) },
             selected = currentRoute == StarGazerDestinations.COMPASS_ROUTE,
             onClick = { navigateToCompass(); closeDrawer() },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+        NavigationDrawerItem(
+            label = { Text(stringResource(id = R.string.polar_title)) },
+            icon = { Icon(Icons.Filled.Star, null) },
+            selected = currentRoute == StarGazerDestinations.POLAR_ROUTE,
+            onClick = { navigateToPolar(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
     }

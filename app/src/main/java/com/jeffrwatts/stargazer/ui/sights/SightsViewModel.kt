@@ -23,7 +23,7 @@ class SightsViewModel @Inject constructor(
     val uiState: StateFlow<SightsUiState> = _uiState
 
     init {
-        //locationRepository.startLocationUpdates(viewModelScope)
+        locationRepository.startLocationUpdates(viewModelScope)
         fetchObjects()
     }
 
