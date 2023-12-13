@@ -15,7 +15,7 @@ data class CelestialObjPos(
         val MIN_ALTITUDE = 15
 
         fun fromCelestialObj(obj: CelestialObj, julianDate: Double, lat: Double, lon: Double): CelestialObjPos {
-            val (alt, azm, lha) = Utils.calculatePosition(obj.ra, obj.dec, lat, lon, julianDate)
+            val (alt, azm, lha) = Utils.calculateAltAzm(obj.ra, obj.dec, lat, lon, julianDate)
             var polarAlignCandidate = false
 
             if (obj.type == ObjectType.STAR) {

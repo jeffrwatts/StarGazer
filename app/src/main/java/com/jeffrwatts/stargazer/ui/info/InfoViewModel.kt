@@ -111,8 +111,8 @@ class InfoViewModel @Inject constructor (
     private fun updatePolarisCoords(lat: Double, lon: Double): Pair<Double, Double> {
         val jdNow = Utils.calculateJulianDateNow()
 
-        val (altPolaris, azmPolaris, _) = Utils.calculatePosition(POLARIS_RA, POLARIS_DEC, lat, lon, jdNow)
-        val (altCNP, _, _) = Utils.calculatePosition(CELESTIAL_NORTH_POLE_RA, CELESTIAL_NORTH_POLE_DEC, lat, lon, jdNow)
+        val (altPolaris, azmPolaris, _) = Utils.calculateAltAzm(POLARIS_RA, POLARIS_DEC, lat, lon, jdNow)
+        val (altCNP, _, _) = Utils.calculateAltAzm(CELESTIAL_NORTH_POLE_RA, CELESTIAL_NORTH_POLE_DEC, lat, lon, jdNow)
 
         // Adjust polaris azimuth to be zero based.
         val polarisX = if (azmPolaris<180.0) azmPolaris else azmPolaris-360.0

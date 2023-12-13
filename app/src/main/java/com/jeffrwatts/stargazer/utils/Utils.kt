@@ -77,7 +77,7 @@ object Utils {
         return ha
     }
 
-    fun calculatePosition(ra: Double, dec: Double, latitude: Double, longitude: Double, julianDate: Double) : Triple<Double, Double, Double> {
+    fun calculateAltAzm(ra: Double, dec: Double, latitude: Double, longitude: Double, julianDate: Double) : Triple<Double, Double, Double> {
         val latRad = Math.toRadians(latitude)
         val decRad = Math.toRadians(dec)
         val lst = calculateLocalSiderealTime(longitude, julianDate)
@@ -119,4 +119,31 @@ object Utils {
 
         return nearMeridian && closeToCelestialEquator && overheadOrHorizon
     }
+
+    fun calculateRAandDEC(alt: Double, azm: Double, latitude: Double, longitude: Double, julianDate: Double): Pair<Double, Double> {
+        val altRad = Math.toRadians(alt)
+        val azmRad = Math.toRadians(azm)
+        val latRad = Math.toRadians(latitude)
+
+        // Calculate the declination
+        val sinDec = sin(altRad) * sin(latRad) + cos(altRad) * cos(latRad) * cos(azmRad)
+        val decRad = asin(sinDec)
+        val dec = Math.toDegrees(decRad)
+
+        // Calculate the hour angle
+        val cosH = (sin(altRad) - sin(latRad) * sin(decRad)) / (cos(latRad) * cos(decRad))
+        var lhaRad = Math.acos(cosH)
+        lhaRad = if (sin(azmRad) > 0) 2 * Math.PI - lhaRad else lhaRad
+        val lha = Math.toDegrees(lhaRad)
+
+        // Calculate the Local Sidereal Time
+        val lst = calculateLocalSiderealTime(longitude, julianDate)
+
+        // Convert LST to RA
+        var ra = lst - lha
+        if (ra < 0) ra += 360
+
+        return Pair(ra, dec)
+    }
+
 }
