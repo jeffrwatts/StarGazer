@@ -28,6 +28,9 @@ interface CelestialObjDao {
     @Query("SELECT * FROM celestial_objects")
     fun getAll(): Flow<List<CelestialObj>>
 
+    @Query("SELECT * FROM celestial_objects WHERE type IN (:types)")
+    fun getByTypes(types: List<ObjectType>): Flow<List<CelestialObj>>
+
     @Query("SELECT * FROM celestial_objects WHERE type = :type")
     fun getAllWithType(type: ObjectType): Flow<List<CelestialObj>>
 

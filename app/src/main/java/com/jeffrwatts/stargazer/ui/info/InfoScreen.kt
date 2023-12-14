@@ -57,14 +57,6 @@ fun InfoScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val uiState by viewModel.state.collectAsState()
 
-    val permissionsState = rememberMultiplePermissionsState(
-        permissions = listOf(
-            android.Manifest.permission.ACCESS_FINE_LOCATION,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            android.Manifest.permission.CAMERA
-        )
-    )
-
     Scaffold(
         topBar = {
             StarGazerTopAppBar(
@@ -79,30 +71,11 @@ fun InfoScreen(
             .padding(innerPadding)
             .nestedScroll(scrollBehavior.nestedScrollConnection)
 
-        LaunchedEffect(key1 = permissionsState) {
-            if (!permissionsState.allPermissionsGranted) {
-                permissionsState.launchMultiplePermissionRequest()
-            }
-        }
-
-        if (permissionsState.allPermissionsGranted) {
-            viewModel.startLocationUpdates()
             InfoContent(
                 uiState = uiState,
                 toggleHorozontal = { viewModel.toggleHorizontalFlip() },
                 toggleVertical = { viewModel.toggleVerticalFlip() },
                 modifier = contentModifier)
-        } else {
-            Column (
-                modifier = contentModifier.padding(start = 8.dp, end = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center) {
-                Text("We need location permissions to provide the star-gazing experience.")
-                Button(onClick = { permissionsState.launchMultiplePermissionRequest() }) {
-                    Text("Grant Permissions")
-                }
-            }
-        }
     }
 }
 

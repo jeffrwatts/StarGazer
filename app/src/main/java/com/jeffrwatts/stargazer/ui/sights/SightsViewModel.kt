@@ -15,6 +15,7 @@ class SightsViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
+    private var locationUpdating = false
 
     private val _selectedFilter = MutableStateFlow<ObservationStatus?>(null) // null will represent 'Show All'
     val selectedFilter = _selectedFilter.asStateFlow()
@@ -22,46 +23,40 @@ class SightsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<SightsUiState>(SightsUiState.Loading)
     val uiState: StateFlow<SightsUiState> = _uiState
 
-    init {
-        locationRepository.startLocationUpdates(viewModelScope)
-        fetchObjects()
-    }
-
     fun setObservationStatusFilter(status: ObservationStatus?) {
         _selectedFilter.value = status
         fetchObjects()
     }
+
+    fun startLocationUpdates() {
+        if (!locationUpdating) {
+            locationRepository.startLocationUpdates(viewModelScope)
+            locationUpdating = true
+            fetchObjects()
+        }
+    }
+
     fun fetchObjects() {
         viewModelScope.launch {
-            celestialObjRepository.getAllStream()
-                .combine(locationRepository.locationFlow) { objects, location ->
-                    // Check if location is not null and proceed
-                    if (location != null) {
-                        val jdNow = Utils.calculateJulianDateNow()
-                        objects.filterNot { it.type == ObjectType.STAR }
-                            .filter { selectedFilter.value == null || it.observationStatus == selectedFilter.value }
-                            .map { obj ->
-                                CelestialObjPos.fromCelestialObj(obj, julianDate = jdNow, lat = location.latitude, lon = location.longitude)
-                            }.sortedWith(
-                                compareByDescending<CelestialObjPos> { it.observable }
-                                    .thenBy { it.celestialObj.observationStatus.priority }
-                            )
-                    } else {
-                        // Emit a Loading state if the location is not yet available
-                        _uiState.value = SightsUiState.Loading
-                        return@combine emptyList<CelestialObjPos>()
-                    }
+            locationRepository.locationFlow.collect{location->
+                location?.let {
+                    val date = Utils.calculateJulianDateNow()
+                    val typesToQuery = listOf(ObjectType.PLANET, ObjectType.CLUSTER, ObjectType.NEBULA, ObjectType.GALAXY)
+
+                    celestialObjRepository.getAllCelestialObjsByType(typesToQuery, location, date)
+                        .distinctUntilChanged() // To avoid redundant UI updates
+                        .catch { e ->
+                            _uiState.value = SightsUiState.Error(e.message ?: "Unknown error")
+                        }
+                        .collect { celestialObjPosList ->
+                            val sorted = celestialObjPosList
+                                .filter { selectedFilter.value == null || it.celestialObj.observationStatus == selectedFilter.value }
+                                .sortedWith(compareByDescending<CelestialObjPos> { it.observable }
+                                    .thenBy { it.celestialObj.observationStatus.priority } )
+                            _uiState.value = SightsUiState.Success(sorted)
+                        }
                 }
-                .distinctUntilChanged() // To avoid redundant UI updates
-                .catch { e ->
-                    _uiState.value = SightsUiState.Error(e.message ?: "Unknown error")
-                }
-                .collect { celestialObjPosList ->
-                    // If location is still not available (null), keep the Loading state
-                    if (celestialObjPosList.isNotEmpty() || locationRepository.locationFlow.value != null) {
-                        _uiState.value = SightsUiState.Success(celestialObjPosList)
-                    }
-                }
+            }
         }
     }
 

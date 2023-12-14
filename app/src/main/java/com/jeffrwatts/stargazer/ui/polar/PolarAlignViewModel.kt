@@ -22,7 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PolarAlignViewModel @Inject constructor(
-    private val repository: CelestialObjRepository,
+    private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
 
@@ -35,37 +35,29 @@ class PolarAlignViewModel @Inject constructor(
 
     fun fetchObjects() {
         viewModelScope.launch {
-            repository.getAllByTypeStream(ObjectType.STAR)
-                .combine(locationRepository.locationFlow) { objects, location ->
-                    // Check if location is not null and proceed
-                    if (location != null) {
-                        val jdNow = Utils.calculateJulianDateNow()
-                        objects.map { obj ->
-                                CelestialObjPos.fromCelestialObj(obj, julianDate = jdNow, lat = location.latitude, lon = location.longitude)
-                            }.sortedByDescending { it.polarAlignCandidate }
-                    } else {
-                        // Emit a Loading state if the location is not yet available
-                        _uiState.value = PolarAlignUiState.Loading
-                        return@combine emptyList<CelestialObjPos>()
-                    }
+            locationRepository.locationFlow.collect { location->
+                location?.let {
+                    val date = Utils.calculateJulianDateNow()
+                    val typesToQuery = listOf(ObjectType.STAR)
+
+                    celestialObjRepository.getAllCelestialObjsByType(typesToQuery, location, date)
+                        .distinctUntilChanged() // To avoid redundant UI updates
+                        .catch { e ->
+                            _uiState.value = PolarAlignUiState.Error(e.message ?: "Unknown error")
+                        }
+                        .collect { celestialObjPosList ->
+                            val listSorted = celestialObjPosList.sortedByDescending { it.polarAlignCandidate }
+                            _uiState.value = PolarAlignUiState.Success(listSorted)
+                        }
                 }
-                .distinctUntilChanged() // To avoid redundant UI updates
-                .catch { e ->
-                    _uiState.value = PolarAlignUiState.Error(e.message ?: "Unknown error")
-                }
-                .collect { celestialObjPosList ->
-                    // If location is still not available (null), keep the Loading state
-                    if (celestialObjPosList.isNotEmpty() || locationRepository.locationFlow.value != null) {
-                        _uiState.value = PolarAlignUiState.Success(celestialObjPosList)
-                    }
-                }
+            }
         }
     }
 
     fun updateObservationStatus(celestialObj: CelestialObj, newObservationStatus: ObservationStatus) {
         viewModelScope.launch {
             val updatedItem = celestialObj.copy(observationStatus = newObservationStatus)
-            repository.update(updatedItem)
+            celestialObjRepository.update(updatedItem)
         }
     }
 }

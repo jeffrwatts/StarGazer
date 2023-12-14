@@ -5,7 +5,6 @@ import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
-import com.jeffrwatts.stargazer.data.celestialobject.OfflineCelestialObjRepository
 import com.jeffrwatts.stargazer.data.orientation.OrientationRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.data.planetaryposition.DefaultPlanetPosRepository
@@ -87,11 +86,11 @@ object RepositoryModule {
     @Provides
     fun provideCelestialObjRepository(
         @ApplicationContext context: Context,
-        dao: CelestialObjDao,
+        celestialObjDao: CelestialObjDao,
         planetPosRepository: PlanetPosRepository,
         @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): CelestialObjRepository {
-        return OfflineCelestialObjRepository(context, dao, planetPosRepository, ioDispatcher)
+        return CelestialObjRepository(celestialObjDao, planetPosRepository, context, ioDispatcher)
     }
 
     @Singleton

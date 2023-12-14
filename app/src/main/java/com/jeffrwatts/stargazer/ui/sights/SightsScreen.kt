@@ -3,6 +3,7 @@ package com.jeffrwatts.stargazer.ui.sights
 import android.Manifest
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -112,29 +114,49 @@ fun SightsScreen(
             }
         }
 
-        Box(Modifier.pullRefresh(pullRefreshState)) {
-            when (sightsUiState) {
-                is SightsUiState.Loading -> {
-                    LoadingScreen(modifier = contentModifier)
+        if (permissionsState.allPermissionsGranted) {
+            viewModel.startLocationUpdates()
+            Box(Modifier.pullRefresh(pullRefreshState)) {
+                when (sightsUiState) {
+                    is SightsUiState.Loading -> {
+                        LoadingScreen(modifier = contentModifier)
+                    }
+
+                    is SightsUiState.Success -> {
+                        SightsBody(
+                            celestialObjs = (sightsUiState as SightsUiState.Success).data,
+                            onObservationStatusChanged = { item, newStatus ->
+                                viewModel.updateObservationStatus(item.celestialObj, newStatus)
+                            },
+                            onSightClick = onSightClick,
+                            modifier = contentModifier
+                        )
+                    }
+
+                    is SightsUiState.Error -> {
+                        ErrorScreen(
+                            message = (sightsUiState as SightsUiState.Error).message,
+                            modifier = contentModifier,
+                            onRetryClick = { viewModel.fetchObjects() }
+                        )
+                    }
                 }
-                is SightsUiState.Success -> {
-                    SightsBody(
-                        celestialObjs = (sightsUiState as SightsUiState.Success).data,
-                        onObservationStatusChanged = { item, newStatus ->
-                            viewModel.updateObservationStatus(item.celestialObj, newStatus)
-                        },
-                        onSightClick = onSightClick,
-                        modifier = contentModifier)
-                }
-                is SightsUiState.Error -> {
-                    ErrorScreen(
-                        message = (sightsUiState as SightsUiState.Error).message,
-                        modifier = contentModifier,
-                        onRetryClick = { viewModel.fetchObjects() }
-                    )
+                PullRefreshIndicator(
+                    isRefreshing,
+                    pullRefreshState,
+                    Modifier.align(Alignment.TopCenter)
+                )
+            }
+        } else {
+            Column (
+                modifier = contentModifier.padding(start = 8.dp, end = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center) {
+                Text("Need location permissions to provide the star-gazing experience.")
+                Button(onClick = { permissionsState.launchMultiplePermissionRequest() }) {
+                    Text("Grant Permissions")
                 }
             }
-            PullRefreshIndicator(isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
         }
     }
 }

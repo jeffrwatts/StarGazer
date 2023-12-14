@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
+import com.jeffrwatts.stargazer.data.location.LocationRepository
+import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SightDetailViewModel @Inject constructor(
-    private val repository: CelestialObjRepository
+    private val celestialObjRepository: CelestialObjRepository,
+    private val locationRepository: LocationRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SightDetailUiState>(SightDetailUiState.Loading)
@@ -21,11 +24,16 @@ class SightDetailViewModel @Inject constructor(
 
     fun fetchSightDetail(sightId: Int) {
         viewModelScope.launch {
-            repository.getStream(sightId).collect { celestialObj ->
-                celestialObj?.let {
-                    _uiState.value = SightDetailUiState.Success(it)
-                } ?: run {
-                    _uiState.value = SightDetailUiState.Error("Object not found.")
+            locationRepository.locationFlow.collect { location->
+                location?.let {
+                    val date = Utils.calculateJulianDateNow()
+                    celestialObjRepository.getCelestialObj(sightId, location, date).collect { celestialObjPos ->
+                        celestialObjPos?.let {
+                            _uiState.value = SightDetailUiState.Success(it.celestialObj)
+                        } ?: run {
+                            _uiState.value = SightDetailUiState.Error("Object not found.")
+                        }
+                    }
                 }
             }
         }
