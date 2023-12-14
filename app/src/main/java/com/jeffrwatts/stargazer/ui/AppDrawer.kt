@@ -30,7 +30,7 @@ fun AppDrawer(
     navigateToSights: () -> Unit,
     navigateToPolar: () -> Unit,
     navigateToInfo: () -> Unit,
-    navigateToCompass: () -> Unit,
+    navigateToStarFinder: () -> Unit,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -53,15 +53,15 @@ fun AppDrawer(
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(
-            label = { Text(stringResource(id = R.string.sights_compass)) },
-            icon = { Icon(Icons.Filled.AddCircleOutline, null) },
-            selected = currentRoute == StarGazerDestinations.COMPASS_ROUTE,
-            onClick = { navigateToCompass(); closeDrawer() },
+            label = { Text(stringResource(id = R.string.star_finder)) },
+            icon = { Icon(Icons.Filled.Star, null) },
+            selected = currentRoute == StarGazerDestinations.STAR_FINDER_ROUTE,
+            onClick = { navigateToStarFinder(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(
             label = { Text(stringResource(id = R.string.polar_title)) },
-            icon = { Icon(Icons.Filled.Star, null) },
+            icon = { Icon(Icons.Filled.AddCircleOutline, null) },
             selected = currentRoute == StarGazerDestinations.POLAR_ROUTE,
             onClick = { navigateToPolar(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)

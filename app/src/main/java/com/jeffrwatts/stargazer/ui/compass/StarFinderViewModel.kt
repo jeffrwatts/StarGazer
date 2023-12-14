@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class CompassViewModel @Inject constructor(
+class StarFinderViewModel @Inject constructor(
     private val orientationRepository: OrientationRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {

@@ -7,7 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.jeffrwatts.stargazer.ui.compass.CompassScreen
+import com.jeffrwatts.stargazer.ui.compass.StarFinderScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
 import com.jeffrwatts.stargazer.ui.polar.PolarAlignScreen
 import com.jeffrwatts.stargazer.ui.sightdetail.SightDetailScreen
@@ -37,8 +37,8 @@ fun StarGazerNavGraph(
                 onSightClick = actions.navigateToSightDetail,
                 modifier = modifier)
         }
-        composable(route = StarGazerDestinations.COMPASS_ROUTE) {
-            CompassScreen(openDrawer = openDrawer, modifier = modifier)
+        composable(route = StarGazerDestinations.STAR_FINDER_ROUTE) {
+            StarFinderScreen(openDrawer = openDrawer, modifier = modifier)
         }
         composable("${StarGazerDestinations.SIGHT_DETAIL_ROUTE}/{sightId}") { backStackEntry ->
             val sightId = backStackEntry.arguments?.getString("sightId")?.toIntOrNull()

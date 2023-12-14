@@ -42,10 +42,10 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CompassScreen(
+fun StarFinderScreen(
     openDrawer: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: CompassViewModel = hiltViewModel()
+    viewModel: StarFinderViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState().value
     val topAppBarState = rememberTopAppBarState()
@@ -61,7 +61,7 @@ fun CompassScreen(
     Scaffold(
         topBar = {
             StarGazerTopAppBar(
-                title = stringResource(R.string.compass_title),
+                title = stringResource(R.string.star_finder),
                 openDrawer = openDrawer,
                 topAppBarState = topAppBarState
             )
@@ -90,7 +90,7 @@ fun CompassScreen(
             ) {
                 CameraPreview(modifier = Modifier.fillMaxWidth())
 
-                CompassOverlay(azimuth = azimuth, altitude = altitude,
+                StarFinderOverlay(azimuth = azimuth, altitude = altitude,
                     magDeclination = uiState.magDeclination, Modifier.align(Alignment.Center))
             }
         }
@@ -122,7 +122,7 @@ fun CameraPreview(modifier: Modifier = Modifier) {
     )
 }
 @Composable
-fun CompassOverlay(azimuth: Int, altitude: Int, magDeclination: Float, modifier: Modifier = Modifier) {
+fun StarFinderOverlay(azimuth: Int, altitude: Int, magDeclination: Float, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize()) {
         // Align AzimuthRulerOverlay horizontally within the Box
         AzimuthRulerOverlay(azimuth, modifier.align(Alignment.Center))
