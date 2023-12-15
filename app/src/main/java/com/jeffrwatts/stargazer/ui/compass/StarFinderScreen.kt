@@ -15,13 +15,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +40,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.LifecycleOwner
 import com.jeffrwatts.stargazer.R
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import kotlin.math.roundToInt
 
@@ -47,7 +51,9 @@ fun StarFinderScreen(
     modifier: Modifier = Modifier,
     viewModel: StarFinderViewModel = hiltViewModel()
 ) {
-    val uiState = viewModel.uiState.collectAsState().value
+    val uiState by viewModel.uiState.collectAsState()
+    val foundObjects by viewModel.foundObjects.collectAsState()
+    val searchCompleted by viewModel.searchCompleted.collectAsState()
     val topAppBarState = rememberTopAppBarState()
 
     val accuracyDescription = when (uiState.orientationData.accuracy) {
@@ -98,6 +104,13 @@ fun StarFinderScreen(
                     magDeclination = uiState.magDeclination, Modifier.align(Alignment.Center))
             }
 
+            // Display the dialog based on search results
+            if (searchCompleted) {
+                ShowResultsDialog(foundObjects, foundObjects.isEmpty()) {
+                    viewModel.clearFoundObjects()
+                }
+            }
+
         }
     }
 }
@@ -144,7 +157,9 @@ fun StarFinderOverlay(azimuth: Int, altitude: Int, magDeclination: Float, modifi
 
 @Composable
 fun AzimuthRulerOverlay(azimuth: Int, modifier: Modifier = Modifier) {
-    Canvas(modifier = modifier.fillMaxWidth().height(100.dp)) {
+    Canvas(modifier = modifier
+        .fillMaxWidth()
+        .height(100.dp)) {
         val canvasWidth = size.width
         val tickSpacing = 20f
         val center = canvasWidth / 2
@@ -243,4 +258,31 @@ fun ReferenceLines(modifier: Modifier = Modifier) {
         )
     }
 }
+
+@Composable
+fun ShowResultsDialog(celestialObjects: List<CelestialObj>, noObjectsFound: Boolean, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (noObjectsFound) "Search Results" else "Found Celestial Objects") },
+        text = {
+            if (noObjectsFound) {
+                Text("No celestial objects found at the selected location.")
+            } else {
+                Column {
+                    celestialObjects.forEach { obj ->
+                        Text(obj.friendlyName)
+                        // Add more details as needed
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", color = Color.White)
+            }
+        }
+    )
+}
+
+
 
