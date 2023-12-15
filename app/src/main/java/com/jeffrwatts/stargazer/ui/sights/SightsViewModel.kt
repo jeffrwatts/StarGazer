@@ -3,7 +3,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.*
 import com.jeffrwatts.stargazer.data.location.LocationRepository
-import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*

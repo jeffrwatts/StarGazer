@@ -4,38 +4,59 @@ package com.jeffrwatts.stargazer.ui.compass
 import android.hardware.GeomagneticField
 import android.hardware.SensorManager
 import android.location.Location
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.orientation.OrientationData
 import com.jeffrwatts.stargazer.data.orientation.OrientationRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
+import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class StarFinderViewModel @Inject constructor(
+    private val celestialObjRepository: CelestialObjRepository,
     private val orientationRepository: OrientationRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
-    private val orientationDataFlow = orientationRepository.orientationData
-    private val locationFlow = locationRepository.locationFlow
 
-    val uiState: StateFlow<CompassUIState> = combine(
-        orientationDataFlow,
-        locationFlow
+
+    val uiState: StateFlow<StarFinderUIState> = combine(
+        orientationRepository.orientationData,
+        locationRepository.locationFlow
     ) { orientationData, location ->
         val declination = location?.let { calculateDeclination(it) } ?: 0f
         val adjustedAzimuth = normalizeAzimuth(orientationData.azimuth + declination)
-        CompassUIState(
+        StarFinderUIState(
             orientationData.copy(azimuth = adjustedAzimuth),
             declination,
             location != null
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CompassUIState(OrientationData(0.0, 0.0, SensorManager.SENSOR_STATUS_UNRELIABLE), 0f, false))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StarFinderUIState(OrientationData(0.0, 0.0, SensorManager.SENSOR_STATUS_UNRELIABLE), 0f, false))
+
+    fun findObjects(alt: Double, azimuth: Double) {
+        viewModelScope.launch {
+            val location = locationRepository.locationFlow.value?: return@launch
+
+            val timeNow = Utils.calculateJulianDateNow()
+            val (ra, dec) = Utils.calculateRAandDEC(alt, azimuth, location.latitude, location.longitude, timeNow)
+
+            val threshold = 1.0
+            val celestialObjects = celestialObjRepository.getCelestialObjsByRaDec(ra, dec, threshold).firstOrNull()
+
+            celestialObjects?.forEach {
+                Log.d("TAG", it.friendlyName)
+            }
+        }
+    }
 
     private fun normalizeAzimuth(azimuth: Double): Double {
         var normalizedAzimuth = azimuth % 360
@@ -54,7 +75,7 @@ class StarFinderViewModel @Inject constructor(
     }
 }
 
-data class CompassUIState(
+data class StarFinderUIState(
     val orientationData: OrientationData,
     val magDeclination: Float,
     val isMagDeclinationValid: Boolean

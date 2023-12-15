@@ -88,17 +88,22 @@ fun StarFinderScreen(
                     .padding(innerPadding)
                     .fillMaxSize()
             ) {
-                CameraPreview(modifier = Modifier.fillMaxWidth())
+                CameraPreview({
+                    viewModel.findObjects(
+                        uiState.orientationData.altitude,
+                        uiState.orientationData.azimuth)},
+                    modifier = Modifier.fillMaxWidth())
 
                 StarFinderOverlay(azimuth = azimuth, altitude = altitude,
                     magDeclination = uiState.magDeclination, Modifier.align(Alignment.Center))
             }
+
         }
     }
 }
 
 @Composable
-fun CameraPreview(modifier: Modifier = Modifier) {
+fun CameraPreview(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     val cameraController: LifecycleCameraController = remember { LifecycleCameraController(context) }
@@ -111,6 +116,7 @@ fun CameraPreview(modifier: Modifier = Modifier) {
                 layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                 scaleType = PreviewView.ScaleType.FILL_START
                 implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                setOnClickListener { onClick() }
             }.also { previewView ->
                 previewView.controller = cameraController
                 cameraController.bindToLifecycle(lifecycleOwner)

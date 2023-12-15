@@ -6,15 +6,12 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.jeffrwatts.stargazer.R
-import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosRepository
 import com.jeffrwatts.stargazer.di.IoDispatcher
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -53,6 +50,11 @@ class CelestialObjRepository @Inject constructor (
             mapObjectPosition(obj, location, date)
         }
     }
+
+    fun getCelestialObjsByRaDec(ra: Double, dec: Double, threshold: Double): Flow<List<CelestialObj>> {
+        return celestialObjDao.findByRaDec(ra, dec, threshold)
+    }
+
 
     suspend fun update(celestialObj: CelestialObj) = celestialObjDao.update(celestialObj)
 
