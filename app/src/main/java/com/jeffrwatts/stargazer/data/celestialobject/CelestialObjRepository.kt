@@ -11,9 +11,12 @@ import com.jeffrwatts.stargazer.di.IoDispatcher
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -51,12 +54,29 @@ class CelestialObjRepository @Inject constructor (
         }
     }
 
-    fun getCelestialObjsByRaDec(ra: Double, dec: Double, threshold: Double): Flow<List<CelestialObj>> {
-        return celestialObjDao.findByRaDec(ra, dec, threshold)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getCelestialObjsByRaDec(ra: Double, dec: Double, threshold: Double, date: Double): Flow<List<CelestialObj>> {
+        val planetsFlow = celestialObjDao.getAllWithType(ObjectType.PLANET).map { planets ->
+            planets.map { updatePlanetPosition(it, date) }
+                .filter { filterByThreshold(it, ra, dec, threshold) }
+        }.take(1)  // Take only the first emission
+
+        val starsFlow = celestialObjDao.findByRaDec(ra, dec, threshold).take(1)  // Take only the first emission
+
+        return planetsFlow.flatMapConcat { planets ->
+            starsFlow.map { stars ->
+                planets + stars
+            }
+        }
     }
 
-
     suspend fun update(celestialObj: CelestialObj) = celestialObjDao.update(celestialObj)
+
+    private fun filterByThreshold(celestialObj: CelestialObj, ra: Double, dec: Double, threshold: Double): Boolean {
+        return (celestialObj.dec in dec-threshold .. dec+threshold) &&
+                (celestialObj.ra in ra-threshold .. ra+threshold)
+    }
+
 
     private suspend fun mapObjectPosition(celestialObj: CelestialObj, location: Location, date: Double): CelestialObjPos {
         return if (celestialObj.type == ObjectType.PLANET) {

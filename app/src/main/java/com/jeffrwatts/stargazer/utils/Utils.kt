@@ -132,7 +132,15 @@ object Utils {
 
         // Calculate the hour angle
         val cosH = (sin(altRad) - sin(latRad) * sin(decRad)) / (cos(latRad) * cos(decRad))
-        var lhaRad = Math.acos(cosH)
+
+        // Threshold to handle precision issues near zenith or horizon
+        val adjustedCosH = when {
+            cosH > 1.0 -> 1.0
+            cosH < -1.0 -> -1.0
+            else -> cosH
+        }
+
+        var lhaRad = Math.acos(adjustedCosH)
         lhaRad = if (sin(azmRad) > 0) 2 * Math.PI - lhaRad else lhaRad
         val lha = Math.toDegrees(lhaRad)
 

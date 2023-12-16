@@ -95,9 +95,11 @@ fun StarFinderScreen(
                     .fillMaxSize()
             ) {
                 CameraPreview({
+                    val theshold = 5.0
                     viewModel.findObjects(
                         uiState.orientationData.altitude,
-                        uiState.orientationData.azimuth)},
+                        uiState.orientationData.azimuth,
+                        theshold)},
                     modifier = Modifier.fillMaxWidth())
 
                 StarFinderOverlay(azimuth = azimuth, altitude = altitude,

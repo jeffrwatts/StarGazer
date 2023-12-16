@@ -51,15 +51,14 @@ class StarFinderViewModel @Inject constructor(
     private val _searchCompleted = MutableStateFlow(false)
     val searchCompleted: StateFlow<Boolean> = _searchCompleted.asStateFlow()
 
-    fun findObjects(alt: Double, azimuth: Double) {
+    fun findObjects(alt: Double, azimuth: Double, threshold: Double) {
         viewModelScope.launch {
             val location = locationRepository.locationFlow.value?: return@launch
 
             val timeNow = Utils.calculateJulianDateNow()
             val (ra, dec) = Utils.calculateRAandDEC(alt, azimuth, location.latitude, location.longitude, timeNow)
 
-            val threshold = 5.0
-            val objs = celestialObjRepository.getCelestialObjsByRaDec(ra, dec, threshold).firstOrNull()
+            val objs = celestialObjRepository.getCelestialObjsByRaDec(ra, dec, threshold, timeNow).firstOrNull()
             _foundObjects.value = objs ?: emptyList()
             _searchCompleted.value = true
         }

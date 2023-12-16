@@ -160,7 +160,7 @@ fun PolarAlignmentItem(
                 color = textColor
             )
             Text(
-                text = "Dec: ${formatToDegreeAndMinutes(celestialObjPos.celestialObj.dec)}, LHA: ${formatToDegreeAndMinutes(celestialObjPos.lha)}",
+                text = "Dec: ${formatToDegreeAndMinutes(celestialObjPos.celestialObj.dec)}, RA: ${formatToDegreeAndMinutes(celestialObjPos.celestialObj.ra)}",
                 style = MaterialTheme.typography.bodyMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,

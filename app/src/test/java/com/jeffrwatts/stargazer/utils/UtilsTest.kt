@@ -30,6 +30,10 @@ class UtilsTest {
 
         val VEGA_RA = Utils.hmsToDegrees(18, 36, 56.336) // RA of Vega: 18h 36m 56.336s
         val VEGA_DEC = Utils.dmsToDegrees(38, 47, 1.28) * N // Declination of Vega: 38° 47' 1.28"
+
+        val POLARIS_RA = Utils.hmsToDegrees(2, 41, 39.0)
+        val POLARIS_DEC = Utils.dmsToDegrees(89, 15, 51.0)
+
     }
 
     @Test
@@ -167,6 +171,21 @@ class UtilsTest {
         val (ra8, dec8) = Utils.calculateRAandDEC(alt8, azm8, SYDNEY_LATITUDE, SYDNEY_LONGITUDE, julianDate)
         assertEquals(VEGA_RA, ra8, 0.01)
         assertEquals(VEGA_DEC, dec8, 0.01)
+    }
+
+    @Test
+    fun PolarisTests() {
+        val dateTime = LocalDateTime.of(2023, 12, 16, 12, 0, 0)
+        val julianDate = Utils.calculateJulianDate(dateTime)
+
+        val (alt, azm, lha) =  Utils.calculateAltAzm(POLARIS_RA, POLARIS_DEC, KONA_LATITUDE, KONA_LONGITUDE, julianDate)
+        assertEquals(19.908625619869397, alt, 0.01)
+        assertEquals(359.27202352564825, azm, 0.01)
+        assertEquals(68.46570678168828, lha, 0.01)
+
+        val (ra, dec) = Utils.calculateRAandDEC(alt, azm, KONA_LATITUDE, KONA_LONGITUDE, julianDate)
+        assertEquals(POLARIS_RA, ra, 0.01)
+        assertEquals(POLARIS_DEC, dec, 0.01)
     }
 
     @Test
