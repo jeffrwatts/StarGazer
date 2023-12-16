@@ -7,7 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.jeffrwatts.stargazer.ui.compass.StarFinderScreen
+import com.jeffrwatts.stargazer.ui.starfinder.StarFinderScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
 import com.jeffrwatts.stargazer.ui.polar.PolarAlignScreen
 import com.jeffrwatts.stargazer.ui.sightdetail.SightDetailScreen

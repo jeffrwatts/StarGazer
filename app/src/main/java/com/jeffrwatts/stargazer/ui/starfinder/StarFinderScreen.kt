@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.compass
+package com.jeffrwatts.stargazer.ui.starfinder
 
 import android.graphics.Paint
 import android.hardware.SensorManager

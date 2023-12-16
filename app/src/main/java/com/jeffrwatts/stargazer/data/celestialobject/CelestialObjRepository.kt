@@ -70,6 +70,10 @@ class CelestialObjRepository @Inject constructor (
         }
     }
 
+    fun findObjectsNearZeroRA (threshold: Double): Flow<List<CelestialObj>> {
+        return celestialObjDao.findObjectsNearZeroRA(threshold)
+    }
+
     suspend fun update(celestialObj: CelestialObj) = celestialObjDao.update(celestialObj)
 
     private fun filterByThreshold(celestialObj: CelestialObj, ra: Double, dec: Double, threshold: Double): Boolean {

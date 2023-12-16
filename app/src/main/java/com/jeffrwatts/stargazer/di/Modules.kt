@@ -7,9 +7,8 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.orientation.OrientationRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
-import com.jeffrwatts.stargazer.data.planetaryposition.DefaultPlanetPosRepository
-import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosDao
 import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosRepository
+import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosDao
 import com.jeffrwatts.stargazer.network.EphemerisApi
 import dagger.Module
 import dagger.Provides
@@ -100,7 +99,7 @@ object RepositoryModule {
         ephemerisApi: EphemerisApi,
         @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): PlanetPosRepository {
-        return DefaultPlanetPosRepository(dao, ephemerisApi, ioDispatcher)
+        return PlanetPosRepository(dao, ephemerisApi, ioDispatcher)
     }
 
     @Singleton

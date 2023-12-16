@@ -1,10 +1,9 @@
-package com.jeffrwatts.stargazer.ui.compass
+package com.jeffrwatts.stargazer.ui.starfinder
 
 
 import android.hardware.GeomagneticField
 import android.hardware.SensorManager
 import android.location.Location
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
