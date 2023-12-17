@@ -34,15 +34,17 @@ interface CelestialObjDao {
     @Query("SELECT * FROM celestial_objects WHERE type = :type")
     fun getAllWithType(type: ObjectType): Flow<List<CelestialObj>>
 
-    @Query("SELECT * FROM celestial_objects WHERE ra BETWEEN :ra - :threshold AND :ra + :threshold AND dec BETWEEN :dec - :threshold AND :dec + :threshold")
-    fun findByRaDec(ra: Double, dec: Double, threshold: Double): Flow<List<CelestialObj>>
-
     @Query("""
     SELECT * FROM celestial_objects 
-    WHERE (ra <= :threshold OR ra >= 360 - :threshold)
+    WHERE type IN (:types)
+    AND (
+        (ra BETWEEN :ra - :raThreshold AND :ra + :raThreshold) OR
+        (:ra - :raThreshold < 0 AND ra BETWEEN 360 + (:ra - :raThreshold) AND 360) OR
+        (:ra + :raThreshold > 360 AND ra BETWEEN 0 AND (:ra + :raThreshold - 360))
+    )
+    AND dec BETWEEN :dec - :decThreshold AND :dec + :decThreshold
 """)
-    fun findObjectsNearZeroRA(threshold: Double): Flow<List<CelestialObj>>
-
+    fun findByRaDec(types: List<ObjectType>, ra: Double, dec: Double, raThreshold: Double, decThreshold: Double): Flow<List<CelestialObj>>
 
     @Query("SELECT COUNT(*) FROM celestial_objects")
     fun getCount(): Int

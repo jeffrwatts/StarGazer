@@ -55,23 +55,23 @@ class CelestialObjRepository @Inject constructor (
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getCelestialObjsByRaDec(ra: Double, dec: Double, threshold: Double, date: Double): Flow<List<CelestialObj>> {
+    fun getCelestialObjsByRaDec(ra: Double, dec: Double, date: Double): Flow<List<CelestialObj>> {
+        val raThreshold = 5.0  // REVIEW Set these baesd off of a function.
+        val decThreshold = 5.0
+
         val planetsFlow = celestialObjDao.getAllWithType(ObjectType.PLANET).map { planets ->
             planets.map { updatePlanetPosition(it, date) }
-                .filter { filterByThreshold(it, ra, dec, threshold) }
+                .filter { filterByThreshold(it, ra, dec, raThreshold) }
         }.take(1)  // Take only the first emission
 
-        val starsFlow = celestialObjDao.findByRaDec(ra, dec, threshold).take(1)  // Take only the first emission
+        val types = listOf(ObjectType.STAR, ObjectType.GALAXY, ObjectType.NEBULA, ObjectType.CLUSTER)
+        val objectsType = celestialObjDao.findByRaDec(types, ra, dec, raThreshold, decThreshold).take(1)  // Take only the first emission
 
         return planetsFlow.flatMapConcat { planets ->
-            starsFlow.map { stars ->
-                planets + stars
+            objectsType.map { objs ->
+                planets + objs
             }
         }
-    }
-
-    fun findObjectsNearZeroRA (threshold: Double): Flow<List<CelestialObj>> {
-        return celestialObjDao.findObjectsNearZeroRA(threshold)
     }
 
     suspend fun update(celestialObj: CelestialObj) = celestialObjDao.update(celestialObj)
@@ -80,7 +80,6 @@ class CelestialObjRepository @Inject constructor (
         return (celestialObj.dec in dec-threshold .. dec+threshold) &&
                 (celestialObj.ra in ra-threshold .. ra+threshold)
     }
-
 
     private suspend fun mapObjectPosition(celestialObj: CelestialObj, location: Location, date: Double): CelestialObjPos {
         return if (celestialObj.type == ObjectType.PLANET) {
@@ -102,24 +101,17 @@ class CelestialObjRepository @Inject constructor (
     private suspend fun populateDatabaseIfEmpty() {
         val count = celestialObjDao.getCount()
         if (count == 0) {
-            val jsonString = loadJsonFromRaw()
-            val jsonItems = parseJson(jsonString)
-            val items = convertJsonToItems(jsonItems)
-            celestialObjDao.insertAll(items)
+            populateDao()
         }
     }
 
-    private fun loadJsonFromRaw(): String {
-        return context.resources.openRawResource(R.raw.items).bufferedReader().use { it.readText() }
-    }
+    private suspend fun populateDao()  {
+        val jsonString = context.resources.openRawResource(R.raw.items).bufferedReader().use { it.readText() }
 
-    private fun parseJson(jsonString: String): List<CelestialObjJson> {
         val gson = Gson()
         val itemType = object : TypeToken<List<CelestialObjJson>>() {}.type
-        return gson.fromJson(jsonString, itemType)
-    }
-
-    private fun convertJsonToItems(jsonItems: List<CelestialObjJson>): List<CelestialObj> {
-        return jsonItems.map { it.toCelestialObjEntity() }
+        val jsonItems: List<CelestialObjJson> = gson.fromJson(jsonString, itemType)
+        val celestialObjs = jsonItems.map { it.toCelestialObjEntity() }
+        celestialObjDao.insertAll(celestialObjs)
     }
 }
