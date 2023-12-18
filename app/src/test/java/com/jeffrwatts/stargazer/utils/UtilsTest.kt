@@ -187,8 +187,4 @@ class UtilsTest {
         assertEquals(POLARIS_RA, ra, 0.01)
         assertEquals(POLARIS_DEC, dec, 0.01)
     }
-
-    @Test
-    fun isGoodForPolarAlignment() {
-    }
 }

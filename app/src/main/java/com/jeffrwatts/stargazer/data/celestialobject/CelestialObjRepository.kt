@@ -55,13 +55,10 @@ class CelestialObjRepository @Inject constructor (
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getCelestialObjsByRaDec(ra: Double, dec: Double, date: Double): Flow<List<CelestialObj>> {
-        val raThreshold = 5.0  // REVIEW Set these baesd off of a function.
-        val decThreshold = 5.0
-
+    fun getCelestialObjsByRaDec(ra: Double, dec: Double, date: Double, raThreshold: Double, decThreshold: Double): Flow<List<CelestialObj>> {
         val planetsFlow = celestialObjDao.getAllWithType(ObjectType.PLANET).map { planets ->
             planets.map { updatePlanetPosition(it, date) }
-                .filter { filterByThreshold(it, ra, dec, raThreshold) }
+                .filter { filterByThreshold(it, ra, dec, raThreshold, decThreshold) }
         }.take(1)  // Take only the first emission
 
         val types = listOf(ObjectType.STAR, ObjectType.GALAXY, ObjectType.NEBULA, ObjectType.CLUSTER)
@@ -76,9 +73,21 @@ class CelestialObjRepository @Inject constructor (
 
     suspend fun update(celestialObj: CelestialObj) = celestialObjDao.update(celestialObj)
 
-    private fun filterByThreshold(celestialObj: CelestialObj, ra: Double, dec: Double, threshold: Double): Boolean {
-        return (celestialObj.dec in dec-threshold .. dec+threshold) &&
-                (celestialObj.ra in ra-threshold .. ra+threshold)
+    private fun filterByThreshold(celestialObj: CelestialObj, ra: Double, dec: Double, raThreshold: Double, decThreshold: Double): Boolean {
+        //SELECT * FROM celestial_objects
+        //        WHERE type IN (:types)
+        //AND (
+        //    (ra BETWEEN :ra - :raThreshold AND :ra + :raThreshold) OR
+        //        (:ra - :raThreshold < 0 AND ra BETWEEN 360 + (:ra - :raThreshold) AND 360) OR
+        //(:ra + :raThreshold > 360 AND ra BETWEEN 0 AND (:ra + :raThreshold - 360))
+        //)
+        //AND dec BETWEEN :dec - :decThreshold AND :dec + :decThreshold
+
+        val raMatch = (celestialObj.ra in ra-raThreshold .. ra+raThreshold) ||
+                (ra-raThreshold < 0.0 && celestialObj.ra in 360.0+(ra-raThreshold)..360.0) ||
+                (ra+raThreshold > 360.0 && celestialObj.ra in 0.0 .. (ra+raThreshold-360.0))
+
+        return raMatch && (celestialObj.dec in dec-decThreshold .. dec+decThreshold)
     }
 
     private suspend fun mapObjectPosition(celestialObj: CelestialObj, location: Location, date: Double): CelestialObjPos {

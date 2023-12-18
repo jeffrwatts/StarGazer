@@ -6,6 +6,11 @@ plugins {
     //id("com.google.devtools.ksp") version "1.9.10-1.0.13"
     kotlin("kapt") // Needed for hilt currently.
     id("com.google.dagger.hilt.android")
+    kotlin("plugin.allopen") version "1.9.10"
+}
+
+allOpen {
+    annotation("com.jeffrwatts.stargazer.Mockable")
 }
 
 val localProperties = Properties()
@@ -138,11 +143,10 @@ dependencies {
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     testImplementation ("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2")
 
     // Mockito
     testImplementation ("org.mockito:mockito-core:5.8.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0") // Unit tests are broken if upgrade to 5.8.0.
     androidTestImplementation ("org.mockito:mockito-android:5.8.0")
-
-    //debugImplementation("androidx.compose.ui:ui-tooling")
-    //debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

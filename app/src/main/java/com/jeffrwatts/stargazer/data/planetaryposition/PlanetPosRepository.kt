@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.data.planetaryposition
 
+import com.jeffrwatts.stargazer.Mockable
 import com.jeffrwatts.stargazer.di.IoDispatcher
 import com.jeffrwatts.stargazer.network.EphemerisApi
 import com.jeffrwatts.stargazer.utils.Utils
@@ -11,6 +12,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@Mockable
 class PlanetPosRepository @Inject constructor(
     private val dao: PlanetPosDao,
     private val ephemerisApi: EphemerisApi,

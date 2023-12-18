@@ -57,7 +57,8 @@ class StarFinderViewModel @Inject constructor(
             val timeNow = Utils.calculateJulianDateNow()
             val (ra, dec) = Utils.calculateRAandDEC(alt, azimuth, location.latitude, location.longitude, timeNow)
 
-            val objs = celestialObjRepository.getCelestialObjsByRaDec(ra, dec, timeNow).firstOrNull()
+            val threshold = 5.0 // REPLACE with function.
+            val objs = celestialObjRepository.getCelestialObjsByRaDec(ra, dec, timeNow, threshold, threshold).firstOrNull()
             _foundObjects.value = objs ?: emptyList()
             _searchCompleted.value = true
         }
