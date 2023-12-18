@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.abs
 
 class CelestialObjRepository @Inject constructor (
     private val celestialObjDao: CelestialObjDao,
@@ -55,7 +56,9 @@ class CelestialObjRepository @Inject constructor (
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getCelestialObjsByRaDec(ra: Double, dec: Double, date: Double, raThreshold: Double, decThreshold: Double): Flow<List<CelestialObj>> {
+    fun getCelestialObjsByRaDec(ra: Double, dec: Double, date: Double): Flow<List<CelestialObj>> {
+        val (raThreshold, decThreshold) = thresholdsFromDec(dec)
+
         val planetsFlow = celestialObjDao.getAllWithType(ObjectType.PLANET).map { planets ->
             planets.map { updatePlanetPosition(it, date) }
                 .filter { filterByThreshold(it, ra, dec, raThreshold, decThreshold) }
@@ -72,6 +75,17 @@ class CelestialObjRepository @Inject constructor (
     }
 
     suspend fun update(celestialObj: CelestialObj) = celestialObjDao.update(celestialObj)
+
+    private fun thresholdsFromDec(dec: Double) : Pair<Double, Double> {
+        val absDec = abs(dec)
+
+        return when {
+            absDec > 87.0 -> Pair(180.0, 5.0)
+            absDec > 80.0 -> Pair(60.0, 5.0)
+            absDec > 60.0 -> Pair(11.0, 5.0)
+            else -> Pair (5.0, 5.0)
+        }
+    }
 
     private fun filterByThreshold(celestialObj: CelestialObj, ra: Double, dec: Double, raThreshold: Double, decThreshold: Double): Boolean {
         //SELECT * FROM celestial_objects

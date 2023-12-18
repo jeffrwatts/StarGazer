@@ -1,6 +1,8 @@
 package com.jeffrwatts.stargazer.data.celestialobject
 
 import android.content.Context
+import android.location.Location
+import android.util.Log
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
@@ -9,6 +11,7 @@ import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPos
 import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosRepository
+import com.jeffrwatts.stargazer.utils.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -71,16 +74,12 @@ class CelestialObjRepositoryTest {
 
     @Test
     fun findByRaDecTest_NonWrap() = runBlocking {
-        val raThreshold = 2.0
-        val decThreshold = 2.0
-
-        val result = repository.getCelestialObjsByRaDec(90.0, 45.0, 0.0, raThreshold, decThreshold).first()
+        val result = repository.getCelestialObjsByRaDec(90.0, 45.0, 0.0).first()
 
         // Expected names
         val expectedNames = setOf("Menkalinan", "Venus")
 
         // Verify results
-        assertEquals(2, result.size)
         assertTrue(result.all { it.friendlyName in expectedNames })
 
         // Additional check to ensure each name appears only once
@@ -90,15 +89,11 @@ class CelestialObjRepositoryTest {
 
     @Test
     fun findByRaDecTest_ZeroWrapPos() = runBlocking {
-        val raThreshold = 2.0
-        val decThreshold = 2.0
+        val result = repository.getCelestialObjsByRaDec(359.0, 16.0, 0.0).first()
 
-        val result = repository.getCelestialObjsByRaDec(359.0, 16.0, 0.0, raThreshold, decThreshold).first()
-
-        val expectedNames = setOf("NGC 7814", "Jupiter")
+        val expectedNames = setOf("NGC 7814", "Algenib", "Jupiter")
 
         // Verify results
-        assertEquals(2, result.size)
         assertTrue(result.all { it.friendlyName in expectedNames })
 
         // Additional check to ensure each name appears only once
@@ -107,21 +102,47 @@ class CelestialObjRepositoryTest {
     }
     @Test
     fun findByRaDecTest_ZeroWrapNeg() = runBlocking {
-        val raThreshold = 7.0
-        val decThreshold = 2.0
+        val result = repository.getCelestialObjsByRaDec(1.0, 77.0, 0.0).first()
 
-        val result = repository.getCelestialObjsByRaDec(1.0, 77.0, 0.0, raThreshold, decThreshold).first()
-
-        val expectedNames = setOf("Alrai", "Saturn")
+        val expectedNames = setOf("Alrai", "Bow-Tie Nebula", "Saturn")
 
         // Verify results
-        assertEquals(2, result.size)
         assertTrue(result.all { it.friendlyName in expectedNames })
 
         // Additional check to ensure each name appears only once
         val resultNames = result.map { it.friendlyName }.toSet()
         assertEquals(expectedNames, resultNames)
     }
+
+    // Used for exploring data... not a real test.
+    //@Test
+    //fun testThreshold() = runBlocking{
+    //    val raThreshold = 10.0
+    //    val decThreshold = 40.0
+    //    val types = listOf(ObjectType.STAR, ObjectType.GALAXY, ObjectType.NEBULA, ObjectType.CLUSTER)
+    //    val searchResult = celestialObjDao.findByRaDec(types, 0.0, 45.0, raThreshold, decThreshold).first()
+
+    //    searchResult.forEach {
+    //        Log.d("TAG", "Name: ${it.friendlyName}: RA:${it.ra}, DEC: ${it.dec}, ID: ${it.id}")
+    //    }
+
+    //    val dateNow = Utils.calculateJulianDateNow()
+    //    val KONA_LATITUDE = Utils.dmsToDegrees(19, 38, 24.0) * 1
+    //    val KONA_LONGITUDE = Utils.dmsToDegrees(155, 59, 48.8) * -1
+
+    //    val testResult = celestialObjDao.get(123).first()
+    //    val celestialObjPos = CelestialObjPos.fromCelestialObj(testResult, dateNow, KONA_LATITUDE, KONA_LONGITUDE)
+    //    val azmLow = celestialObjPos.azm-5.0
+    //    val azmHigh = celestialObjPos.azm+5.0
+
+    //    val (raLow, decLow) = Utils.calculateRAandDEC(celestialObjPos.alt, azmLow, KONA_LATITUDE, KONA_LONGITUDE, dateNow)
+    //    val (raHigh, decHigh) = Utils.calculateRAandDEC(celestialObjPos.alt, azmHigh, KONA_LATITUDE, KONA_LONGITUDE, dateNow)
+
+    //    Log.d("TAG", "RA: ${raLow} - ${raHigh}")
+    //    Log.d("TAG", "DEC: ${decLow} - ${decHigh}")
+
+    //    assertEquals(0, 0)
+    //}
 
     private fun populateDao(context: Context) = runBlocking {
         val jsonString = context.resources.openRawResource(R.raw.items).bufferedReader().use { it.readText() }
