@@ -56,7 +56,7 @@ fun StarFinderScreen(
     val searchCompleted by viewModel.searchCompleted.collectAsState()
     val topAppBarState = rememberTopAppBarState()
 
-    val accuracyDescription = when (uiState.orientationData.accuracy) {
+    val accuracyDescription = when (uiState.accuracy) {
         SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> "High"
         SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> "Medium"
         SensorManager.SENSOR_STATUS_ACCURACY_LOW -> "Low"
@@ -81,11 +81,8 @@ fun StarFinderScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            val azimuth = uiState.orientationData.azimuth.roundToInt()
-            val altitude = uiState.orientationData.altitude.roundToInt()
-
-            Text(text = "Azimuth: ${azimuth}°", style = MaterialTheme.typography.bodyLarge)
-            Text(text = "Altitude: ${altitude}°", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "True Azimuth: ${uiState.trueAzimuth.roundToInt()}°", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Altitude: ${uiState.altitude.roundToInt()}°", style = MaterialTheme.typography.bodyLarge)
             Text(text = "Declination: ${String.format("%.1f", uiState.magDeclination)}°", style = MaterialTheme.typography.bodyLarge)
             Text(text = "Accuracy: $accuracyDescription", style = MaterialTheme.typography.bodyLarge)
 
@@ -96,12 +93,14 @@ fun StarFinderScreen(
             ) {
                 CameraPreview({
                     viewModel.findObjects(
-                        uiState.orientationData.altitude,
-                        uiState.orientationData.azimuth)},
+                        uiState.altitude,
+                        uiState.trueAzimuth)},
                     modifier = Modifier.fillMaxWidth())
 
-                StarFinderOverlay(azimuth = azimuth, altitude = altitude,
-                    magDeclination = uiState.magDeclination, Modifier.align(Alignment.Center))
+                StarFinderOverlay(
+                    azimuth = uiState.trueAzimuth.roundToInt(),
+                    altitude = uiState.altitude.roundToInt(),
+                    Modifier.align(Alignment.Center))
             }
 
             // Display the dialog based on search results
@@ -141,7 +140,7 @@ fun CameraPreview(onClick: () -> Unit, modifier: Modifier = Modifier) {
     )
 }
 @Composable
-fun StarFinderOverlay(azimuth: Int, altitude: Int, magDeclination: Float, modifier: Modifier = Modifier) {
+fun StarFinderOverlay(azimuth: Int, altitude: Int, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize()) {
         // Align AzimuthRulerOverlay horizontally within the Box
         AzimuthRulerOverlay(azimuth, modifier.align(Alignment.Center))

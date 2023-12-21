@@ -4,6 +4,7 @@ package com.jeffrwatts.stargazer.ui.starfinder
 import android.hardware.GeomagneticField
 import android.hardware.SensorManager
 import android.location.Location
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
@@ -35,14 +36,11 @@ class StarFinderViewModel @Inject constructor(
         orientationRepository.orientationData,
         locationRepository.locationFlow
     ) { orientationData, location ->
-        val declination = location?.let { calculateDeclination(it) } ?: 0f
-        val adjustedAzimuth = normalizeAzimuth(orientationData.azimuth + declination)
-        StarFinderUIState(
-            orientationData.copy(azimuth = adjustedAzimuth),
-            declination,
-            location != null
-        )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), StarFinderUIState(OrientationData(0.0, 0.0, SensorManager.SENSOR_STATUS_UNRELIABLE), 0f, false))
+        val magDeclination = location?.let { calculateDeclination(it) } ?: 0.0
+        val trueAzimuth = calculateTrueAzimuth(orientationData.azimuth, magDeclination)
+        StarFinderUIState(orientationData.altitude, orientationData.azimuth, trueAzimuth, magDeclination, orientationData.accuracy)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000),
+        StarFinderUIState(0.0, 0.0, 0.0, 0.0, SensorManager.SENSOR_STATUS_UNRELIABLE))
 
     val _foundObjects = MutableStateFlow<List<CelestialObj>> (emptyList())
     val foundObjects = _foundObjects.asStateFlow()
@@ -50,12 +48,14 @@ class StarFinderViewModel @Inject constructor(
     private val _searchCompleted = MutableStateFlow(false)
     val searchCompleted: StateFlow<Boolean> = _searchCompleted.asStateFlow()
 
-    fun findObjects(alt: Double, azimuth: Double) {
+    fun findObjects(altitude: Double, azimuth: Double) {
         viewModelScope.launch {
+            Log.d("TAG", "altitude:${altitude}, azimuth:${azimuth}")
+
             val location = locationRepository.locationFlow.value?: return@launch
 
             val timeNow = Utils.calculateJulianDateNow()
-            val (ra, dec) = Utils.calculateRAandDEC(alt, azimuth, location.latitude, location.longitude, timeNow)
+            val (ra, dec) = Utils.calculateRAandDEC(altitude, azimuth, location.latitude, location.longitude, timeNow)
 
             val objs = celestialObjRepository.getCelestialObjsByRaDec(ra, dec, timeNow).firstOrNull()
             _foundObjects.value = objs ?: emptyList()
@@ -68,25 +68,29 @@ class StarFinderViewModel @Inject constructor(
         _searchCompleted.value = false
     }
 
-    private fun normalizeAzimuth(azimuth: Double): Double {
-        var normalizedAzimuth = azimuth % 360
-        if (normalizedAzimuth < 0) normalizedAzimuth += 360
-        return normalizedAzimuth
+    private fun calculateTrueAzimuth(azimuth: Double, magDeclination: Double): Double {
+        var trueAzimuth = (azimuth + magDeclination) % 360
+        if (trueAzimuth < 0) {
+            trueAzimuth += 360
+        }
+        return trueAzimuth
     }
 
-    private fun calculateDeclination(location: Location): Float {
+    private fun calculateDeclination(location: Location): Double {
         val geomagneticField = GeomagneticField(
             location.latitude.toFloat(),
             location.longitude.toFloat(),
             location.altitude.toFloat(),
             System.currentTimeMillis()
         )
-        return geomagneticField.declination
+        return geomagneticField.declination.toDouble()
     }
 }
 
 data class StarFinderUIState(
-    val orientationData: OrientationData,
-    val magDeclination: Float,
-    val isMagDeclinationValid: Boolean
+    val altitude: Double,
+    val azimuth: Double,
+    val trueAzimuth: Double,
+    val magDeclination: Double,
+    val accuracy: Int
 )

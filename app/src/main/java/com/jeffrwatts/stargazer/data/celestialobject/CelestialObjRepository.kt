@@ -83,7 +83,7 @@ class CelestialObjRepository @Inject constructor (
             absDec > 87.0 -> Pair(180.0, 5.0)
             absDec > 80.0 -> Pair(60.0, 5.0)
             absDec > 60.0 -> Pair(11.0, 5.0)
-            else -> Pair (5.0, 5.0)
+            else -> Pair (6.0, 5.0)
         }
     }
 
