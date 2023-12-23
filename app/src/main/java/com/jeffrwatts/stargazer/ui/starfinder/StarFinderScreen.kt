@@ -7,6 +7,7 @@ import android.widget.LinearLayout
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -23,13 +25,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -42,7 +47,9 @@ import androidx.lifecycle.LifecycleOwner
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
+import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,6 +69,13 @@ fun StarFinderScreen(
         SensorManager.SENSOR_STATUS_ACCURACY_LOW -> "Low"
         SensorManager.SENSOR_STATUS_UNRELIABLE -> "Unreliable"
         else -> "Unknown"
+    }
+
+    DisposableEffect(Unit) {
+        viewModel.startContinuousSearching()
+        onDispose {
+            viewModel.stopContinuousSearching()
+        }
     }
 
     Scaffold(
@@ -88,34 +102,37 @@ fun StarFinderScreen(
 
             Box(
                 modifier = Modifier
-                    .padding(innerPadding)
                     .fillMaxSize()
             ) {
-                CameraPreview({
-                    viewModel.findObjects(
-                        uiState.altitude,
-                        uiState.trueAzimuth)},
-                    modifier = Modifier.fillMaxWidth())
+                CameraPreview(Modifier.fillMaxSize())
 
                 StarFinderOverlay(
                     azimuth = uiState.trueAzimuth.roundToInt(),
                     altitude = uiState.altitude.roundToInt(),
                     Modifier.align(Alignment.Center))
-            }
 
-            // Display the dialog based on search results
-            if (searchCompleted) {
-                ShowResultsDialog(foundObjects, foundObjects.isEmpty()) {
-                    viewModel.clearFoundObjects()
+                LazyColumn(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .fillMaxWidth()
+                        .background(Color(0xFF330000).copy(alpha = 0.6f)) // Dark red, semi-transparent
+                ) {
+                    items(foundObjects.size) { index ->
+                        val celestialObject = foundObjects[index]
+                        Text(
+                            text = celestialObject.friendlyName,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(4.dp)
+                        )
+                    }
                 }
             }
-
         }
     }
 }
 
 @Composable
-fun CameraPreview(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun CameraPreview(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     val cameraController: LifecycleCameraController = remember { LifecycleCameraController(context) }
@@ -128,7 +145,6 @@ fun CameraPreview(onClick: () -> Unit, modifier: Modifier = Modifier) {
                 layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                 scaleType = PreviewView.ScaleType.FILL_START
                 implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-                setOnClickListener { onClick() }
             }.also { previewView ->
                 previewView.controller = cameraController
                 cameraController.bindToLifecycle(lifecycleOwner)
@@ -139,8 +155,36 @@ fun CameraPreview(onClick: () -> Unit, modifier: Modifier = Modifier) {
         }
     )
 }
+
 @Composable
 fun StarFinderOverlay(azimuth: Int, altitude: Int, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.fillMaxSize()) {
+        val center = Offset(size.width / 2, size.height / 2)
+        val radius = calculate5DegreeRadius(size, azimuth, altitude) // You'll need to implement this
+
+        drawCircle(
+            color = Color.White.copy(alpha = 0.3f), // Faint white circle
+            radius = radius,
+            center = center,
+            style = Stroke(width = 2f) // Thin stroke for the circle
+        )
+    }
+}
+
+/**
+ * Calculates the radius for a 5-degree field of view circle.
+ * This might need adjustment based on actual camera field of view and screen size.
+ */
+fun calculate5DegreeRadius(size: Size, azimuth: Int, altitude: Int): Float {
+    // Placeholder calculation. Adjust based on actual field of view.
+    // The ratio here (e.g., 10f) will depend on how much of the screen's width/height
+    // should be covered by the 5-degree field of view.
+    val screenDiagonal = sqrt(size.width.pow(2) + size.height.pow(2))
+    return screenDiagonal / 10f // Example calculation
+}
+
+@Composable
+fun StarFinderOverlayRuler(azimuth: Int, altitude: Int, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize()) {
         // Align AzimuthRulerOverlay horizontally within the Box
         AzimuthRulerOverlay(azimuth, modifier.align(Alignment.Center))

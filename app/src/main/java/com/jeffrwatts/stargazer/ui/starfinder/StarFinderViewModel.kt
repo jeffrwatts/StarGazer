@@ -14,6 +14,8 @@ import com.jeffrwatts.stargazer.data.orientation.OrientationRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -66,6 +69,24 @@ class StarFinderViewModel @Inject constructor(
     fun clearFoundObjects() {
         _foundObjects.value = emptyList()
         _searchCompleted.value = false
+    }
+
+    private var searchJob: Job? = null
+
+    fun startContinuousSearching() {
+        searchJob = viewModelScope.launch {
+            while (isActive) {
+                val orientationData = orientationRepository.orientationData.firstOrNull() ?: continue
+                val location = locationRepository.locationFlow.firstOrNull() ?: continue
+
+                findObjects(orientationData.altitude, orientationData.azimuth)
+                delay(1000) // Delay for 5 seconds before searching again
+            }
+        }
+    }
+
+    fun stopContinuousSearching() {
+        searchJob?.cancel()
     }
 
     private fun calculateTrueAzimuth(azimuth: Double, magDeclination: Double): Double {
