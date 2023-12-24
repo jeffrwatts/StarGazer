@@ -59,8 +59,6 @@ fun StarFinderScreen(
     viewModel: StarFinderViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val foundObjects by viewModel.foundObjects.collectAsState()
-    val searchCompleted by viewModel.searchCompleted.collectAsState()
     val topAppBarState = rememberTopAppBarState()
 
     val accuracyDescription = when (uiState.accuracy) {
@@ -69,13 +67,6 @@ fun StarFinderScreen(
         SensorManager.SENSOR_STATUS_ACCURACY_LOW -> "Low"
         SensorManager.SENSOR_STATUS_UNRELIABLE -> "Unreliable"
         else -> "Unknown"
-    }
-
-    DisposableEffect(Unit) {
-        viewModel.startContinuousSearching()
-        onDispose {
-            viewModel.stopContinuousSearching()
-        }
     }
 
     Scaffold(
@@ -117,8 +108,8 @@ fun StarFinderScreen(
                         .fillMaxWidth()
                         .background(Color(0xFF330000).copy(alpha = 0.6f)) // Dark red, semi-transparent
                 ) {
-                    items(foundObjects.size) { index ->
-                        val celestialObject = foundObjects[index]
+                    items(uiState.foundObjects.size) { index ->
+                        val celestialObject = uiState.foundObjects[index]
                         Text(
                             text = celestialObject.friendlyName,
                             style = MaterialTheme.typography.bodyLarge,
