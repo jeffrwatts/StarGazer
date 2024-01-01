@@ -60,7 +60,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
-import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
+import com.jeffrwatts.stargazer.data.celestialobject.PhotoStatus
 import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
@@ -96,7 +96,7 @@ fun SightsScreen(
                 title = stringResource(R.string.sights_title),
                 openDrawer = openDrawer,
                 onFilterSelected = { newFilter ->
-                    viewModel.setObservationStatusFilter(newFilter)
+                    viewModel.setPhotoStatusFilter(newFilter)
                 },
                 currentFilter = currentFilter,
                 topAppBarState = topAppBarState
@@ -125,8 +125,8 @@ fun SightsScreen(
                     is SightsUiState.Success -> {
                         SightsBody(
                             celestialObjs = (sightsUiState as SightsUiState.Success).data,
-                            onObservationStatusChanged = { item, newStatus ->
-                                viewModel.updateObservationStatus(item.celestialObj, newStatus)
+                            onPhotoStatusChanged = { item, newStatus ->
+                                viewModel.updatePhotoStatus(item.celestialObj, newStatus)
                             },
                             onSightClick = onSightClick,
                             modifier = contentModifier
@@ -166,7 +166,7 @@ fun SightsScreen(
 private fun SightsBody(
     celestialObjs: List<CelestialObjPos>,
     onSightClick: (Int) -> Unit,
-    onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
+    onPhotoStatusChanged: (CelestialObjPos, PhotoStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (celestialObjs.isEmpty()) {
@@ -181,7 +181,7 @@ private fun SightsBody(
                 SightItem(
                     celestialObjPos = celestialObj,
                     onItemClick = {onSightClick(celestialObj.celestialObj.id)},
-                    onObservationStatusChanged = onObservationStatusChanged,
+                    onPhotoStatusChanged = onPhotoStatusChanged,
                     modifier = Modifier
                         .padding(8.dp)
                 )
@@ -198,14 +198,14 @@ private fun SightsBody(
 fun SightItem(
     celestialObjPos: CelestialObjPos,
     onItemClick:() -> Unit,
-    onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
+    onPhotoStatusChanged: (CelestialObjPos, PhotoStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val prominenceAlpha = if (celestialObjPos.observable) 1f else 0.6f
     val textColor = MaterialTheme.colorScheme.onSurface.copy(alpha = prominenceAlpha)
 
     var expanded by remember { mutableStateOf(false) }
-    val observationalStatusOptions = ObservationStatus.values()
+    val photoStatusOptions = PhotoStatus.values()
 
     Row(
         modifier = modifier
@@ -257,7 +257,7 @@ fun SightItem(
                     style = MaterialTheme.typography.bodyMedium
                 )
 
-                Text(text = celestialObjPos.celestialObj.observationStatus.name,
+                Text(text = celestialObjPos.celestialObj.photoStatus.name,
                     modifier = Modifier.clickable { expanded = true })
 
                 IconButton(onClick = { expanded = true }) {
@@ -268,11 +268,11 @@ fun SightItem(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    observationalStatusOptions.forEach { status ->
+                    photoStatusOptions.forEach { status ->
                         DropdownMenuItem(
                             text = { Text(text = status.name) },
                             onClick = {
-                                onObservationStatusChanged(celestialObjPos, status)
+                                onPhotoStatusChanged(celestialObjPos, status)
                                 expanded = false
                             }
                         )
@@ -288,8 +288,8 @@ fun SightItem(
 fun SightsTopAppBar(
     title: String,
     openDrawer: () -> Unit,
-    onFilterSelected: (ObservationStatus?) -> Unit,
-    currentFilter: ObservationStatus?,
+    onFilterSelected: (PhotoStatus?) -> Unit,
+    currentFilter: PhotoStatus?,
     modifier: Modifier = Modifier,
     topAppBarState: TopAppBarState = rememberTopAppBarState(),
     scrollBehavior: TopAppBarScrollBehavior? =
@@ -332,7 +332,7 @@ fun SightsTopAppBar(
                     },
                     leadingIcon = { if (currentFilter == null) FilledCheckIcon() }
                 )
-                ObservationStatus.values().forEach { status ->
+                PhotoStatus.values().forEach { status ->
                     DropdownMenuItem(
                         text = { Text(status.name) },
                         onClick = {

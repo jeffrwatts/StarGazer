@@ -13,7 +13,7 @@ data class CelestialObjJson(
     val magnitude: Double?,
     val observationNotes: String?,
     val recommended: Boolean,
-    val observationStatus: String
+    val photoStatus: String
 )
 
 fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
@@ -30,6 +30,6 @@ fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
         magnitude = this.magnitude,
         observationNotes = this.observationNotes,
         recommended = this.recommended,
-        observationStatus = ObservationStatus.values().find { it.name.equals(this.observationStatus, true) } ?: ObservationStatus.NOT_OBSERVED
+        photoStatus = PhotoStatus.values().find { it.name.equals(this.photoStatus, true) } ?: PhotoStatus.NOT_PHOTOGRAPHED
     )
 }

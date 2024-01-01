@@ -16,13 +16,13 @@ class SightsViewModel @Inject constructor(
 ) : ViewModel() {
     private var locationUpdating = false
 
-    private val _selectedFilter = MutableStateFlow<ObservationStatus?>(null) // null will represent 'Show All'
+    private val _selectedFilter = MutableStateFlow<PhotoStatus?>(null) // null will represent 'Show All'
     val selectedFilter = _selectedFilter.asStateFlow()
 
     private val _uiState = MutableStateFlow<SightsUiState>(SightsUiState.Loading)
     val uiState: StateFlow<SightsUiState> = _uiState
 
-    fun setObservationStatusFilter(status: ObservationStatus?) {
+    fun setPhotoStatusFilter(status: PhotoStatus?) {
         _selectedFilter.value = status
         fetchObjects()
     }
@@ -49,9 +49,9 @@ class SightsViewModel @Inject constructor(
                         }
                         .collect { celestialObjPosList ->
                             val sorted = celestialObjPosList
-                                .filter { selectedFilter.value == null || it.celestialObj.observationStatus == selectedFilter.value }
+                                .filter { selectedFilter.value == null || it.celestialObj.photoStatus == selectedFilter.value }
                                 .sortedWith(compareByDescending<CelestialObjPos> { it.observable }
-                                    .thenBy { it.celestialObj.observationStatus.priority } )
+                                    .thenBy { it.celestialObj.photoStatus.priority } )
                             _uiState.value = SightsUiState.Success(sorted)
                         }
                 }
@@ -59,9 +59,9 @@ class SightsViewModel @Inject constructor(
         }
     }
 
-    fun updateObservationStatus(celestialObj: CelestialObj, newObservationStatus: ObservationStatus) {
+    fun updatePhotoStatus(celestialObj: CelestialObj, newPhotoStatus: PhotoStatus) {
         viewModelScope.launch {
-            val updatedItem = celestialObj.copy(observationStatus = newObservationStatus)
+            val updatedItem = celestialObj.copy(photoStatus = newPhotoStatus)
             celestialObjRepository.update(updatedItem)
         }
     }

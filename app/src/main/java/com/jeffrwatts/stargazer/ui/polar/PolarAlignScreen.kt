@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
-import com.jeffrwatts.stargazer.data.celestialobject.ObservationStatus
 import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.utils.ErrorScreen
@@ -79,9 +78,6 @@ fun PolarAlignScreen(
                 is PolarAlignUiState.Success -> {
                     PolarAlignBody(
                         celestialObjs = (polarAlignUiState as PolarAlignUiState.Success).data,
-                        onObservationStatusChanged = { item, newStatus ->
-                            viewModel.updateObservationStatus(item.celestialObj, newStatus)
-                        },
                         modifier = contentModifier
                     )
                 }
@@ -103,7 +99,6 @@ fun PolarAlignScreen(
 @Composable
 private fun PolarAlignBody(
     celestialObjs: List<CelestialObjPos>,
-    onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (celestialObjs.isEmpty()) {
@@ -117,7 +112,6 @@ private fun PolarAlignBody(
             items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
                 val highlight = celestialObj.polarAlignCandidate
                 PolarAlignmentItem(celestialObjPos = celestialObj,
-                    onObservationStatusChanged = onObservationStatusChanged,
                     modifier = Modifier
                         .padding(8.dp))
                 Divider(
@@ -132,7 +126,6 @@ private fun PolarAlignBody(
 @Composable
 fun PolarAlignmentItem(
     celestialObjPos: CelestialObjPos,
-    onObservationStatusChanged: (CelestialObjPos, ObservationStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val prominenceAlpha = if (celestialObjPos.polarAlignCandidate) 1f else 0.6f  // More prominent if polarAlignCandidate is true
