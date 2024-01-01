@@ -7,6 +7,7 @@ object StarGazerDestinations {
     const val INFO_ROUTE = "info"
     const val POLAR_ROUTE = "polar"
     const val SIGHTS_ROUTE = "sights"
+    const val RECOMMENDED_ROUTE = "recommended"
     const val STAR_FINDER_ROUTE = "starFinder"
     const val SIGHT_DETAIL_ROUTE = "sightDetail"
 }
@@ -42,6 +43,16 @@ class StarGazerNavigationActions(navController: NavHostController) {
     }
     val navigateToSights: () -> Unit = {
         navController.navigate(StarGazerDestinations.SIGHTS_ROUTE) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    val navigateToRecommended: () -> Unit = {
+        navController.navigate(StarGazerDestinations.RECOMMENDED_ROUTE) {
             popUpTo(navController.graph.findStartDestination().id) {
                 saveState = true
             }

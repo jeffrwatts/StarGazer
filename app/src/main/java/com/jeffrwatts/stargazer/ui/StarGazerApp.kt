@@ -37,6 +37,7 @@ fun StarGazerApp() {
                     navigateToPolar = navigationActions.navigateToPolar,
                     navigateToInfo = navigationActions.navigateToInfo,
                     navigateToStarFinder = navigationActions.navigateToStarFinder,
+                    navigateToRecommended = navigationActions.navigateToRecommended,
                     closeDrawer = { coroutineScope.launch { drawerState.close() } }
                 )
             },
