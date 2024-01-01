@@ -82,7 +82,10 @@ fun RecommendedScreen(
                         modifier = contentModifier)
                 }
 
-                is RecommendedUiState.Error -> {
+                else -> {
+                    // The IDE shows an error if an else block is not present, but only on this screen for some reason.
+                    // It will build and run fine, but adding this else here to avoid the annoying compile failure warnings.
+                //is RecommendedUiState.Error -> {
                     ErrorScreen(
                         message = (recommendedUiState as RecommendedUiState.Error).message,
                         modifier = contentModifier,
