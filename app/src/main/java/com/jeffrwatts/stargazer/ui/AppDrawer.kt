@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.Recommend
@@ -41,9 +42,9 @@ fun AppDrawer(
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 24.dp)
         )
         NavigationDrawerItem(
-            label = { Text(stringResource(id = R.string.sights_title)) },
-            icon = { Icon(Icons.Filled.Radar, null) },
-            selected = currentRoute == StarGazerDestinations.SIGHTS_ROUTE,
+            label = { Text(stringResource(id = R.string.photo_planner_title)) },
+            icon = { Icon(Icons.Filled.Camera, null) },
+            selected = currentRoute == StarGazerDestinations.PHOTO_PLANNER_ROUTE,
             onClick = { navigateToSights(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )

@@ -12,14 +12,14 @@ import com.jeffrwatts.stargazer.ui.starfinder.StarFinderScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
 import com.jeffrwatts.stargazer.ui.polar.PolarAlignScreen
 import com.jeffrwatts.stargazer.ui.sightdetail.SightDetailScreen
-import com.jeffrwatts.stargazer.ui.sights.SightsScreen
+import com.jeffrwatts.stargazer.ui.photoplanner.PhotoPlannerScreen
 
 @Composable
 fun StarGazerNavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     openDrawer: () -> Unit = {},
-    startDestination: String = StarGazerDestinations.SIGHTS_ROUTE,
+    startDestination: String = StarGazerDestinations.PHOTO_PLANNER_ROUTE,
 ) {
     NavHost(
         navController = navController,
@@ -32,9 +32,9 @@ fun StarGazerNavGraph(
         composable(StarGazerDestinations.POLAR_ROUTE) {
             PolarAlignScreen(openDrawer = openDrawer, modifier = modifier)
         }
-        composable(route = StarGazerDestinations.SIGHTS_ROUTE) {
+        composable(route = StarGazerDestinations.PHOTO_PLANNER_ROUTE) {
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
-            SightsScreen(openDrawer = openDrawer,
+            PhotoPlannerScreen(openDrawer = openDrawer,
                 onSightClick = actions.navigateToSightDetail,
                 modifier = modifier)
         }

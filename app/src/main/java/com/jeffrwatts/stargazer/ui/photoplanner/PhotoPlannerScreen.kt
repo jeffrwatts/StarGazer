@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.sights
+package com.jeffrwatts.stargazer.ui.photoplanner
 
 import android.Manifest
 import androidx.compose.foundation.Image
@@ -70,16 +70,16 @@ import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
     ExperimentalPermissionsApi::class
 )
 @Composable
-fun SightsScreen(
+fun PhotoPlannerScreen(
     openDrawer: () -> Unit,
     onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: SightsViewModel = hiltViewModel(),
+    viewModel: PhotoPlannerViewModel = hiltViewModel(),
 ) {
     val topAppBarState = rememberTopAppBarState()
-    val sightsUiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val currentFilter by viewModel.selectedFilter.collectAsState()
-    val isRefreshing = sightsUiState is SightsUiState.Loading
+    val isRefreshing = uiState is PhotoPlannerUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
 
     val permissionsState = rememberMultiplePermissionsState(
@@ -92,8 +92,8 @@ fun SightsScreen(
 
     Scaffold(
         topBar = {
-            SightsTopAppBar(
-                title = stringResource(R.string.sights_title),
+            PhotoPlannerTopAppBar(
+                title = stringResource(R.string.photo_planner_title),
                 openDrawer = openDrawer,
                 onFilterSelected = { newFilter ->
                     viewModel.setPhotoStatusFilter(newFilter)
@@ -117,14 +117,14 @@ fun SightsScreen(
         if (permissionsState.allPermissionsGranted) {
             viewModel.startLocationUpdates()
             Box(Modifier.pullRefresh(pullRefreshState)) {
-                when (sightsUiState) {
-                    is SightsUiState.Loading -> {
+                when (uiState) {
+                    is PhotoPlannerUiState.Loading -> {
                         LoadingScreen(modifier = contentModifier)
                     }
 
-                    is SightsUiState.Success -> {
-                        SightsBody(
-                            celestialObjs = (sightsUiState as SightsUiState.Success).data,
+                    is PhotoPlannerUiState.Success -> {
+                        PhotoPlannerBody(
+                            celestialObjs = (uiState as PhotoPlannerUiState.Success).data,
                             onPhotoStatusChanged = { item, newStatus ->
                                 viewModel.updatePhotoStatus(item.celestialObj, newStatus)
                             },
@@ -133,9 +133,9 @@ fun SightsScreen(
                         )
                     }
 
-                    is SightsUiState.Error -> {
+                    is PhotoPlannerUiState.Error -> {
                         ErrorScreen(
-                            message = (sightsUiState as SightsUiState.Error).message,
+                            message = (uiState as PhotoPlannerUiState.Error).message,
                             modifier = contentModifier,
                             onRetryClick = { viewModel.fetchObjects() }
                         )
@@ -163,7 +163,7 @@ fun SightsScreen(
 
 
 @Composable
-private fun SightsBody(
+private fun PhotoPlannerBody(
     celestialObjs: List<CelestialObjPos>,
     onSightClick: (Int) -> Unit,
     onPhotoStatusChanged: (CelestialObjPos, PhotoStatus) -> Unit,
@@ -178,7 +178,7 @@ private fun SightsBody(
     } else {
         LazyColumn(modifier = modifier) {
             items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
-                SightItem(
+                PhotoPlannerItem(
                     celestialObjPos = celestialObj,
                     onItemClick = {onSightClick(celestialObj.celestialObj.id)},
                     onPhotoStatusChanged = onPhotoStatusChanged,
@@ -195,7 +195,7 @@ private fun SightsBody(
 }
 
 @Composable
-fun SightItem(
+fun PhotoPlannerItem(
     celestialObjPos: CelestialObjPos,
     onItemClick:() -> Unit,
     onPhotoStatusChanged: (CelestialObjPos, PhotoStatus) -> Unit,
@@ -285,7 +285,7 @@ fun SightItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SightsTopAppBar(
+fun PhotoPlannerTopAppBar(
     title: String,
     openDrawer: () -> Unit,
     onFilterSelected: (PhotoStatus?) -> Unit,

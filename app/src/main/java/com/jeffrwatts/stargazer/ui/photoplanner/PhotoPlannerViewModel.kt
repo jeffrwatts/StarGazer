@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.sights
+package com.jeffrwatts.stargazer.ui.photoplanner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.*
@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SightsViewModel @Inject constructor(
+class PhotoPlannerViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
@@ -19,8 +19,8 @@ class SightsViewModel @Inject constructor(
     private val _selectedFilter = MutableStateFlow<PhotoStatus?>(null) // null will represent 'Show All'
     val selectedFilter = _selectedFilter.asStateFlow()
 
-    private val _uiState = MutableStateFlow<SightsUiState>(SightsUiState.Loading)
-    val uiState: StateFlow<SightsUiState> = _uiState
+    private val _uiState = MutableStateFlow<PhotoPlannerUiState>(PhotoPlannerUiState.Loading)
+    val uiState: StateFlow<PhotoPlannerUiState> = _uiState
 
     fun setPhotoStatusFilter(status: PhotoStatus?) {
         _selectedFilter.value = status
@@ -45,14 +45,14 @@ class SightsViewModel @Inject constructor(
                     celestialObjRepository.getAllCelestialObjsByType(typesToQuery, location, date)
                         .distinctUntilChanged() // To avoid redundant UI updates
                         .catch { e ->
-                            _uiState.value = SightsUiState.Error(e.message ?: "Unknown error")
+                            _uiState.value = PhotoPlannerUiState.Error(e.message ?: "Unknown error")
                         }
                         .collect { celestialObjPosList ->
                             val sorted = celestialObjPosList
                                 .filter { selectedFilter.value == null || it.celestialObj.photoStatus == selectedFilter.value }
                                 .sortedWith(compareByDescending<CelestialObjPos> { it.observable }
                                     .thenBy { it.celestialObj.photoStatus.priority } )
-                            _uiState.value = SightsUiState.Success(sorted)
+                            _uiState.value = PhotoPlannerUiState.Success(sorted)
                         }
                 }
             }
@@ -72,8 +72,8 @@ class SightsViewModel @Inject constructor(
     }
 }
 
-sealed class SightsUiState {
-    object Loading : SightsUiState()
-    data class Success(val data: List<CelestialObjPos>) : SightsUiState()
-    data class Error(val message: String) : SightsUiState()
+sealed class PhotoPlannerUiState {
+    object Loading : PhotoPlannerUiState()
+    data class Success(val data: List<CelestialObjPos>) : PhotoPlannerUiState()
+    data class Error(val message: String) : PhotoPlannerUiState()
 }

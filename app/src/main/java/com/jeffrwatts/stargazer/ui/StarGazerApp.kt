@@ -25,7 +25,7 @@ fun StarGazerApp() {
         val coroutineScope = rememberCoroutineScope()
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route ?: StarGazerDestinations.SIGHTS_ROUTE
+        val currentRoute = navBackStackEntry?.destination?.route ?: StarGazerDestinations.PHOTO_PLANNER_ROUTE
 
         val drawerState = rememberDrawerState(DrawerValue.Closed)
 
@@ -33,7 +33,7 @@ fun StarGazerApp() {
             drawerContent = {
                 AppDrawer(
                     currentRoute = currentRoute,
-                    navigateToSights = navigationActions.navigateToSights,
+                    navigateToSights = navigationActions.navigateToPhotoPlanner,
                     navigateToPolar = navigationActions.navigateToPolar,
                     navigateToInfo = navigationActions.navigateToInfo,
                     navigateToStarFinder = navigationActions.navigateToStarFinder,

@@ -6,7 +6,7 @@ import androidx.navigation.NavHostController
 object StarGazerDestinations {
     const val INFO_ROUTE = "info"
     const val POLAR_ROUTE = "polar"
-    const val SIGHTS_ROUTE = "sights"
+    const val PHOTO_PLANNER_ROUTE = "photoPlanner"
     const val RECOMMENDED_ROUTE = "recommended"
     const val STAR_FINDER_ROUTE = "starFinder"
     const val SIGHT_DETAIL_ROUTE = "sightDetail"
@@ -41,8 +41,8 @@ class StarGazerNavigationActions(navController: NavHostController) {
             restoreState = true
         }
     }
-    val navigateToSights: () -> Unit = {
-        navController.navigate(StarGazerDestinations.SIGHTS_ROUTE) {
+    val navigateToPhotoPlanner: () -> Unit = {
+        navController.navigate(StarGazerDestinations.PHOTO_PLANNER_ROUTE) {
             popUpTo(navController.graph.findStartDestination().id) {
                 saveState = true
             }
