@@ -179,6 +179,11 @@ fun RecommendedItem(
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
+            Text(
+                text = "Obs Tags: ${celestialObjPos.celestialObj.tags}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = textColor
+            )
         }
     }
 }

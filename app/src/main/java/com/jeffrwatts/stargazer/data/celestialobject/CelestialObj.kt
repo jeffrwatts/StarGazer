@@ -47,7 +47,8 @@ data class CelestialObj(
     val magnitude: Double?,
     val observationNotes: String?,
     val recommended: Boolean,
-    val photoStatus: PhotoStatus
+    val photoStatus: PhotoStatus,
+    val tags: String
 )
 
 fun CelestialObj.getImageResource(): Int {
