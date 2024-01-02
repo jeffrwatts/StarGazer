@@ -14,8 +14,6 @@ class PhotoPlannerViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
-    private var locationUpdating = false
-
     private val _selectedFilter = MutableStateFlow<PhotoStatus?>(null) // null will represent 'Show All'
     val selectedFilter = _selectedFilter.asStateFlow()
 
@@ -28,11 +26,8 @@ class PhotoPlannerViewModel @Inject constructor(
     }
 
     fun startLocationUpdates() {
-        if (!locationUpdating) {
-            locationRepository.startLocationUpdates(viewModelScope)
-            locationUpdating = true
-            fetchObjects()
-        }
+        locationRepository.startLocationUpdates()
+        fetchObjects()
     }
 
     fun fetchObjects() {
@@ -64,11 +59,6 @@ class PhotoPlannerViewModel @Inject constructor(
             val updatedItem = celestialObj.copy(photoStatus = newPhotoStatus)
             celestialObjRepository.update(updatedItem)
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        //locationRepository.stopLocationUpdates()
     }
 }
 

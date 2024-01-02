@@ -2,6 +2,7 @@ package com.jeffrwatts.stargazer.di
 
 import android.content.Context
 import com.jeffrwatts.stargazer.BuildConfig
+import com.jeffrwatts.stargazer.StarGazerApplication
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
@@ -16,6 +17,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -102,12 +104,23 @@ object RepositoryModule {
         return PlanetPosRepository(dao, ephemerisApi, ioDispatcher)
     }
 
+    // Provide CoroutineScope separately
+    @Singleton
+    @Provides
+    fun provideApplicationScope(
+        @ApplicationContext context: Context
+    ): CoroutineScope {
+        val app = context.applicationContext as StarGazerApplication
+        return app.applicationScope
+    }
+
     @Singleton
     @Provides
     fun provideLocationRepository(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        applicationScope: CoroutineScope
     ): LocationRepository {
-        return LocationRepository(context)
+        return LocationRepository(context, applicationScope)
     }
 
     @Singleton

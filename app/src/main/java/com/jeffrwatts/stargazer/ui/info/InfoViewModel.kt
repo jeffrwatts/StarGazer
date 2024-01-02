@@ -19,7 +19,7 @@ import javax.inject.Inject
 class InfoViewModel @Inject constructor (
     private val locationRepository: LocationRepository
 ) : ViewModel() {
-    private var locationUpdating = false
+
     private val _state = MutableStateFlow(InfoUiState(currentTime = "",
         currentDate = "",
         latitude = "",
@@ -43,10 +43,7 @@ class InfoViewModel @Inject constructor (
     }
 
     fun startLocationUpdates() {
-        if (!locationUpdating) {
-            locationRepository.startLocationUpdates(viewModelScope)
-            locationUpdating = true
-        }
+        locationRepository.startLocationUpdates()
     }
 
     fun toggleHorizontalFlip() {
@@ -55,10 +52,6 @@ class InfoViewModel @Inject constructor (
 
     fun toggleVerticalFlip() {
         _state.value = _state.value.copy(isVerticalFlip = !_state.value.isVerticalFlip)
-    }
-    override fun onCleared() {
-        locationRepository.stopLocationUpdates()
-        super.onCleared()
     }
 
 
