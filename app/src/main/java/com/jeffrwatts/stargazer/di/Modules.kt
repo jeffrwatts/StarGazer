@@ -3,6 +3,8 @@ package com.jeffrwatts.stargazer.di
 import android.content.Context
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.StarGazerApplication
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
@@ -78,6 +80,12 @@ object DatabaseModule {
     fun provideCelestialObjDao(@ApplicationContext context: Context): CelestialObjDao {
         return StarGazerDatabase.getDatabase(context).celestialObjDao()
     }
+
+    @Singleton
+    @Provides
+    fun provideVariableStarObjDao(@ApplicationContext context: Context): VariableStarObjDao {
+        return StarGazerDatabase.getDatabase(context).variableStarObjDao()
+    }
 }
 
 @Module
@@ -102,6 +110,16 @@ object RepositoryModule {
         @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): PlanetPosRepository {
         return PlanetPosRepository(dao, ephemerisApi, ioDispatcher)
+    }
+
+    @Singleton
+    @Provides
+    fun provideVariableStarObjRepository(
+        @ApplicationContext context: Context,
+        variableStarObjDao: VariableStarObjDao,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher
+    ): VariableStarObjRepository {
+        return VariableStarObjRepository(variableStarObjDao, context, ioDispatcher)
     }
 
     // Provide CoroutineScope separately

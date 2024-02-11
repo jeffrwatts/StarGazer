@@ -8,9 +8,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.recommended.RecommendedScreen
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
 import com.jeffrwatts.stargazer.ui.starfinder.StarFinderScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
-import com.jeffrwatts.stargazer.ui.polar.PolarAlignScreen
 import com.jeffrwatts.stargazer.ui.sightdetail.SightDetailScreen
 import com.jeffrwatts.stargazer.ui.photoplanner.PhotoPlannerScreen
 
@@ -29,8 +29,8 @@ fun StarGazerNavGraph(
         composable(StarGazerDestinations.INFO_ROUTE) {
             InfoScreen(openDrawer = openDrawer, modifier = modifier)
         }
-        composable(StarGazerDestinations.POLAR_ROUTE) {
-            PolarAlignScreen(openDrawer = openDrawer, modifier = modifier)
+        composable(StarGazerDestinations.VARIABLE_STAR_ROUTE) {
+            VariableStarScreen(openDrawer = openDrawer, modifier = modifier)
         }
         composable(route = StarGazerDestinations.PHOTO_PLANNER_ROUTE) {
             val actions = remember(navController) { StarGazerNavigationActions(navController) }

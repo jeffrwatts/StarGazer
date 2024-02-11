@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.polar
+package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -35,30 +35,28 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
-import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjPos
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun PolarAlignScreen(
+fun VariableStarScreen(
     openDrawer: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: PolarAlignViewModel = hiltViewModel()
+    viewModel: VariableStarViewModel = hiltViewModel()
 ) {
     val topAppBarState = rememberTopAppBarState()
-    val polarAlignUiState by viewModel.uiState.collectAsState()
-    val isRefreshing = polarAlignUiState is PolarAlignUiState.Loading
+    val variableStarUiState by viewModel.uiState.collectAsState()
+    val isRefreshing = variableStarUiState is VariableStarUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
 
     Scaffold(
         topBar = {
             StarGazerTopAppBar(
-                title = stringResource(R.string.polar_title),
+                title = stringResource(R.string.variable_star_title),
                 openDrawer = openDrawer,
                 topAppBarState = topAppBarState
             )
@@ -70,21 +68,24 @@ fun PolarAlignScreen(
             .fillMaxSize()
 
         Box(Modifier.pullRefresh(pullRefreshState)) {
-            when (polarAlignUiState) {
-                is PolarAlignUiState.Loading -> {
+            when (variableStarUiState) {
+                is VariableStarUiState.Loading -> {
                     LoadingScreen(modifier = contentModifier)
                 }
 
-                is PolarAlignUiState.Success -> {
-                    PolarAlignBody(
-                        celestialObjs = (polarAlignUiState as PolarAlignUiState.Success).data,
+                is VariableStarUiState.Success -> {
+                    VariableStarBody(
+                        variableStarObjs = (variableStarUiState as VariableStarUiState.Success).data,
                         modifier = contentModifier
                     )
                 }
 
-                is PolarAlignUiState.Error -> {
+                else -> {
+                    // The IDE shows an error if an else block is not present, but only on this screen for some reason.
+                    // It will build and run fine, but adding this else here to avoid the annoying compile failure warnings.
+                    //is RecommendedUiState.Error -> {
                     ErrorScreen(
-                        message = (polarAlignUiState as PolarAlignUiState.Error).message,
+                        message = (variableStarUiState as VariableStarUiState.Error).message,
                         modifier = contentModifier,
                         onRetryClick = { viewModel.fetchObjects() }
                     )
@@ -95,13 +96,12 @@ fun PolarAlignScreen(
     }
 }
 
-
 @Composable
-private fun PolarAlignBody(
-    celestialObjs: List<CelestialObjPos>,
+private fun VariableStarBody(
+    variableStarObjs: List<VariableStarObjPos>,
     modifier: Modifier = Modifier
 ) {
-    if (celestialObjs.isEmpty()) {
+    if (variableStarObjs.isEmpty()) {
         Text(
             text = stringResource(R.string.no_item_description),
             textAlign = TextAlign.Center,
@@ -109,9 +109,8 @@ private fun PolarAlignBody(
         )
     } else {
         LazyColumn(modifier = modifier) {
-            items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
-                val highlight = celestialObj.polarAlignCandidate
-                PolarAlignmentItem(celestialObjPos = celestialObj,
+            items(items = variableStarObjs, key = { it.variableStarObj.id }) { variableStarObj ->
+                VariableStarItem(variableStarObjPos = variableStarObj,
                     modifier = Modifier
                         .padding(8.dp))
                 Divider(
@@ -124,11 +123,11 @@ private fun PolarAlignBody(
 }
 
 @Composable
-fun PolarAlignmentItem(
-    celestialObjPos: CelestialObjPos,
+fun VariableStarItem(
+    variableStarObjPos: VariableStarObjPos,
     modifier: Modifier = Modifier
 ) {
-    val prominenceAlpha = if (celestialObjPos.polarAlignCandidate) 1f else 0.6f  // More prominent if polarAlignCandidate is true
+    val prominenceAlpha = if (variableStarObjPos.observable) 1f else 0.6f
     val textColor = MaterialTheme.colorScheme.onSurface.copy(alpha = prominenceAlpha)
 
     Row(
@@ -139,31 +138,49 @@ fun PolarAlignmentItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = painterResource(id = celestialObjPos.celestialObj.getImageResource()), // replace with actual drawable resource
-            contentDescription = "Celestial Object",
+            painter = painterResource(id = R.drawable.star),
+            contentDescription = "Variable Star Object",
             modifier = Modifier.size(48.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
-                text = celestialObjPos.celestialObj.friendlyName,
+                text = variableStarObjPos.variableStarObj.friendlyName,
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
                 color = textColor
             )
             Text(
-                text = "Dec: ${formatToDegreeAndMinutes(celestialObjPos.celestialObj.dec)}, RA: ${formatToDegreeAndMinutes(celestialObjPos.celestialObj.ra)}",
+                text = "Dec: ${formatToDegreeAndMinutes(variableStarObjPos.variableStarObj.dec)}, RA: ${formatToDegreeAndMinutes(variableStarObjPos.variableStarObj.ra)}",
                 style = MaterialTheme.typography.bodyMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
                 color = textColor
             )
             Text(
-                text = "Alt: ${formatToDegreeAndMinutes(celestialObjPos.alt)}, Azm: ${formatToDegreeAndMinutes(celestialObjPos.azm)}",
+                text = "Alt: ${formatToDegreeAndMinutes(variableStarObjPos.alt)}, Azm: ${formatToDegreeAndMinutes(variableStarObjPos.azm)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = textColor
+            )
+            Text(
+                text = "Period: ${formatPeriodToDHH(variableStarObjPos.variableStarObj.period)}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
         }
+    }
+}
+
+fun formatPeriodToDHH(periodInDays: Double): String {
+    val days = periodInDays.toInt() // Extract whole days
+    val fractionalDay = periodInDays - days // Fraction of a day
+    val hoursAsDecimal = fractionalDay * 24 // Convert fraction to hours as a decimal
+
+    // Check if days are 0 and format the output accordingly
+    return if (days > 0) {
+        "${days}d ${String.format("%.2f", hoursAsDecimal)}h"
+    } else {
+        "${String.format("%.2f", hoursAsDecimal)}h"
     }
 }

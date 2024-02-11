@@ -30,7 +30,7 @@ import com.jeffrwatts.stargazer.R
 fun AppDrawer(
     currentRoute: String,
     navigateToSights: () -> Unit,
-    navigateToPolar: () -> Unit,
+    navigateToVariableStar: () -> Unit,
     navigateToInfo: () -> Unit,
     navigateToStarFinder: () -> Unit,
     navigateToRecommended: () -> Unit,
@@ -49,6 +49,13 @@ fun AppDrawer(
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(
+            label = { Text(stringResource(id = R.string.variable_star_title)) },
+            icon = { Icon(Icons.Filled.Star, null) },
+            selected = currentRoute == StarGazerDestinations.VARIABLE_STAR_ROUTE,
+            onClick = { navigateToVariableStar(); closeDrawer() },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+        NavigationDrawerItem(
             label = { Text(stringResource(id = R.string.info_title)) },
             icon = { Icon(Icons.Filled.Navigation, null) },
             selected = currentRoute == StarGazerDestinations.INFO_ROUTE,
@@ -64,16 +71,9 @@ fun AppDrawer(
         )
         NavigationDrawerItem(
             label = { Text(stringResource(id = R.string.star_finder)) },
-            icon = { Icon(Icons.Filled.Star, null) },
+            icon = { Icon(Icons.Filled.AddCircleOutline, null) },
             selected = currentRoute == StarGazerDestinations.STAR_FINDER_ROUTE,
             onClick = { navigateToStarFinder(); closeDrawer() },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-        NavigationDrawerItem(
-            label = { Text(stringResource(id = R.string.polar_title)) },
-            icon = { Icon(Icons.Filled.AddCircleOutline, null) },
-            selected = currentRoute == StarGazerDestinations.POLAR_ROUTE,
-            onClick = { navigateToPolar(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
     }
