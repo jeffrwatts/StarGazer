@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.recommended.RecommendedScreen
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.solarsystem.SolarSystemScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
 import com.jeffrwatts.stargazer.ui.starfinder.StarFinderScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
@@ -28,6 +29,9 @@ fun StarGazerNavGraph(
     ) {
         composable(StarGazerDestinations.INFO_ROUTE) {
             InfoScreen(openDrawer = openDrawer, modifier = modifier)
+        }
+        composable(StarGazerDestinations.SOLAR_SYSTEM_ROUTE) {
+            SolarSystemScreen(openDrawer = openDrawer, {}, modifier = modifier)
         }
         composable(StarGazerDestinations.VARIABLE_STAR_ROUTE) {
             VariableStarScreen(openDrawer = openDrawer, modifier = modifier)

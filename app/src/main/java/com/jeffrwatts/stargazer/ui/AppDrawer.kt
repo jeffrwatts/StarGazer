@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Radar
@@ -30,6 +31,7 @@ import com.jeffrwatts.stargazer.R
 fun AppDrawer(
     currentRoute: String,
     navigateToSights: () -> Unit,
+    navigateToSolarSystem: () -> Unit,
     navigateToVariableStar: () -> Unit,
     navigateToInfo: () -> Unit,
     navigateToStarFinder: () -> Unit,
@@ -46,6 +48,13 @@ fun AppDrawer(
             icon = { Icon(Icons.Filled.Camera, null) },
             selected = currentRoute == StarGazerDestinations.PHOTO_PLANNER_ROUTE,
             onClick = { navigateToSights(); closeDrawer() },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+        NavigationDrawerItem(
+            label = { Text(stringResource(id = R.string.solarsystem)) },
+            icon = { Icon(Icons.Filled.Adjust, null) },
+            selected = currentRoute == StarGazerDestinations.SOLAR_SYSTEM_ROUTE,
+            onClick = { navigateToSolarSystem(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(

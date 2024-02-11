@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 
 object StarGazerDestinations {
     const val INFO_ROUTE = "info"
+    const val SOLAR_SYSTEM_ROUTE = "solarSystem"
     const val VARIABLE_STAR_ROUTE = "variableStar"
     const val PHOTO_PLANNER_ROUTE = "photoPlanner"
     const val RECOMMENDED_ROUTE = "recommended"
@@ -32,6 +33,16 @@ class StarGazerNavigationActions(navController: NavHostController) {
         }
     }
 
+    val navigateToSolarSystem: () -> Unit = {
+        navController.navigate(StarGazerDestinations.SOLAR_SYSTEM_ROUTE) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     val navigateToVariableStar: () -> Unit = {
         navController.navigate(StarGazerDestinations.VARIABLE_STAR_ROUTE) {
             popUpTo(navController.graph.findStartDestination().id) {
@@ -41,6 +52,7 @@ class StarGazerNavigationActions(navController: NavHostController) {
             restoreState = true
         }
     }
+
     val navigateToPhotoPlanner: () -> Unit = {
         navController.navigate(StarGazerDestinations.PHOTO_PLANNER_ROUTE) {
             popUpTo(navController.graph.findStartDestination().id) {

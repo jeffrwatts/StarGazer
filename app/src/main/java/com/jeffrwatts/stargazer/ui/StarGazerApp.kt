@@ -34,6 +34,7 @@ fun StarGazerApp() {
                 AppDrawer(
                     currentRoute = currentRoute,
                     navigateToSights = navigationActions.navigateToPhotoPlanner,
+                    navigateToSolarSystem = navigationActions.navigateToSolarSystem,
                     navigateToVariableStar = navigationActions.navigateToVariableStar,
                     navigateToInfo = navigationActions.navigateToInfo,
                     navigateToStarFinder = navigationActions.navigateToStarFinder,

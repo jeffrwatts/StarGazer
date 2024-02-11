@@ -11,4 +11,6 @@
     <string name="recommended">Recommended</string>
     <string name="photo_planner_title">Photo Planner</string>
     <string name="variable_star_title">Variable Stars</string>
+    <string name="planets">Planets</string>
+    <string name="solarsystem">Solar System</string>
 </resources>
