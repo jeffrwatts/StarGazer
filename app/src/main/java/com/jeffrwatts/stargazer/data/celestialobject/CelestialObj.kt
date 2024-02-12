@@ -10,30 +10,8 @@ enum class ObjectType {
     STAR, GALAXY, NEBULA, CLUSTER, PLANET, UNKNOWN
 }
 
-enum class PhotoStatus(val priority: Int) {
-    SUGGESTED(1),
-    PHOTOGRAPHED(2),
-    NOT_PHOTOGRAPHED(3),
-    SKIP(4);
-}
-
-class Converters {
-
-    @TypeConverter
-    fun toObjectType(value: String) = enumValueOf<ObjectType>(value)
-
-    @TypeConverter
-    fun fromObjectType(value: ObjectType) = value.name
-
-    @TypeConverter
-    fun toPhotoStatus(value: String) = enumValueOf<PhotoStatus>(value)
-
-    @TypeConverter
-    fun fromPhotoStatus(value: PhotoStatus) = value.name
-}
-
 @Entity(tableName = "celestial_objects")
-@TypeConverters(Converters::class)
+//@TypeConverters(Converters::class)
 data class CelestialObj(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val friendlyName: String,
@@ -47,7 +25,6 @@ data class CelestialObj(
     val magnitude: Double?,
     val observationNotes: String?,
     val recommended: Boolean,
-    val photoStatus: PhotoStatus,
     val tags: String
 )
 

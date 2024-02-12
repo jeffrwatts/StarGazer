@@ -43,13 +43,13 @@ fun AppDrawer(
         StarGazerHeader(
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 24.dp)
         )
-        NavigationDrawerItem(
-            label = { Text(stringResource(id = R.string.photo_planner_title)) },
-            icon = { Icon(Icons.Filled.Camera, null) },
-            selected = currentRoute == StarGazerDestinations.PHOTO_PLANNER_ROUTE,
-            onClick = { navigateToSights(); closeDrawer() },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
+        //NavigationDrawerItem(
+        //    label = { Text(stringResource(id = R.string.photo_planner_title)) },
+        //    icon = { Icon(Icons.Filled.Camera, null) },
+        //    selected = currentRoute == StarGazerDestinations.PHOTO_PLANNER_ROUTE,
+        //    onClick = { navigateToSights(); closeDrawer() },
+        //    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        //)
         NavigationDrawerItem(
             label = { Text(stringResource(id = R.string.deepskyobjects)) },
             icon = { Icon(Icons.Filled.Radar, null) },

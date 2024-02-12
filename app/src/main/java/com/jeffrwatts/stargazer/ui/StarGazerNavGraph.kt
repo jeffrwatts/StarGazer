@@ -13,26 +13,25 @@ import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.Variabl
 import com.jeffrwatts.stargazer.ui.starfinder.StarFinderScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
 import com.jeffrwatts.stargazer.ui.sightdetail.SightDetailScreen
-import com.jeffrwatts.stargazer.ui.photoplanner.PhotoPlannerScreen
 
 @Composable
 fun StarGazerNavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     openDrawer: () -> Unit = {},
-    startDestination: String = StarGazerDestinations.PHOTO_PLANNER_ROUTE,
+    startDestination: String = StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE,
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier
     ) {
-        composable(route = StarGazerDestinations.PHOTO_PLANNER_ROUTE) {
-            val actions = remember(navController) { StarGazerNavigationActions(navController) }
-            PhotoPlannerScreen(openDrawer = openDrawer,
-                onSightClick = actions.navigateToSightDetail,
-                modifier = modifier)
-        }
+        //composable(route = StarGazerDestinations.PHOTO_PLANNER_ROUTE) {
+        //    val actions = remember(navController) { StarGazerNavigationActions(navController) }
+        //    PhotoPlannerScreen(openDrawer = openDrawer,
+        //        onSightClick = actions.navigateToSightDetail,
+        //        modifier = modifier)
+        //}
         composable(route = StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE) {
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
             DeepSkyObjectsScreen(openDrawer = openDrawer,
