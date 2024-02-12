@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.recommended
+package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.deepskyobjects
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -45,21 +45,21 @@ import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun RecommendedScreen(
+fun DeepSkyObjectsScreen(
     openDrawer: () -> Unit,
     onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: RecommendedViewModel = hiltViewModel()
+    viewModel: DeepSkyObjectsViewModel = hiltViewModel()
 ) {
     val topAppBarState = rememberTopAppBarState()
-    val recommendedUiState by viewModel.uiState.collectAsState()
-    val isRefreshing = recommendedUiState is RecommendedUiState.Loading
+    val deepSkyObjectsUiState by viewModel.uiState.collectAsState()
+    val isRefreshing = deepSkyObjectsUiState is DeepSkyObjectsUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
 
     Scaffold(
         topBar = {
             StarGazerTopAppBar(
-                title = stringResource(R.string.recommended),
+                title = stringResource(R.string.deepskyobjects),
                 openDrawer = openDrawer,
                 topAppBarState = topAppBarState
             )
@@ -71,13 +71,13 @@ fun RecommendedScreen(
             .fillMaxSize()
 
         Box(Modifier.pullRefresh(pullRefreshState)) {
-            when (recommendedUiState) {
-                is RecommendedUiState.Loading -> {
+            when (deepSkyObjectsUiState) {
+                is DeepSkyObjectsUiState.Loading -> {
                     LoadingScreen(modifier = contentModifier)
                 }
 
-                is RecommendedUiState.Success -> {
-                    RecommendedBody(celestialObjs = (recommendedUiState as RecommendedUiState.Success).data,
+                is DeepSkyObjectsUiState.Success -> {
+                    DeepSkyObjectsBody(celestialObjs = (deepSkyObjectsUiState as DeepSkyObjectsUiState.Success).data,
                         onSightClick = onSightClick,
                         modifier = contentModifier)
                 }
@@ -85,9 +85,9 @@ fun RecommendedScreen(
                 else -> {
                     // The IDE shows an error if an else block is not present, but only on this screen for some reason.
                     // It will build and run fine, but adding this else here to avoid the annoying compile failure warnings.
-                //is RecommendedUiState.Error -> {
+                //is DeepSkyObjectsUiState.Error -> {
                     ErrorScreen(
-                        message = (recommendedUiState as RecommendedUiState.Error).message,
+                        message = (deepSkyObjectsUiState as DeepSkyObjectsUiState.Error).message,
                         modifier = contentModifier,
                         onRetryClick = { viewModel.fetchObjects() }
                     )
@@ -99,7 +99,7 @@ fun RecommendedScreen(
 }
 
 @Composable
-private fun RecommendedBody(
+private fun DeepSkyObjectsBody(
     celestialObjs: List<CelestialObjPos>,
     onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier
@@ -113,7 +113,7 @@ private fun RecommendedBody(
     } else {
         LazyColumn(modifier = modifier) {
             items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
-                RecommendedItem(
+                DeepSkyObjectsItem(
                     celestialObjPos = celestialObj,
                     onItemClick = {onSightClick(celestialObj.celestialObj.id)},
                     modifier = Modifier
@@ -129,7 +129,7 @@ private fun RecommendedBody(
 }
 
 @Composable
-fun RecommendedItem(
+fun DeepSkyObjectsItem(
     celestialObjPos: CelestialObjPos,
     onItemClick:() -> Unit,
     modifier: Modifier = Modifier

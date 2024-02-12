@@ -13,4 +13,5 @@
     <string name="variable_star_title">Variable Stars</string>
     <string name="planets">Planets</string>
     <string name="solarsystem">Solar System</string>
+    <string name="deepskyobjects">Deep Sky Objects</string>
 </resources>

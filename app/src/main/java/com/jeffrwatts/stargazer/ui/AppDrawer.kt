@@ -31,11 +31,11 @@ import com.jeffrwatts.stargazer.R
 fun AppDrawer(
     currentRoute: String,
     navigateToSights: () -> Unit,
+    navigateToDeepSkyObjects: () -> Unit,
     navigateToSolarSystem: () -> Unit,
     navigateToVariableStar: () -> Unit,
     navigateToInfo: () -> Unit,
     navigateToStarFinder: () -> Unit,
-    navigateToRecommended: () -> Unit,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -48,6 +48,13 @@ fun AppDrawer(
             icon = { Icon(Icons.Filled.Camera, null) },
             selected = currentRoute == StarGazerDestinations.PHOTO_PLANNER_ROUTE,
             onClick = { navigateToSights(); closeDrawer() },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+        NavigationDrawerItem(
+            label = { Text(stringResource(id = R.string.deepskyobjects)) },
+            icon = { Icon(Icons.Filled.Radar, null) },
+            selected = currentRoute == StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE,
+            onClick = { navigateToDeepSkyObjects(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(
@@ -69,13 +76,6 @@ fun AppDrawer(
             icon = { Icon(Icons.Filled.Navigation, null) },
             selected = currentRoute == StarGazerDestinations.INFO_ROUTE,
             onClick = { navigateToInfo(); closeDrawer() },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-        NavigationDrawerItem(
-            label = { Text(stringResource(id = R.string.recommended)) },
-            icon = { Icon(Icons.Filled.Recommend, null) },
-            selected = currentRoute == StarGazerDestinations.RECOMMENDED_ROUTE,
-            onClick = { navigateToRecommended(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(

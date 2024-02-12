@@ -7,7 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.recommended.RecommendedScreen
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.deepskyobjects.DeepSkyObjectsScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.solarsystem.SolarSystemScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
 import com.jeffrwatts.stargazer.ui.starfinder.StarFinderScreen
@@ -27,8 +27,17 @@ fun StarGazerNavGraph(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        composable(StarGazerDestinations.INFO_ROUTE) {
-            InfoScreen(openDrawer = openDrawer, modifier = modifier)
+        composable(route = StarGazerDestinations.PHOTO_PLANNER_ROUTE) {
+            val actions = remember(navController) { StarGazerNavigationActions(navController) }
+            PhotoPlannerScreen(openDrawer = openDrawer,
+                onSightClick = actions.navigateToSightDetail,
+                modifier = modifier)
+        }
+        composable(route = StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE) {
+            val actions = remember(navController) { StarGazerNavigationActions(navController) }
+            DeepSkyObjectsScreen(openDrawer = openDrawer,
+                onSightClick = actions.navigateToSightDetail,
+                modifier = modifier)
         }
         composable(StarGazerDestinations.SOLAR_SYSTEM_ROUTE) {
             SolarSystemScreen(openDrawer = openDrawer, {}, modifier = modifier)
@@ -36,17 +45,8 @@ fun StarGazerNavGraph(
         composable(StarGazerDestinations.VARIABLE_STAR_ROUTE) {
             VariableStarScreen(openDrawer = openDrawer, modifier = modifier)
         }
-        composable(route = StarGazerDestinations.PHOTO_PLANNER_ROUTE) {
-            val actions = remember(navController) { StarGazerNavigationActions(navController) }
-            PhotoPlannerScreen(openDrawer = openDrawer,
-                onSightClick = actions.navigateToSightDetail,
-                modifier = modifier)
-        }
-        composable(route = StarGazerDestinations.RECOMMENDED_ROUTE) {
-            val actions = remember(navController) { StarGazerNavigationActions(navController) }
-            RecommendedScreen(openDrawer = openDrawer,
-                onSightClick = actions.navigateToSightDetail,
-                modifier = modifier)
+        composable(StarGazerDestinations.INFO_ROUTE) {
+            InfoScreen(openDrawer = openDrawer, modifier = modifier)
         }
         composable(route = StarGazerDestinations.STAR_FINDER_ROUTE) {
             StarFinderScreen(openDrawer = openDrawer, modifier = modifier)

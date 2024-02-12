@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.recommended
+package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.deepskyobjects
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,13 +16,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RecommendedViewModel @Inject constructor(
+class DeepSkyObjectsViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<RecommendedUiState>(RecommendedUiState.Loading)
-    val uiState: StateFlow<RecommendedUiState> = _uiState
+    private val _uiState = MutableStateFlow<DeepSkyObjectsUiState>(DeepSkyObjectsUiState.Loading)
+    val uiState: StateFlow<DeepSkyObjectsUiState> = _uiState
 
     init {
         fetchObjects()
@@ -32,18 +32,18 @@ class RecommendedViewModel @Inject constructor(
             locationRepository.locationFlow.collect { location->
                 location?.let {
                     val date = Utils.calculateJulianDateNow()
-                    val typesToQuery = listOf(ObjectType.CLUSTER, ObjectType.PLANET, ObjectType.NEBULA, ObjectType.GALAXY)
+                    val typesToQuery = listOf(ObjectType.CLUSTER, ObjectType.NEBULA, ObjectType.GALAXY)
 
                     celestialObjRepository.getAllCelestialObjsByType(typesToQuery, location, date)
                         .distinctUntilChanged() // To avoid redundant UI updates
                         .catch { e ->
-                            _uiState.value = RecommendedUiState.Error(e.message ?: "Unknown error")
+                            _uiState.value = DeepSkyObjectsUiState.Error(e.message ?: "Unknown error")
                         }
                         .collect { celestialObjPosList ->
                             val listFiltered = celestialObjPosList
                                 .filter { it.celestialObj.recommended }
                                 .sortedWith(compareByDescending<CelestialObjPos> { it.observable })
-                            _uiState.value = RecommendedUiState.Success(listFiltered)
+                            _uiState.value = DeepSkyObjectsUiState.Success(listFiltered)
                         }
                 }
             }
@@ -51,8 +51,8 @@ class RecommendedViewModel @Inject constructor(
     }
 }
 
-sealed class RecommendedUiState {
-    object Loading : RecommendedUiState()
-    data class Success(val data: List<CelestialObjPos>) : RecommendedUiState()
-    data class Error(val message: String) : RecommendedUiState()
+sealed class DeepSkyObjectsUiState {
+    object Loading : DeepSkyObjectsUiState()
+    data class Success(val data: List<CelestialObjPos>) : DeepSkyObjectsUiState()
+    data class Error(val message: String) : DeepSkyObjectsUiState()
 }

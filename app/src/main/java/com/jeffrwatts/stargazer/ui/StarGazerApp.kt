@@ -34,11 +34,11 @@ fun StarGazerApp() {
                 AppDrawer(
                     currentRoute = currentRoute,
                     navigateToSights = navigationActions.navigateToPhotoPlanner,
+                    navigateToDeepSkyObjects = navigationActions.navigateToDeepSkyObjects,
                     navigateToSolarSystem = navigationActions.navigateToSolarSystem,
                     navigateToVariableStar = navigationActions.navigateToVariableStar,
                     navigateToInfo = navigationActions.navigateToInfo,
                     navigateToStarFinder = navigationActions.navigateToStarFinder,
-                    navigateToRecommended = navigationActions.navigateToRecommended,
                     closeDrawer = { coroutineScope.launch { drawerState.close() } }
                 )
             },
