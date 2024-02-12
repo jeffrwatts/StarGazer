@@ -97,7 +97,21 @@ object Utils {
             azm = 360.0 - azm
         }
 
-        return Triple(alt, azm, lha)
+        // Time until meridian crossing
+        var hourAngle = ra - lst
+        // Normalize the hour angle to be within 0 to 360 degrees
+        hourAngle = (hourAngle + 360) % 360
+
+        // If the hour angle is greater than 180 degrees, it means the object will cross the meridian in the past, adjust it
+        if (hourAngle > 180) {
+            hourAngle -= 360.0
+        }
+
+        // Convert hour angle to time, considering the Earth rotates at 15 degrees per hour
+        val timeUntilMeridian = if (hourAngle < 0) (hourAngle + 360) / 15 else hourAngle / 15
+
+
+        return Triple(alt, azm, timeUntilMeridian)
     }
 
     fun isGoodForPolarAlignment(alt: Double, dec: Double, lha: Double): Boolean {

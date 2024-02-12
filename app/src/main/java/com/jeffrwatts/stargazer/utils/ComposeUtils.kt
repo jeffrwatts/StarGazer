@@ -53,6 +53,25 @@ fun formatToDegreeAndMinutes(angle: Double): String {
     return "$degrees° $minutes'"
 }
 
+fun formatHoursToHoursMinutes(hoursDecimal: Double): String {
+    val hours = hoursDecimal.toInt() // Extract whole hours
+    val minutes = ((hoursDecimal - hours) * 60).toInt() // Convert the decimal part to minutes
+    return String.format("%dh %02dm", hours, minutes) // Format and return the string
+}
+
+fun formatPeriodToDHH(periodInDays: Double): String {
+    val days = periodInDays.toInt() // Extract whole days
+    val fractionalDay = periodInDays - days // Fraction of a day
+    val hoursAsDecimal = fractionalDay * 24 // Convert fraction to hours as a decimal
+
+    // Check if days are 0 and format the output accordingly
+    return if (days > 0) {
+        "${days}d ${String.format("%.2f", hoursAsDecimal)}h"
+    } else {
+        "${String.format("%.2f", hoursAsDecimal)}h"
+    }
+}
+
 private fun Double.roundTo(decimals: Int): Double {
     val multiplier = 10.0.pow(decimals)
     return (this * multiplier).roundToInt() / multiplier

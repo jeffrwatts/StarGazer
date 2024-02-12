@@ -62,6 +62,7 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
+import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
@@ -232,6 +233,11 @@ fun DeepSkyObjectsItem(
                         celestialObjPos.azm
                     )
                 }",
+                style = MaterialTheme.typography.bodyMedium,
+                color = textColor
+            )
+            Text(
+                text = "Meridian: ${formatHoursToHoursMinutes(celestialObjPos.timeUntilMeridian)}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )

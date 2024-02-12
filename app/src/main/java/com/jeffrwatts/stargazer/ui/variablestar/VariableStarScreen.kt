@@ -39,6 +39,8 @@ import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
+import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
+import com.jeffrwatts.stargazer.utils.formatPeriodToDHH
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -159,12 +161,17 @@ fun VariableStarItem(
                 color = textColor
             )
             Text(
+                text = "Period: ${formatPeriodToDHH(variableStarObjPos.variableStarObj.period)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = textColor
+            )
+            Text(
                 text = "Alt: ${formatToDegreeAndMinutes(variableStarObjPos.alt)}, Azm: ${formatToDegreeAndMinutes(variableStarObjPos.azm)}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
             Text(
-                text = "Period: ${formatPeriodToDHH(variableStarObjPos.variableStarObj.period)}",
+                text = "Meridian: ${formatHoursToHoursMinutes(variableStarObjPos.timeUntilMeridian)}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
@@ -172,15 +179,3 @@ fun VariableStarItem(
     }
 }
 
-fun formatPeriodToDHH(periodInDays: Double): String {
-    val days = periodInDays.toInt() // Extract whole days
-    val fractionalDay = periodInDays - days // Fraction of a day
-    val hoursAsDecimal = fractionalDay * 24 // Convert fraction to hours as a decimal
-
-    // Check if days are 0 and format the output accordingly
-    return if (days > 0) {
-        "${days}d ${String.format("%.2f", hoursAsDecimal)}h"
-    } else {
-        "${String.format("%.2f", hoursAsDecimal)}h"
-    }
-}

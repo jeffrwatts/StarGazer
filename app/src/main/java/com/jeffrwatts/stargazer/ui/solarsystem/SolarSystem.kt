@@ -41,6 +41,7 @@ import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
+import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -180,7 +181,7 @@ fun SolarSystemItem(
                 color = textColor
             )
             Text(
-                text = "Obs Tags: ${celestialObjPos.celestialObj.tags}",
+                text = "Meridian: ${formatHoursToHoursMinutes(celestialObjPos.timeUntilMeridian)}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
