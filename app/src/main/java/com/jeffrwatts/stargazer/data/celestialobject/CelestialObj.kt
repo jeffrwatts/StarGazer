@@ -2,8 +2,6 @@ package com.jeffrwatts.stargazer.data.celestialobject
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverter
-import androidx.room.TypeConverters
 import com.jeffrwatts.stargazer.R
 
 enum class ObjectType {
@@ -60,6 +58,7 @@ fun CelestialObj.getImageResource(): Int {
         "Caldwell 33" -> R.drawable.caldwell33
         "Caldwell 34" -> R.drawable.caldwell33 // intentionally the same.
         "Caldwell 49" -> R.drawable.caldwell49
+        "Caldwell 63" -> R.drawable.caldwell63
         "Caldwell 64" -> R.drawable.caldwell64
         else -> when (this.type) {
             ObjectType.STAR -> R.drawable.star
