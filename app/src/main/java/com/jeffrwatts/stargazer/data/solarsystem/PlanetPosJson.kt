@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.data.planetaryposition
+package com.jeffrwatts.stargazer.data.solarsystem
 
 data class PlanetPosJson (
     val name: String,

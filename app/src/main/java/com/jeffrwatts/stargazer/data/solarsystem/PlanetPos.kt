@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.data.planetaryposition
+package com.jeffrwatts.stargazer.data.solarsystem
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

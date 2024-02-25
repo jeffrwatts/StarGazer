@@ -1,24 +1,20 @@
 package com.jeffrwatts.stargazer.data.celestialobject
 
 import android.content.Context
-import android.location.Location
-import android.util.Log
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
-import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPos
-import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosRepository
-import com.jeffrwatts.stargazer.utils.Utils
+import com.jeffrwatts.stargazer.data.solarsystem.PlanetPos
+import com.jeffrwatts.stargazer.data.solarsystem.PlanetPosRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.After
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before

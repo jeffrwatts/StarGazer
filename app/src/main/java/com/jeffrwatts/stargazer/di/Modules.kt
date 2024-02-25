@@ -3,6 +3,7 @@ package com.jeffrwatts.stargazer.di
 import android.content.Context
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.StarGazerApplication
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.planetaryposition.SolarSystemRepository
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
@@ -10,8 +11,7 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.orientation.OrientationRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
-import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosRepository
-import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosDao
+import com.jeffrwatts.stargazer.data.solarsystem.PlanetPosDao
 import com.jeffrwatts.stargazer.network.EphemerisApi
 import dagger.Module
 import dagger.Provides
@@ -96,20 +96,19 @@ object RepositoryModule {
     fun provideCelestialObjRepository(
         @ApplicationContext context: Context,
         celestialObjDao: CelestialObjDao,
-        planetPosRepository: PlanetPosRepository,
         @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): CelestialObjRepository {
-        return CelestialObjRepository(celestialObjDao, planetPosRepository, context, ioDispatcher)
+        return CelestialObjRepository(celestialObjDao, context, ioDispatcher)
     }
 
     @Singleton
     @Provides
-    fun providePlanetPosRepository(
+    fun provideSolarSystemRepository(
         dao: PlanetPosDao,
         ephemerisApi: EphemerisApi,
         @IoDispatcher ioDispatcher: CoroutineDispatcher
-    ): PlanetPosRepository {
-        return PlanetPosRepository(dao, ephemerisApi, ioDispatcher)
+    ): SolarSystemRepository {
+        return SolarSystemRepository(dao, ephemerisApi, ioDispatcher)
     }
 
     @Singleton

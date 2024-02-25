@@ -8,8 +8,8 @@ import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
-import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPos
-import com.jeffrwatts.stargazer.data.planetaryposition.PlanetPosDao
+import com.jeffrwatts.stargazer.data.solarsystem.PlanetPos
+import com.jeffrwatts.stargazer.data.solarsystem.PlanetPosDao
 
 @Database(entities = [CelestialObj::class, PlanetPos::class, VariableStarObj::class], version = 1, exportSchema = false)
 abstract class StarGazerDatabase : RoomDatabase() {
