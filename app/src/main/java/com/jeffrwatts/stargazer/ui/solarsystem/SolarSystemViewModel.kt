@@ -9,6 +9,7 @@ import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -22,6 +23,7 @@ class SolarSystemViewModel @Inject constructor(
     private val locationRepository: LocationRepository
 ) : ViewModel() {
 
+    private var collectionJob: Job? = null
     private val _uiState = MutableStateFlow<SolarSystemUiState>(SolarSystemUiState.Loading)
     val uiState: StateFlow<SolarSystemUiState> = _uiState
 
@@ -30,7 +32,8 @@ class SolarSystemViewModel @Inject constructor(
     }
 
     fun fetchObjects() {
-        viewModelScope.launch {
+        collectionJob?.cancel() // Cancel the previous collection job if it exists
+        collectionJob = viewModelScope.launch {
             locationRepository.locationFlow.collect { location ->
                 location?.let {
                     val date = Utils.calculateJulianDateNow()
