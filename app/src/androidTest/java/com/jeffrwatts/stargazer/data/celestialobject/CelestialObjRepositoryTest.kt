@@ -8,29 +8,19 @@ import com.google.gson.reflect.TypeToken
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.solarsystem.PlanetPos
-import com.jeffrwatts.stargazer.data.solarsystem.PlanetPosRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentMatchers.anyDouble
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
-import org.mockito.invocation.InvocationOnMock
-import org.mockito.stubbing.Answer
 
 class CelestialObjRepositoryTest {
 
     private lateinit var database: StarGazerDatabase
     private lateinit var celestialObjDao: CelestialObjDao
-    private val planetPosRepository: PlanetPosRepository = mock(PlanetPosRepository::class.java)
     private lateinit var repository: CelestialObjRepository
 
     @Before
@@ -44,20 +34,19 @@ class CelestialObjRepositoryTest {
         celestialObjDao = database.celestialObjDao()
         populateDao(appContext)
 
-        `when`(planetPosRepository.getPlanetPosition(anyString(), anyDouble()))
-            .thenAnswer(object : Answer<Flow<PlanetPos>> {
-                override fun answer(invocation: InvocationOnMock): Flow<PlanetPos> {
-                    val planetName = invocation.getArgument<String>(0)
-                    val time = invocation.getArgument<Double>(1)
-                    val planetPos = createPlanetPosForName(planetName, time)
-                    return flowOf(planetPos)
-                }
-            })
+        //`when`(planetPosRepository.getPlanetPosition(anyString(), anyDouble()))
+        //    .thenAnswer(object : Answer<Flow<PlanetPos>> {
+        //        override fun answer(invocation: InvocationOnMock): Flow<PlanetPos> {
+        //            val planetName = invocation.getArgument<String>(0)
+        //            val time = invocation.getArgument<Double>(1)
+        //            val planetPos = createPlanetPosForName(planetName, time)
+        //            return flowOf(planetPos)
+        //        }
+        //    })
 
 
         repository = CelestialObjRepository(
             celestialObjDao,
-            planetPosRepository,
             appContext,
             Dispatchers.IO // Replace with a test dispatcher if needed
         )
@@ -73,7 +62,8 @@ class CelestialObjRepositoryTest {
         val result = repository.getCelestialObjsByRaDec(90.0, 45.0, 0.0).first()
 
         // Expected names
-        val expectedNames = setOf("Menkalinan", "Venus")
+        //val expectedNames = setOf("Menkalinan", "Venus")
+        val expectedNames = setOf("Menkalinan")
 
         // Verify results
         assertTrue(result.all { it.friendlyName in expectedNames })
@@ -87,7 +77,8 @@ class CelestialObjRepositoryTest {
     fun findByRaDecTest_ZeroWrapPos() = runBlocking {
         val result = repository.getCelestialObjsByRaDec(359.0, 16.0, 0.0).first()
 
-        val expectedNames = setOf("NGC 7814", "Algenib", "Jupiter")
+        //val expectedNames = setOf("NGC 7814", "Algenib", "Jupiter")
+        val expectedNames = setOf("NGC 7814", "Algenib")
 
         // Verify results
         assertTrue(result.all { it.friendlyName in expectedNames })
@@ -100,7 +91,8 @@ class CelestialObjRepositoryTest {
     fun findByRaDecTest_ZeroWrapNeg() = runBlocking {
         val result = repository.getCelestialObjsByRaDec(1.0, 77.0, 0.0).first()
 
-        val expectedNames = setOf("Alrai", "Bow-Tie Nebula", "Saturn")
+        //val expectedNames = setOf("Alrai", "Bow-Tie Nebula", "Saturn")
+        val expectedNames = setOf("Alrai", "Bow-Tie Nebula")
 
         // Verify results
         assertTrue(result.all { it.friendlyName in expectedNames })
