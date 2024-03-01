@@ -177,7 +177,7 @@ fun AltitudeChart(entries: List<AltitudeEntry>, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .height(200.dp)
-            .padding(start = 50.dp), // Leave space for y-axis labels
+            .padding(start = 30.dp), // Leave space for y-axis labels
         onDraw = {
             drawAltitudeChart(entries, size.width, size.height)
         }
@@ -190,6 +190,20 @@ fun DrawScope.drawAltitudeChart(entries: List<AltitudeEntry>, chartWidth: Float,
     val endTime = entries.lastOrNull()?.time ?: startTime.plusHours(24)
     val duration = Duration.between(startTime, endTime).toMillis().toFloat()
     val xScale = chartWidth / duration // Time scale based on duration
+
+    // Draw light gray shading for daylight hours (6 AM to 6 PM) for each day
+    var dayTime = startTime.withHour(6).withMinute(0).withSecond(0)
+    while (dayTime.isBefore(endTime)) {
+        val daylightStart = Duration.between(startTime, dayTime).toMillis() * xScale
+        val daylightEnd = Duration.between(startTime, dayTime.plusHours(12)).toMillis() * xScale
+        val adjustedDaylightStart = maxOf(daylightStart, 0f) // Adjust to start at the chart edge if needed
+        drawRect(
+            color = Color.LightGray.copy(alpha = 0.3f),
+            topLeft = Offset(adjustedDaylightStart, 0f),
+            size = androidx.compose.ui.geometry.Size(daylightEnd - adjustedDaylightStart, chartHeight)
+        )
+        dayTime = dayTime.plusDays(1)
+    }
 
     // Draw grid lines for hours and labels
     val hours = Duration.between(startTime, endTime).toHours().toInt()
@@ -272,6 +286,9 @@ fun DrawScope.drawAltitudeChart(entries: List<AltitudeEntry>, chartWidth: Float,
         strokeWidth = 2f
     )
 }
+
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
