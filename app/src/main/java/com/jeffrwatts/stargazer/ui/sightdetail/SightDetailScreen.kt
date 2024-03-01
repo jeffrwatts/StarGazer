@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.ui.sightdetail
 
+import android.graphics.Paint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,8 +48,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,7 +176,8 @@ fun AltitudeChart(entries: List<AltitudeEntry>, modifier: Modifier = Modifier) {
     Canvas(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp),
+            .height(200.dp)
+            .padding(start = 50.dp), // Leave space for y-axis labels
         onDraw = {
             drawAltitudeChart(entries, size.width, size.height)
         }
@@ -187,27 +191,58 @@ fun DrawScope.drawAltitudeChart(entries: List<AltitudeEntry>, chartWidth: Float,
     val duration = Duration.between(startTime, endTime).toMillis().toFloat()
     val xScale = chartWidth / duration // Time scale based on duration
 
-    // Draw grid lines for hours
+    // Draw grid lines for hours and labels
     val hours = Duration.between(startTime, endTime).toHours().toInt()
-    for (hour in 1..hours) {
+    for (hour in 0..hours) {
         val x = hour * xScale * 3600000 // Convert hours to milliseconds and scale
+        val time = startTime.plusHours(hour.toLong())
+        val label = when (time.hour) {
+            0 -> time.format(DateTimeFormatter.ofPattern("MMM d"))
+            6 -> "6AM"
+            12 -> "12PM"
+            18 -> "6PM"
+            else -> ""
+        }
         drawLine(
-            color = Color.LightGray,
+            color = if (label.isEmpty()) Color.LightGray.copy(alpha = 0.3f) else Color.White, // Lighter color for non-labeled lines
             start = Offset(x, 0f),
             end = Offset(x, chartHeight),
-            strokeWidth = 1f
+            strokeWidth = if (hour % 6 == 0) 2f else 1f // Thicker lines for labeled hours
         )
+        if (label.isNotEmpty()) {
+            drawContext.canvas.nativeCanvas.drawText(
+                label,
+                x,
+                chartHeight + 30f, // Position slightly below the chart
+                Paint().apply {
+                    color = android.graphics.Color.WHITE
+                    textSize = 35f // Larger text size
+                }
+            )
+        }
     }
 
-    // Draw grid lines for altitude
+    // Draw grid lines for altitude and labels
     for (altitude in -90..90 step 30) {
         val y = chartHeight - (altitude + 90) * yScale
+        val label = if (altitude == 90 || altitude == -90) "${altitude}°" else ""
         drawLine(
-            color = Color.LightGray,
+            color = Color.White,
             start = Offset(0f, y),
             end = Offset(chartWidth, y),
-            strokeWidth = 1f
+            strokeWidth = if (altitude == 0) 2f else 1f // Thicker line for 0 degrees
         )
+        if (label.isNotEmpty()) {
+            drawContext.canvas.nativeCanvas.drawText(
+                label,
+                -45f, // Position to the left of the chart
+                y + 15f, // Center vertically with the line
+                Paint().apply {
+                    color = android.graphics.Color.WHITE
+                    textSize = 35f // Larger text size
+                }
+            )
+        }
     }
 
     // Draw the altitude path
@@ -227,6 +262,14 @@ fun DrawScope.drawAltitudeChart(entries: List<AltitudeEntry>, chartWidth: Float,
         path = path,
         color = Color.Blue,
         style = Stroke(width = 2.dp.toPx())
+    )
+
+    // Draw a white border along the right side of the grid
+    drawLine(
+        color = Color.White,
+        start = Offset(chartWidth, 0f),
+        end = Offset(chartWidth, chartHeight),
+        strokeWidth = 2f
     )
 }
 
