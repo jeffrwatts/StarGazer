@@ -41,6 +41,14 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import java.time.Duration
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +92,8 @@ fun SightDetailScreen(
             }
             is SightDetailUiState.Success -> {
                 val celestialObj = (uiState as SightDetailUiState.Success).data
-                SightDetailContent(celestialObj = celestialObj, modifier = contentModifier)
+                val altitudes = (uiState as SightDetailUiState.Success).altitudes
+                SightDetailContent(celestialObj = celestialObj, entries = altitudes, modifier = contentModifier)
             }
             is SightDetailUiState.Error -> {
                 ErrorScreen(
@@ -98,7 +107,7 @@ fun SightDetailScreen(
 }
 
 @Composable
-fun SightDetailContent(celestialObj: CelestialObj, modifier: Modifier = Modifier) {
+fun SightDetailContent(celestialObj: CelestialObj, entries: List<AltitudeEntry>, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         // Banner Image
         Image(
@@ -120,6 +129,8 @@ fun SightDetailContent(celestialObj: CelestialObj, modifier: Modifier = Modifier
         LabeledField(label = "Constellation", value = celestialObj.constellation ?: "N/A")
         LabeledField(label = "Magnitude", value = celestialObj.magnitude?.toString() ?: "N/A")
 
+        Spacer(modifier = Modifier.height(16.dp))
+        AltitudeChart(entries)
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
@@ -155,6 +166,68 @@ fun LabeledField(label: String, value: String, modifier: Modifier = Modifier) {
             modifier = Modifier.weight(2f)
         )
     }
+}
+
+@Composable
+fun AltitudeChart(entries: List<AltitudeEntry>, modifier: Modifier = Modifier) {
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(200.dp),
+        onDraw = {
+            drawAltitudeChart(entries, size.width, size.height)
+        }
+    )
+}
+
+fun DrawScope.drawAltitudeChart(entries: List<AltitudeEntry>, chartWidth: Float, chartHeight: Float) {
+    val yScale = chartHeight / 180f // Altitude range is 180 degrees (-90 to 90)
+    val startTime = entries.firstOrNull()?.time ?: LocalDateTime.now()
+    val endTime = entries.lastOrNull()?.time ?: startTime.plusHours(24)
+    val duration = Duration.between(startTime, endTime).toMillis().toFloat()
+    val xScale = chartWidth / duration // Time scale based on duration
+
+    // Draw grid lines for hours
+    val hours = Duration.between(startTime, endTime).toHours().toInt()
+    for (hour in 1..hours) {
+        val x = hour * xScale * 3600000 // Convert hours to milliseconds and scale
+        drawLine(
+            color = Color.LightGray,
+            start = Offset(x, 0f),
+            end = Offset(x, chartHeight),
+            strokeWidth = 1f
+        )
+    }
+
+    // Draw grid lines for altitude
+    for (altitude in -90..90 step 30) {
+        val y = chartHeight - (altitude + 90) * yScale
+        drawLine(
+            color = Color.LightGray,
+            start = Offset(0f, y),
+            end = Offset(chartWidth, y),
+            strokeWidth = 1f
+        )
+    }
+
+    // Draw the altitude path
+    val path = Path().apply {
+        entries.forEachIndexed { index, entry ->
+            val x = Duration.between(startTime, entry.time).toMillis() * xScale
+            val y = chartHeight - (entry.alt + 90) * yScale
+            if (index == 0) {
+                moveTo(x, y.toFloat())
+            } else {
+                lineTo(x, y.toFloat())
+            }
+        }
+    }
+
+    drawPath(
+        path = path,
+        color = Color.Blue,
+        style = Stroke(width = 2.dp.toPx())
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
