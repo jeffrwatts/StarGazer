@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.utils
 
+import android.location.Location
 import java.time.LocalDateTime
 import java.time.ZoneId
 import kotlin.math.abs
@@ -19,13 +20,6 @@ object Utils {
         return totalHours * 15.0
     }
 
-    fun decimalToHMS(decimal: Double): String {
-        val hours = (decimal / 15).toInt()
-        val minutes = ((decimal / 15 - hours) * 60).toInt()
-        val seconds = (((decimal / 15 - hours) * 60 - minutes) * 60)
-        return "%02dh %02dm %.2fs".format(hours, minutes, seconds)
-    }
-
     fun decimalToDMS(decimal: Double, dirPos: String, dirNeg: String): String {
         val degrees = decimal.toInt()
         val minutes = ((decimal - degrees) * 60).toInt()
@@ -34,7 +28,22 @@ object Utils {
         return "%02d°%02d'%05.2f\"%s".format(abs(degrees), abs(minutes), abs(seconds), direction)
     }
 
-    fun calculateJulianDate(date: LocalDateTime): Double {
+    fun calculateJulianDateFromLocal(localTime:LocalDateTime):Double {
+        val zonedDateTime = localTime.atZone(ZoneId.systemDefault())
+        val utcZonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"))
+        val utcNow = utcZonedDateTime.toLocalDateTime()
+        return calculateJulianDateUtc(utcNow)
+    }
+
+    fun calculateJulianDateNow():Double {
+        val currentTime = LocalDateTime.now()
+        val zonedDateTime = currentTime.atZone(ZoneId.systemDefault())
+        val utcZonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"))
+        val utcNow = utcZonedDateTime.toLocalDateTime()
+        return calculateJulianDateUtc(utcNow)
+    }
+
+    fun calculateJulianDateUtc(date: LocalDateTime): Double {
         val year = date.year
         val month = date.monthValue
         val day = date.dayOfMonth
@@ -46,19 +55,11 @@ object Utils {
         val adjustedYear = if (month > 2) year else year - 1
         val adjustedMonth = if (month > 2) month else month + 12
 
-        val a = (adjustedYear / 100).toInt()
-        val b = 2 - a + (a/4).toInt()
+        val a = (adjustedYear / 100)
+        val b = 2 - a + (a/4)
         val d = day + (hour + minute / 60.0 + second / 3600.0) / 24.0
 
         return (365.25*(adjustedYear+4716)).toInt() + (30.6001*(adjustedMonth+1)).toInt() + d + b - 1524.5
-    }
-
-    fun calculateJulianDateNow():Double {
-        val currentTime = LocalDateTime.now()
-        val zonedDateTime = currentTime.atZone(ZoneId.systemDefault())
-        val utcZonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"))
-        val utcNow = utcZonedDateTime.toLocalDateTime()
-        return calculateJulianDate(utcNow)
     }
 
     fun calculateLocalSiderealTime(longitude: Double, julianDate: Double): Double {
@@ -114,26 +115,6 @@ object Utils {
         return Triple(alt, azm, timeUntilMeridian)
     }
 
-    fun isGoodForPolarAlignment(alt: Double, dec: Double, lha: Double): Boolean {
-        // Celestron website makes the following recommnedation for a star that is good for polar alignment.
-        // Choose a star that is near the meridian, preferably close to the celestial equator.
-        // Try to avoid stars too near the west/east horizon or directly overhead.
-        // Also, stars too near the celestial pole are less accurate than those further away.
-        // https://www.celestron.com/pages/all-star-polar-alignment
-
-        // LHA is 0 at the celestial meridian, allow for 30 deg on either side.
-        val nearMeridian = (lha in 0.0..30.0) || lha in 330.0..360.0
-
-        // dec is 0 at the celestial equator, allow for 20 deg on either side.
-        // Note this range also allows for preventing stars that are closet to the celestial pole.
-        val closeToCelestialEquator = dec in -20.0..20.0 // Allow 20 deg within celestial equator
-
-        // Experimented and shouldn't go over 60 deg.  Put 30 deg at the lower end for now.
-        val overheadOrHorizon = alt in 30.0..60.0
-
-        return nearMeridian && closeToCelestialEquator && overheadOrHorizon
-    }
-
     fun calculateRAandDEC(alt: Double, azm: Double, latitude: Double, longitude: Double, julianDate: Double): Pair<Double, Double> {
         val altRad = Math.toRadians(alt)
         val azmRad = Math.toRadians(azm)
@@ -168,4 +149,34 @@ object Utils {
         return Pair(ra, dec)
     }
 
+    data class AltitudeEntry(val time: LocalDateTime, val alt: Double)
+
+    fun getAltitudeEntries(
+        ra: Double,
+        dec: Double,
+        location: Location,
+        timeStart: LocalDateTime,
+        durationHours: Long,
+        incrementMinutes: Long): List<AltitudeEntry> {
+        val altitudeData = mutableListOf<AltitudeEntry>()
+
+        // Set up the start time to be 2 hours before at 0 min and 0 sec.
+        var timeIx = timeStart
+        val endTime = timeIx.plusHours(durationHours)
+
+        while (timeIx.isBefore(endTime)) {
+            val julianDate = calculateJulianDateFromLocal(timeIx)
+            val (alt, _, _) = calculateAltAzm(
+                ra,
+                dec,
+                location.latitude,
+                location.longitude,
+                julianDate
+            )
+            altitudeData.add(AltitudeEntry(timeIx, alt))
+            timeIx = timeIx.plusMinutes(incrementMinutes)
+        }
+
+        return altitudeData
+    }
 }

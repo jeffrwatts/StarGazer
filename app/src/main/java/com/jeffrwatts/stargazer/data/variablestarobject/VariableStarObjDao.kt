@@ -14,6 +14,9 @@ interface VariableStarObjDao {
     @Query("SELECT * FROM variable_star_objects")
     fun getAll(): Flow<List<VariableStarObj>>
 
+    @Query("SELECT * FROM variable_star_objects WHERE id = :itemId")
+    fun get(itemId: Int): Flow<VariableStarObj>
+
     @Query("SELECT COUNT(*) FROM variable_star_objects")
     fun getCount(): Int
 }

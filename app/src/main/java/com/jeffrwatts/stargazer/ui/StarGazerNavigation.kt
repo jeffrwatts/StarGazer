@@ -4,21 +4,21 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 
 object StarGazerDestinations {
-    const val PHOTO_PLANNER_ROUTE = "photoPlanner"
     const val DEEP_SKY_OBJECTS_ROUTE = "deepSkyObjects"
     const val SOLAR_SYSTEM_ROUTE = "solarSystem"
     const val VARIABLE_STAR_ROUTE = "variableStar"
     const val INFO_ROUTE = "info"
     const val STAR_FINDER_ROUTE = "starFinder"
-    const val SIGHT_DETAIL_ROUTE = "sightDetail"
+    const val DEEP_SKY_DETAIL_ROUTE = "deepSkyDetail"
+    const val VARIABLE_STAR_DETAIL_ROUTE = "variableStarDetail"
 }
 
 /**
  * Models the navigation actions in the app.
  */
 class StarGazerNavigationActions(navController: NavHostController) {
-    val navigateToPhotoPlanner: () -> Unit = {
-        navController.navigate(StarGazerDestinations.PHOTO_PLANNER_ROUTE) {
+    val navigateToDeepSkyObjects: () -> Unit = {
+        navController.navigate(StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE) {
             // Pop up to the start destination of the graph to
             // avoid building up a large stack of destinations
             // on the back stack as users select items
@@ -29,16 +29,6 @@ class StarGazerNavigationActions(navController: NavHostController) {
             // reselecting the same item
             launchSingleTop = true
             // Restore state when reselecting a previously selected item
-            restoreState = true
-        }
-    }
-
-    val navigateToDeepSkyObjects: () -> Unit = {
-        navController.navigate(StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE) {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
-            launchSingleTop = true
             restoreState = true
         }
     }
@@ -84,7 +74,11 @@ class StarGazerNavigationActions(navController: NavHostController) {
         }
     }
 
-    val navigateToSightDetail: (Int) -> Unit = { sightId ->
-        navController.navigate("${StarGazerDestinations.SIGHT_DETAIL_ROUTE}/$sightId")
+    val navigateToDeepSkyDetail: (Int) -> Unit = { deepSkyId ->
+        navController.navigate("${StarGazerDestinations.DEEP_SKY_DETAIL_ROUTE}/$deepSkyId")
+    }
+
+    val navigateToVariableStarDetail: (Int) -> Unit = { variableStarId ->
+        navController.navigate("${StarGazerDestinations.VARIABLE_STAR_DETAIL_ROUTE}/$variableStarId")
     }
 }

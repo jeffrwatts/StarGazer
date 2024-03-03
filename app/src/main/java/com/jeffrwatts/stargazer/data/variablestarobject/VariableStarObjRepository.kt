@@ -33,6 +33,12 @@ class VariableStarObjRepository (
         }
     }
 
+    fun getVariableStarObj(id: Int, location: Location, date: Double): Flow<VariableStarObjPos> {
+        return variableStarObjDao.get(id).map { obj->
+            VariableStarObjPos.fromVariableStarObj(obj, date, location.latitude, location.longitude)
+        }
+    }
+
     private suspend fun populateDatabaseIfEmpty() {
         val count = variableStarObjDao.getCount()
         if (count == 0) {

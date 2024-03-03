@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.deepskyobjects.DeepSkyObjectsScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.solarsystem.SolarSystemScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestardetail.VariableStarDetailScreen
 import com.jeffrwatts.stargazer.ui.deepskydetail.DeepSkyDetailScreen
 import com.jeffrwatts.stargazer.ui.starfinder.StarFinderScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
@@ -29,7 +30,7 @@ fun StarGazerNavGraph(
         composable(route = StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE) {
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
             DeepSkyObjectsScreen(openDrawer = openDrawer,
-                onSightClick = actions.navigateToSightDetail,
+                onSightClick = actions.navigateToDeepSkyDetail,
                 modifier = modifier)
         }
         composable(StarGazerDestinations.SOLAR_SYSTEM_ROUTE) {
@@ -38,7 +39,7 @@ fun StarGazerNavGraph(
         composable(StarGazerDestinations.VARIABLE_STAR_ROUTE) {
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
             VariableStarScreen(openDrawer = openDrawer,
-                onSightClick = actions.navigateToSightDetail,
+                onSightClick = actions.navigateToVariableStarDetail,
                 modifier = modifier)
         }
         composable(StarGazerDestinations.INFO_ROUTE) {
@@ -47,13 +48,23 @@ fun StarGazerNavGraph(
         composable(route = StarGazerDestinations.STAR_FINDER_ROUTE) {
             StarFinderScreen(openDrawer = openDrawer, modifier = modifier)
         }
-        composable("${StarGazerDestinations.SIGHT_DETAIL_ROUTE}/{sightId}") { backStackEntry ->
-            val sightId = backStackEntry.arguments?.getString("sightId")?.toIntOrNull()
+        composable("${StarGazerDestinations.DEEP_SKY_DETAIL_ROUTE}/{deepSkyId}") { backStackEntry ->
+            val deepSkyId = backStackEntry.arguments?.getString("deepSkyId")?.toIntOrNull()
 
             // Only navigate to the detail screen if both sightId is not null
-            sightId?.let {
+            deepSkyId?.let {
                 DeepSkyDetailScreen(
                     sightId = it,
+                    onNavigateBack = { navController.popBackStack() })
+            }
+        }
+        composable("${StarGazerDestinations.VARIABLE_STAR_DETAIL_ROUTE}/{variableStarId}") { backStackEntry ->
+            val variableStarId = backStackEntry.arguments?.getString("variableStarId")?.toIntOrNull()
+
+            // Only navigate to the detail screen if both sightId is not null
+            variableStarId?.let {
+                VariableStarDetailScreen(
+                    variableStarId = it,
                     onNavigateBack = { navController.popBackStack() })
             }
         }

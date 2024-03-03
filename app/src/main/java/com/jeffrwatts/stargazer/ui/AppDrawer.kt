@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Adjust
-import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Radar
-import androidx.compose.material.icons.filled.Recommend
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,7 +28,6 @@ import com.jeffrwatts.stargazer.R
 @Composable
 fun AppDrawer(
     currentRoute: String,
-    navigateToSights: () -> Unit,
     navigateToDeepSkyObjects: () -> Unit,
     navigateToSolarSystem: () -> Unit,
     navigateToVariableStar: () -> Unit,
@@ -43,13 +40,6 @@ fun AppDrawer(
         StarGazerHeader(
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 24.dp)
         )
-        //NavigationDrawerItem(
-        //    label = { Text(stringResource(id = R.string.photo_planner_title)) },
-        //    icon = { Icon(Icons.Filled.Camera, null) },
-        //    selected = currentRoute == StarGazerDestinations.PHOTO_PLANNER_ROUTE,
-        //    onClick = { navigateToSights(); closeDrawer() },
-        //    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        //)
         NavigationDrawerItem(
             label = { Text(stringResource(id = R.string.deepskyobjects)) },
             icon = { Icon(Icons.Filled.Radar, null) },

@@ -35,7 +35,7 @@ class CelestialObjRepository @Inject constructor (
         }
     }
 
-    fun getCelestialObj(id: Int, location: Location, date: Double): Flow<CelestialObjPos?> {
+    fun getCelestialObj(id: Int, location: Location, date: Double): Flow<CelestialObjPos> {
         return celestialObjDao.get(id).map { obj->
             CelestialObjPos.fromCelestialObj(obj, date, location.latitude, location.longitude)
         }

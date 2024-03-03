@@ -65,7 +65,7 @@ class UtilsTest {
     @Test
     fun calculateJulianDate() {
         val dateTime = LocalDateTime.of(2000, 1, 1, 12, 0, 0)
-        val jd = Utils.calculateJulianDate(dateTime)
+        val jd = Utils.calculateJulianDateUtc(dateTime)
 
         // Compare with a known Julian Date for this date and time.
         // The absolute difference should be less than 0.1 because of rounding errors
@@ -75,7 +75,7 @@ class UtilsTest {
     @Test
     fun calculateLocalSiderealTime() {
         val dateTime = LocalDateTime.of(2023, 6, 24, 12, 0)
-        val julianDate = Utils.calculateJulianDate(dateTime)
+        val julianDate = Utils.calculateJulianDateUtc(dateTime)
 
         // Kona (West)
         var lst = Utils.calculateLocalSiderealTime(KONA_LONGITUDE, julianDate)
@@ -98,7 +98,7 @@ class UtilsTest {
     @Test
     fun calculatePosition() {
         val dateTime = LocalDateTime.of(2000, 1, 1, 12, 0, 0)
-        val julianDate = Utils.calculateJulianDate(dateTime)
+        val julianDate = Utils.calculateJulianDateUtc(dateTime)
 
         val (alt1, azm1, timeUntilMeridian1) = Utils.calculateAltAzm(SIRIUS_RA, SIRIUS_DEC, KONA_LATITUDE, KONA_LONGITUDE, julianDate)
         assertEquals(47.10283005268597, alt1, 0.01)
@@ -176,7 +176,7 @@ class UtilsTest {
     @Test
     fun PolarisTests() {
         val dateTime = LocalDateTime.of(2023, 12, 16, 12, 0, 0)
-        val julianDate = Utils.calculateJulianDate(dateTime)
+        val julianDate = Utils.calculateJulianDateUtc(dateTime)
 
         val (alt, azm, timeUntilMeridian) =  Utils.calculateAltAzm(POLARIS_RA, POLARIS_DEC, KONA_LATITUDE, KONA_LONGITUDE, julianDate)
         assertEquals(19.908625619869397, alt, 0.01)

@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.deepskydetail
+package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestardetail
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -35,41 +33,42 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
-import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
 import com.jeffrwatts.stargazer.utils.AltitudeChart
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LabeledField
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.Utils
+import com.jeffrwatts.stargazer.R
+import com.jeffrwatts.stargazer.utils.formatPeriodToDHH
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeepSkyDetailScreen(
-    sightId: Int,
+fun VariableStarDetailScreen(
+    variableStarId: Int,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DeepSkyDetailViewModel = hiltViewModel(),
+    viewModel: VariableStarDetailViewModel = hiltViewModel(),
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(sightId) {
-        viewModel.fetchSightDetail(sightId)
+    LaunchedEffect(variableStarId) {
+        viewModel.fetchVariableStar(variableStarId)
     }
 
     // Update the title when uiState changes
     var title by remember { mutableStateOf("Loading...") } // default title
 
     LaunchedEffect(uiState) {
-        if (uiState is SightDetailUiState.Success) {
-            title = (uiState as SightDetailUiState.Success).data.friendlyName
+        if (uiState is VariableStarDetailUiState.Success) {
+            title = (uiState as VariableStarDetailUiState.Success).data.variableStarObj.friendlyName
         }
     }
 
     Scaffold(
         topBar = {
-            DeepSkyDetailTopAppBar(
+            VariableStarTopAppBar(
                 title = title,
                 onNavigateBack = onNavigateBack
             )
@@ -80,19 +79,19 @@ fun DeepSkyDetailScreen(
             .fillMaxSize()
 
         when (uiState) {
-            is SightDetailUiState.Loading -> {
+            is VariableStarDetailUiState.Loading -> {
                 LoadingScreen(modifier = contentModifier)
             }
-            is SightDetailUiState.Success -> {
-                val celestialObj = (uiState as SightDetailUiState.Success).data
-                val altitudes = (uiState as SightDetailUiState.Success).altitudes
-                DeepSkyDetailContent(celestialObj = celestialObj, entries = altitudes, modifier = contentModifier)
+            is VariableStarDetailUiState.Success -> {
+                val variableStarObjPos = (uiState as VariableStarDetailUiState.Success).data
+                val altitudes = (uiState as VariableStarDetailUiState.Success).altitudes
+                VariableStarDetailContent(variableStarObj = variableStarObjPos.variableStarObj, entries = altitudes, modifier = contentModifier)
             }
-            is SightDetailUiState.Error -> {
+            else -> { //is VariableStarDetailUiState.Error -> {
                 ErrorScreen(
-                    message = (uiState as SightDetailUiState.Error).message,
+                    message = (uiState as VariableStarDetailUiState.Error).message,
                     modifier = contentModifier,
-                    onRetryClick = { viewModel.fetchSightDetail(sightId) }
+                    onRetryClick = { viewModel.fetchVariableStar(variableStarId) }
                 )
             }
         }
@@ -100,12 +99,12 @@ fun DeepSkyDetailScreen(
 }
 
 @Composable
-fun DeepSkyDetailContent(celestialObj: CelestialObj, entries: List<Utils.AltitudeEntry>, modifier: Modifier = Modifier) {
+fun VariableStarDetailContent(variableStarObj: VariableStarObj, entries: List<Utils.AltitudeEntry>, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         // Banner Image
         Image(
-            painter = painterResource(id = celestialObj.getImageResource()),
-            contentDescription = "Banner image for ${celestialObj.friendlyName}",
+            painter = painterResource(id = R.drawable.star),
+            contentDescription = "Banner image for ${variableStarObj.friendlyName}",
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 4.dp)
                 .fillMaxWidth()
@@ -116,11 +115,12 @@ fun DeepSkyDetailContent(celestialObj: CelestialObj, entries: List<Utils.Altitud
         Spacer(modifier = Modifier.height(16.dp))
 
         // Data Fields
-        LabeledField(label = "Catalog ID", value = celestialObj.catalogId ?: "N/A")
-        LabeledField(label = "NGC ID", value = celestialObj.ngcId ?: "N/A")
-        LabeledField(label = "Subtype", value = celestialObj.subType ?: "N/A")
-        LabeledField(label = "Constellation", value = celestialObj.constellation ?: "N/A")
-        LabeledField(label = "Magnitude", value = celestialObj.magnitude?.toString() ?: "N/A")
+        LabeledField(label = "Spectral Type", value = variableStarObj.spectralType)
+        LabeledField(label = "Type", value = variableStarObj.type)
+        LabeledField(label = "Magnitude High", value = variableStarObj.magnitudeHigh.toString())
+        LabeledField(label = "Magnitude Low", value = variableStarObj.magnitudeLow.toString())
+        LabeledField(label = "Period", value = formatPeriodToDHH(variableStarObj.period))
+        LabeledField(label = "Constellation", value = variableStarObj.constellation)
 
         Spacer(modifier = Modifier.height(16.dp))
         AltitudeChart(entries)
@@ -131,12 +131,6 @@ fun DeepSkyDetailContent(celestialObj: CelestialObj, entries: List<Utils.Altitud
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
         )
-        Text(
-            text = celestialObj.observationNotes ?: "No notes available.",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                .verticalScroll(rememberScrollState())
-        )
     }
 }
 
@@ -144,7 +138,7 @@ fun DeepSkyDetailContent(celestialObj: CelestialObj, entries: List<Utils.Altitud
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeepSkyDetailTopAppBar(
+fun VariableStarTopAppBar(
     title: String,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,

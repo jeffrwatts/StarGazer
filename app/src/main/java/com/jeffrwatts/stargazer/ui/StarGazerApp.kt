@@ -1,7 +1,6 @@
 package com.jeffrwatts.stargazer.ui
 
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -14,7 +13,6 @@ import com.jeffrwatts.stargazer.ui.theme.StarGazerTheme
 import kotlinx.coroutines.launch
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 fun StarGazerApp() {
     StarGazerTheme {
         val navController = rememberNavController()
@@ -33,7 +31,6 @@ fun StarGazerApp() {
             drawerContent = {
                 AppDrawer(
                     currentRoute = currentRoute,
-                    navigateToSights = navigationActions.navigateToPhotoPlanner,
                     navigateToDeepSkyObjects = navigationActions.navigateToDeepSkyObjects,
                     navigateToSolarSystem = navigationActions.navigateToSolarSystem,
                     navigateToVariableStar = navigationActions.navigateToVariableStar,
