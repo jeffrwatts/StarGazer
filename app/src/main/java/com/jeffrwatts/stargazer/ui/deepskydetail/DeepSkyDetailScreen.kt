@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.sightdetail
+package com.jeffrwatts.stargazer.ui.deepskydetail
 
 import android.graphics.Paint
 import androidx.compose.foundation.Image
@@ -55,11 +55,11 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SightDetailScreen(
+fun DeepSkyDetailScreen(
     sightId: Int,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: SightDetailViewModel = hiltViewModel(),
+    viewModel: DeepSkyDetailViewModel = hiltViewModel(),
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
@@ -79,7 +79,7 @@ fun SightDetailScreen(
 
     Scaffold(
         topBar = {
-            SightDetailTopAppBar(
+            DeepSkyDetailTopAppBar(
                 title = title,
                 onNavigateBack = onNavigateBack
             )
@@ -96,7 +96,7 @@ fun SightDetailScreen(
             is SightDetailUiState.Success -> {
                 val celestialObj = (uiState as SightDetailUiState.Success).data
                 val altitudes = (uiState as SightDetailUiState.Success).altitudes
-                SightDetailContent(celestialObj = celestialObj, entries = altitudes, modifier = contentModifier)
+                DeepSkyDetailContent(celestialObj = celestialObj, entries = altitudes, modifier = contentModifier)
             }
             is SightDetailUiState.Error -> {
                 ErrorScreen(
@@ -110,7 +110,7 @@ fun SightDetailScreen(
 }
 
 @Composable
-fun SightDetailContent(celestialObj: CelestialObj, entries: List<AltitudeEntry>, modifier: Modifier = Modifier) {
+fun DeepSkyDetailContent(celestialObj: CelestialObj, entries: List<AltitudeEntry>, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         // Banner Image
         Image(
@@ -292,7 +292,7 @@ fun DrawScope.drawAltitudeChart(entries: List<AltitudeEntry>, chartWidth: Float,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SightDetailTopAppBar(
+fun DeepSkyDetailTopAppBar(
     title: String,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,

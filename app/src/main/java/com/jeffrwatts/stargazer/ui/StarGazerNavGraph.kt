@@ -10,9 +10,9 @@ import androidx.navigation.compose.rememberNavController
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.deepskyobjects.DeepSkyObjectsScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.solarsystem.SolarSystemScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
+import com.jeffrwatts.stargazer.ui.deepskydetail.DeepSkyDetailScreen
 import com.jeffrwatts.stargazer.ui.starfinder.StarFinderScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
-import com.jeffrwatts.stargazer.ui.sightdetail.SightDetailScreen
 
 @Composable
 fun StarGazerNavGraph(
@@ -26,12 +26,6 @@ fun StarGazerNavGraph(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        //composable(route = StarGazerDestinations.PHOTO_PLANNER_ROUTE) {
-        //    val actions = remember(navController) { StarGazerNavigationActions(navController) }
-        //    PhotoPlannerScreen(openDrawer = openDrawer,
-        //        onSightClick = actions.navigateToSightDetail,
-        //        modifier = modifier)
-        //}
         composable(route = StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE) {
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
             DeepSkyObjectsScreen(openDrawer = openDrawer,
@@ -42,7 +36,10 @@ fun StarGazerNavGraph(
             SolarSystemScreen(openDrawer = openDrawer, {}, modifier = modifier)
         }
         composable(StarGazerDestinations.VARIABLE_STAR_ROUTE) {
-            VariableStarScreen(openDrawer = openDrawer, modifier = modifier)
+            val actions = remember(navController) { StarGazerNavigationActions(navController) }
+            VariableStarScreen(openDrawer = openDrawer,
+                onSightClick = actions.navigateToSightDetail,
+                modifier = modifier)
         }
         composable(StarGazerDestinations.INFO_ROUTE) {
             InfoScreen(openDrawer = openDrawer, modifier = modifier)
@@ -55,7 +52,7 @@ fun StarGazerNavGraph(
 
             // Only navigate to the detail screen if both sightId is not null
             sightId?.let {
-                SightDetailScreen(
+                DeepSkyDetailScreen(
                     sightId = it,
                     onNavigateBack = { navController.popBackStack() })
             }

@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.sightdetail
+package com.jeffrwatts.stargazer.ui.deepskydetail
 
 import android.location.Location
 import androidx.lifecycle.ViewModel
@@ -17,7 +17,7 @@ import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
-class SightDetailViewModel @Inject constructor(
+class DeepSkyDetailViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {

@@ -1,6 +1,7 @@
 package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,6 +48,7 @@ import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 @Composable
 fun VariableStarScreen(
     openDrawer: () -> Unit,
+    onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VariableStarViewModel = hiltViewModel()
 ) {
@@ -78,6 +80,7 @@ fun VariableStarScreen(
                 is VariableStarUiState.Success -> {
                     VariableStarBody(
                         variableStarObjs = (variableStarUiState as VariableStarUiState.Success).data,
+                        onSightClick = onSightClick,
                         modifier = contentModifier
                     )
                 }
@@ -101,6 +104,7 @@ fun VariableStarScreen(
 @Composable
 private fun VariableStarBody(
     variableStarObjs: List<VariableStarObjPos>,
+    onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (variableStarObjs.isEmpty()) {
@@ -113,6 +117,7 @@ private fun VariableStarBody(
         LazyColumn(modifier = modifier) {
             items(items = variableStarObjs, key = { it.variableStarObj.id }) { variableStarObj ->
                 VariableStarItem(variableStarObjPos = variableStarObj,
+                    onItemClick = {onSightClick(variableStarObj.variableStarObj.id)},
                     modifier = Modifier
                         .padding(8.dp))
                 Divider(
@@ -127,6 +132,7 @@ private fun VariableStarBody(
 @Composable
 fun VariableStarItem(
     variableStarObjPos: VariableStarObjPos,
+    onItemClick:() -> Unit,
     modifier: Modifier = Modifier
 ) {
     val prominenceAlpha = if (variableStarObjPos.observable) 1f else 0.6f
@@ -136,7 +142,8 @@ fun VariableStarItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .alpha(prominenceAlpha), // Apply the alpha here
+            .alpha(prominenceAlpha)
+            .clickable(onClick = onItemClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
