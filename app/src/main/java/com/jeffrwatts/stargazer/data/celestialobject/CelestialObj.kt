@@ -41,10 +41,13 @@ fun CelestialObj.getImageResource(): Int {
         "M31" -> R.drawable.m31
         "M33" -> R.drawable.m33
         "M42" -> R.drawable.m42
+        "M44" -> R.drawable.m44
         "M45" -> R.drawable.m45
         "M51" -> R.drawable.m51
+        "M63" -> R.drawable.m63
         "M78" -> R.drawable.m78
         "M81" -> R.drawable.m81
+        "M82" -> R.drawable.m82
         "M97" -> R.drawable.m97
         "M101" -> R.drawable.m101
         "M104" -> R.drawable.m104
