@@ -115,6 +115,8 @@ fun VariableStarDetailContent(variableStarObj: VariableStarObj, entries: List<Ut
         Spacer(modifier = Modifier.height(16.dp))
 
         // Data Fields
+        LabeledField(label = "RA", value = decimalRaToHmsString(variableStarObj.ra))
+        LabeledField(label = "DEC", value = decimalDecToDmsString(variableStarObj.dec))
         LabeledField(label = "Spectral Type", value = variableStarObj.spectralType)
         LabeledField(label = "Type", value = variableStarObj.type)
         LabeledField(label = "Magnitude High", value = variableStarObj.magnitudeHigh.toString())
@@ -125,16 +127,25 @@ fun VariableStarDetailContent(variableStarObj: VariableStarObj, entries: List<Ut
         Spacer(modifier = Modifier.height(16.dp))
         AltitudeChart(entries)
         Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Observation Notes",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-        )
     }
 }
 
+fun decimalRaToHmsString(raDecimalDegrees: Double): String {
+    val totalSeconds = (raDecimalDegrees / 360.0) * 24 * 3600
+    val hours = (totalSeconds / 3600).toInt()
+    val minutes = ((totalSeconds % 3600) / 60).toInt()
+    val seconds = totalSeconds % 60
+    return String.format("%02dh %02dm %05.2fs", hours, minutes, seconds)
+}
 
+fun decimalDecToDmsString(decDecimalDegrees: Double): String {
+    val sign = if (decDecimalDegrees < 0) "-" else "+"
+    val totalSeconds = Math.abs(decDecimalDegrees) * 3600
+    val degrees = (totalSeconds / 3600).toInt()
+    val minutes = ((totalSeconds % 3600) / 60).toInt()
+    val seconds = totalSeconds % 60
+    return String.format("%s%02d° %02d' %05.2f\"", sign, degrees, minutes, seconds)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
