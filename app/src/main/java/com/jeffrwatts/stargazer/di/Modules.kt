@@ -6,6 +6,7 @@ import com.jeffrwatts.stargazer.StarGazerApplication
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.planetaryposition.SolarSystemRepository
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.ImageApi
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
@@ -63,6 +64,27 @@ object NetworkModule {
             .build()
 
         return retrofit.create(EphemerisApi::class.java)
+    }
+
+    @Provides
+    fun provideImageApi(): ImageApi {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+
+        val okHttpClient = OkHttpClient.Builder()
+            .readTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(logging)
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BuildConfig.API_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+
+        return retrofit.create(ImageApi::class.java)
     }
 }
 
