@@ -50,11 +50,12 @@ class UpdateCelestialObjImageWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            setProgressAsync(buildStatusUpdate("Fetching Images"))
+            var succeeded = 0
+            setProgressAsync(buildStatusUpdate("Getting Images..."))
             val imageUpdates = imageApi.getImages() // Assume this returns a list of image data with URLs and catalogIds
+            setProgressAsync(buildStatusUpdate("Downloading ${imageUpdates.size} images"))
             imageUpdates.forEachIndexed() { index, image ->
                 try {
-                    setProgressAsync(buildStatusUpdate("Fetching ${index + 1} of ${imageUpdates.size}"))
                     val imageUrl = image.url
                     val imageStream = URL(imageUrl).openStream()
                     val outputFile = File(applicationContext.cacheDir, "${image.objectId}.webp")
@@ -62,15 +63,17 @@ class UpdateCelestialObjImageWorker @AssistedInject constructor(
                     outputFile.outputStream().use { fileOutputStream ->
                         imageStream.copyTo(fileOutputStream)
                     }
+                    setProgressAsync(buildStatusUpdate("Downloaded ${index + 1} of ${imageUpdates.size}: ${image.objectId}"))
+                    succeeded+=1
                 } catch (e: IOException) {
                     Log.e("ImageDownload", "Failed to download image for catalogId: ${image.objectId}", e)
-                    // Optionally continue with other images or fail the work
+                    setProgressAsync(buildStatusUpdate("${image.objectId} failed"))
                 }
             }
-            Result.success()
+            Result.success(buildStatusUpdate("Downloaded $succeeded of ${imageUpdates.size}"))
         } catch (e: Exception) {
             Log.e("WorkManager", "Failed during image download work", e)
-            Result.failure()
+            Result.failure(buildStatusUpdate("Failed to get images: ${e.message}"))
         }
     }
 

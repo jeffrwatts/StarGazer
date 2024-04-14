@@ -1,12 +1,13 @@
 package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.updatescreen
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,10 +19,8 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -39,6 +38,7 @@ fun UpdateScreen(
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val uiState by viewModel.state.collectAsState()
+    val statusMessages by viewModel.statusMessages.collectAsState()
 
     Scaffold(
         topBar = {
@@ -50,51 +50,35 @@ fun UpdateScreen(
         },
         modifier = modifier
     ) { innerPadding ->
-        val contentModifier = Modifier
-            .padding(innerPadding)
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
+        Column(modifier = Modifier.padding(innerPadding)) {
+            Text("Last Updated: ${uiState.lastUpdated}", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(16.dp))
 
-        UpdateContent(uiState = uiState,
-            triggerUpdate = { viewModel.triggerImageUpdate() },
-            modifier = contentModifier)
-    }
-}
-
-@Composable
-fun UpdateContent(
-    uiState: UpdateUiState,
-    triggerUpdate: () -> Unit,
-    modifier: Modifier)
-{
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Images: ", style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        text = if (uiState.isDownloading) uiState.downloadStatus else "Last updated: ${uiState.lastUpdated}",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-
+            Row(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                // Update Button
                 Button(
-                    onClick = { triggerUpdate() },
+                    onClick = { viewModel.triggerImageUpdate() },
                     enabled = !uiState.isDownloading,
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = Color.White  // Sets the text and icon color
-                    ),
-                    modifier = Modifier.align(Alignment.CenterVertically)
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(contentColor = Color.White)
                 ) {
                     Text("Update")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp)) // Space between buttons
+
+                // Clear Button
+                Button(
+                    onClick = { viewModel.clearStatus() },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(contentColor = Color.White)
+                ) {
+                    Text("Clear")
+                }
+            }
+
+            LazyColumn(modifier = Modifier.weight(1f).padding(top = 8.dp)) {
+                items(statusMessages) { message ->
+                    Text(text = message, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
                 }
             }
         }

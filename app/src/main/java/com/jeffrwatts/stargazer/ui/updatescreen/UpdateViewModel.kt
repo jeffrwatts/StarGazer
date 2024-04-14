@@ -23,10 +23,12 @@ class UpdateViewModel @Inject constructor (
 
     private val _state = MutableStateFlow(
         UpdateUiState(lastUpdated = getLastUpdate(),
-        downloadStatus = "",
         isDownloading = false)
     )
     val state: StateFlow<UpdateUiState> = _state
+
+    private val _statusMessages = MutableStateFlow(listOf<String>())
+    val statusMessages: StateFlow<List<String>> = _statusMessages
 
     fun triggerImageUpdate() {
         val updateRequest = OneTimeWorkRequestBuilder<UpdateCelestialObjImageWorker>().build()
@@ -37,18 +39,38 @@ class UpdateViewModel @Inject constructor (
             workManager.getWorkInfoByIdLiveData(updateRequest.id).asFlow().collect { workInfo ->
                 when (workInfo.state) {
                     WorkInfo.State.RUNNING -> {
-                        val downloadStatus = workInfo.progress.getString("Status") ?: "Running"
-                        _state.value = _state.value.copy(isDownloading = true, downloadStatus = downloadStatus)
+                        workInfo.progress.getString("Status")?.let { message->
+                            updateStatus(message)
+                        }
+                        _state.value = _state.value.copy(isDownloading = true)
                     }
-                    WorkInfo.State.SUCCEEDED -> _state.value = _state.value.copy(
-                        isDownloading = false,
-                        lastUpdated = getLastUpdate()
-                    )
-                    WorkInfo.State.FAILED -> _state.value = _state.value.copy(isDownloading = false)
+                    WorkInfo.State.SUCCEEDED -> {
+                        workInfo.outputData.getString("Status")?.let { message->
+                            updateStatus(message)
+                        }
+                        _state.value = _state.value.copy(
+                            isDownloading = false,
+                            lastUpdated = getLastUpdate()
+                        )
+                    }
+                    WorkInfo.State.FAILED -> {
+                        workInfo.outputData.getString("Status")?.let { message->
+                            updateStatus(message)
+                        }
+                        _state.value = _state.value.copy(isDownloading = false)
+                    }
                     else -> _state.value = _state.value.copy(isDownloading = false)
                 }
             }
         }
+    }
+
+    private fun updateStatus(message: String) {
+        _statusMessages.value = _statusMessages.value + message
+    }
+
+    fun clearStatus() {
+        _statusMessages.value = emptyList()
     }
 
     private fun getLastUpdate(): String {
@@ -60,6 +82,5 @@ class UpdateViewModel @Inject constructor (
 
 data class UpdateUiState(
     val lastUpdated: String,
-    val downloadStatus: String,
     val isDownloading: Boolean = false
 )
