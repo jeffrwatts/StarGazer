@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.deepskyobjects.DeepSkyObjectsScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.solarsystem.SolarSystemScreen
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.updatescreen.UpdateScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestardetail.VariableStarDetailScreen
 import com.jeffrwatts.stargazer.ui.deepskydetail.DeepSkyDetailScreen
@@ -47,6 +48,9 @@ fun StarGazerNavGraph(
         }
         composable(route = StarGazerDestinations.STAR_FINDER_ROUTE) {
             StarFinderScreen(openDrawer = openDrawer, modifier = modifier)
+        }
+        composable(route = StarGazerDestinations.UPDATE_ROUTE) {
+            UpdateScreen(openDrawer = openDrawer, modifier = modifier)
         }
         composable("${StarGazerDestinations.DEEP_SKY_DETAIL_ROUTE}/{deepSkyId}") { backStackEntry ->
             val deepSkyId = backStackEntry.arguments?.getString("deepSkyId")?.toIntOrNull()

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
@@ -33,6 +34,7 @@ fun AppDrawer(
     navigateToVariableStar: () -> Unit,
     navigateToInfo: () -> Unit,
     navigateToStarFinder: () -> Unit,
+    navigateToUpdate:()->Unit,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -73,6 +75,13 @@ fun AppDrawer(
             icon = { Icon(Icons.Filled.AddCircleOutline, null) },
             selected = currentRoute == StarGazerDestinations.STAR_FINDER_ROUTE,
             onClick = { navigateToStarFinder(); closeDrawer() },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+        NavigationDrawerItem(
+            label = { Text(stringResource(id = R.string.update_title)) },
+            icon = { Icon(Icons.Filled.Update, null) },
+            selected = currentRoute == StarGazerDestinations.UPDATE_ROUTE,
+            onClick = { navigateToUpdate(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
     }

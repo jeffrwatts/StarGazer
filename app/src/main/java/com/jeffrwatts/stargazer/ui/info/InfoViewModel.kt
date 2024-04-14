@@ -1,18 +1,10 @@
 package com.jeffrwatts.stargazer.ui.info
 
-import UpdateCelestialObjImageWorker
-import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
-import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,8 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class InfoViewModel @Inject constructor (
-    private val locationRepository: LocationRepository,
-    private val workManager: WorkManager
+    private val locationRepository: LocationRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(InfoUiState(currentTime = "",
@@ -36,10 +27,7 @@ class InfoViewModel @Inject constructor (
         accuracy = "",
         altitude = "",
         polarisX = 0.0,
-        polarisY = 0.0,
-        lastUpdated = getLastUpdate(),
-        downloadStatus = "",
-        isDownloading = false))
+        polarisY = 0.0))
     val state: StateFlow<InfoUiState> = _state
 
     companion object {
@@ -52,29 +40,6 @@ class InfoViewModel @Inject constructor (
     init {
         observeDateTimeUpdates()
         observeLocationUpdates()
-    }
-
-    fun triggerImageUpdate() {
-        val updateRequest = OneTimeWorkRequestBuilder<UpdateCelestialObjImageWorker>().build()
-        workManager.enqueue(updateRequest)
-
-        // Observe the work status and update the state
-        viewModelScope.launch {
-            workManager.getWorkInfoByIdLiveData(updateRequest.id).asFlow().collect { workInfo ->
-                when (workInfo.state) {
-                    WorkInfo.State.RUNNING -> {
-                        val downloadStatus = workInfo.progress.getString("Status") ?: "Running"
-                        _state.value = _state.value.copy(isDownloading = true, downloadStatus = downloadStatus)
-                    }
-                    WorkInfo.State.SUCCEEDED -> _state.value = _state.value.copy(
-                        isDownloading = false,
-                        lastUpdated = getLastUpdate()
-                    )
-                    WorkInfo.State.FAILED -> _state.value = _state.value.copy(isDownloading = false)
-                    else -> _state.value = _state.value.copy(isDownloading = false)
-                }
-            }
-        }
     }
 
     // Updates the time every second
@@ -123,12 +88,6 @@ class InfoViewModel @Inject constructor (
         return dateFormat.format(Date())
     }
 
-    private fun getLastUpdate(): String {
-        // UPDATE: pull this from the last download time.
-        val dateFormat = SimpleDateFormat("MM/dd/yyyy HH:mm:ss", Locale.getDefault())
-        return dateFormat.format(Date())
-    }
-
     private fun updatePolarisCoords(lat: Double, lon: Double): Pair<Double, Double> {
         val jdNow = Utils.calculateJulianDateNow()
 
@@ -151,8 +110,5 @@ data class InfoUiState(
     val accuracy: String,
     val altitude: String,
     val polarisX: Double,
-    val polarisY: Double,
-    val lastUpdated: String,
-    val downloadStatus: String,
-    val isDownloading: Boolean = false
+    val polarisY: Double
 )

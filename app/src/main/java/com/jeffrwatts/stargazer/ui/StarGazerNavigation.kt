@@ -9,6 +9,7 @@ object StarGazerDestinations {
     const val VARIABLE_STAR_ROUTE = "variableStar"
     const val INFO_ROUTE = "info"
     const val STAR_FINDER_ROUTE = "starFinder"
+    const val UPDATE_ROUTE = "update"
     const val DEEP_SKY_DETAIL_ROUTE = "deepSkyDetail"
     const val VARIABLE_STAR_DETAIL_ROUTE = "variableStarDetail"
 }
@@ -66,6 +67,16 @@ class StarGazerNavigationActions(navController: NavHostController) {
 
     val navigateToStarFinder: () -> Unit = {
         navController.navigate(StarGazerDestinations.STAR_FINDER_ROUTE) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    val navigateToUpdate: () -> Unit = {
+        navController.navigate(StarGazerDestinations.UPDATE_ROUTE) {
             popUpTo(navController.graph.findStartDestination().id) {
                 saveState = true
             }

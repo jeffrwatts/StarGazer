@@ -14,4 +14,5 @@
     <string name="planets">Planets</string>
     <string name="solarsystem">Solar System</string>
     <string name="deepskyobjects">Deep Sky Objects</string>
+    <string name="update_title">Update</string>
 </resources>
