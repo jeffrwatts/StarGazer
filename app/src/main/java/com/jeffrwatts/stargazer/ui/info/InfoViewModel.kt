@@ -62,7 +62,10 @@ class InfoViewModel @Inject constructor (
         viewModelScope.launch {
             workManager.getWorkInfoByIdLiveData(updateRequest.id).asFlow().collect { workInfo ->
                 when (workInfo.state) {
-                    WorkInfo.State.RUNNING -> _state.value = _state.value.copy(isDownloading = true)
+                    WorkInfo.State.RUNNING -> {
+                        val downloadStatus = workInfo.progress.getString("Status") ?: "Running"
+                        _state.value = _state.value.copy(isDownloading = true, downloadStatus = downloadStatus)
+                    }
                     WorkInfo.State.SUCCEEDED -> _state.value = _state.value.copy(
                         isDownloading = false,
                         lastUpdated = getLastUpdate()

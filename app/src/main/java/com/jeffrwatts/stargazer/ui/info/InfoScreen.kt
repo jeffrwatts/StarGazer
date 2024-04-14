@@ -121,7 +121,7 @@ fun InfoContent(
                 ) {
                     Text("Images: ", style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        text = if (uiState.isDownloading) "Downloading..." else "Last updated: ${uiState.lastUpdated}",
+                        text = if (uiState.isDownloading) uiState.downloadStatus else "Last updated: ${uiState.lastUpdated}",
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }

@@ -2,6 +2,7 @@ import android.content.Context
 import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.ImageApi
@@ -49,9 +50,11 @@ class UpdateCelestialObjImageWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
+            setProgressAsync(buildStatusUpdate("Fetching Images"))
             val imageUpdates = imageApi.getImages() // Assume this returns a list of image data with URLs and catalogIds
-            imageUpdates.forEach { image ->
+            imageUpdates.forEachIndexed() { index, image ->
                 try {
+                    setProgressAsync(buildStatusUpdate("Fetching ${index + 1} of ${imageUpdates.size}"))
                     val imageUrl = image.url
                     val imageStream = URL(imageUrl).openStream()
                     val outputFile = File(applicationContext.cacheDir, "${image.objectId}.webp")
@@ -69,5 +72,9 @@ class UpdateCelestialObjImageWorker @AssistedInject constructor(
             Log.e("WorkManager", "Failed during image download work", e)
             Result.failure()
         }
+    }
+
+    private fun buildStatusUpdate(statusUpdate: String): Data {
+        return Data.Builder().putString("Status", statusUpdate).build()
     }
 }
