@@ -1,6 +1,7 @@
 package com.jeffrwatts.stargazer.di
 
 import android.content.Context
+import androidx.work.WorkManager
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.StarGazerApplication
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.planetaryposition.SolarSystemRepository
@@ -44,8 +45,19 @@ object DispatcherModule {
 
 @Module
 @InstallIn(SingletonComponent::class)
+object AppModule {
+
+    @Provides
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+        return WorkManager.getInstance(context)
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
 object NetworkModule {
     @Provides
+    @Singleton
     fun provideEphemerisApi(): EphemerisApi {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -67,6 +79,7 @@ object NetworkModule {
     }
 
     @Provides
+    @Singleton
     fun provideImageApi(): ImageApi {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY

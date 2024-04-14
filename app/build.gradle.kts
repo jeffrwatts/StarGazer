@@ -97,6 +97,9 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
+    implementation ("androidx.work:work-runtime-ktx:2.9.0")
+
+
     // CameraX
     implementation ("androidx.camera:camera-camera2:1.3.2")
     implementation ("androidx.camera:camera-lifecycle:1.3.2")
@@ -111,8 +114,9 @@ dependencies {
     // Dependency Injection
     implementation ("com.google.dagger:hilt-android:2.49")
     implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation ("androidx.hilt:hilt-work:1.2.0")
     implementation("androidx.test.ext:junit-ktx:1.1.5")
-    kapt ("com.google.dagger:hilt-compiler:2.48")
+    kapt ("com.google.dagger:hilt-compiler:2.49")
 
     // Permissions
     implementation ("com.google.accompanist:accompanist-permissions:0.32.0")

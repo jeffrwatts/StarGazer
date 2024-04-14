@@ -10,18 +10,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,7 +38,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import kotlin.math.abs
@@ -71,11 +68,9 @@ fun InfoScreen(
             .padding(innerPadding)
             .nestedScroll(scrollBehavior.nestedScrollConnection)
 
-            InfoContent(
-                uiState = uiState,
-                toggleHorozontal = { viewModel.toggleHorizontalFlip() },
-                toggleVertical = { viewModel.toggleVerticalFlip() },
-                modifier = contentModifier)
+        InfoContent(uiState = uiState,
+            triggerUpdate = { viewModel.triggerImageUpdate() },
+            modifier = contentModifier)
     }
 }
 
@@ -91,8 +86,7 @@ fun InfoSectionHeader(title: String) {
 @Composable
 fun InfoContent(
     uiState: InfoUiState,
-    toggleHorozontal: (switch: Boolean) -> Unit,
-    toggleVertical: (switch: Boolean) -> Unit,
+    triggerUpdate: () -> Unit,
     modifier: Modifier)
 {
     LazyColumn(
@@ -116,42 +110,44 @@ fun InfoContent(
         item { Spacer(modifier = Modifier.height(4.dp)) }
         item { Text(text = "Altitude: ${uiState.altitude}", style = MaterialTheme.typography.bodyLarge) }
 
-        // Polar View
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Images: ", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        text = if (uiState.isDownloading) "Downloading..." else "Last updated: ${uiState.lastUpdated}",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+
+                Button(
+                    onClick = { triggerUpdate() },
+                    enabled = !uiState.isDownloading,
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = Color.White  // Sets the text and icon color
+                    ),
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                ) {
+                    Text("Update")
+                }
+            }
+        }
+
+        // Polar View - Note, currently just using finder scope for this, so hard code horizontal/vertical orientation.
         item { Spacer(modifier = Modifier.height(16.dp)) }
         item { InfoSectionHeader(title = "Polar View") }
         item { Spacer(modifier = Modifier.height(32.dp)) }
         item {
-            PolarView(polarisX = uiState.polarisX, polarisY = uiState.polarisY,
-                isHorizontalFlip = uiState.isHorizontalFlip,
-                isVerticalFlip = uiState.isVerticalFlip)
-        }
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Horizontal Flip
-                Text("Horz. Flip", modifier = Modifier.align(Alignment.CenterVertically))
-                Spacer(modifier = Modifier.width(8.dp)) // space between label and switch
-                Switch(
-                    checked = uiState.isHorizontalFlip,
-                    onCheckedChange = toggleHorozontal
-                )
-
-                Spacer(modifier = Modifier.width(32.dp)) // space between the two switch-label groups
-
-                // Vertical Flip
-                Text("Vert. Flip", modifier = Modifier.align(Alignment.CenterVertically))
-                Spacer(modifier = Modifier.width(8.dp)) // space between label and switch
-                Switch(
-                    checked = uiState.isVerticalFlip,
-                    onCheckedChange = toggleVertical
-                )
-            }
+            PolarView(polarisX = uiState.polarisX,
+                polarisY = uiState.polarisY,
+                isHorizontalFlip = false,
+                isVerticalFlip = true)
         }
     }
 }
@@ -219,5 +215,5 @@ fun DrawScope.drawPolarContent(polarisX: Double, polarisY: Double, circleColor: 
 @Preview
 @Composable
 fun PolarViewPreview() {
-    PolarView(polarisX = -0.2, polarisY = 0.0, isHorizontalFlip = true, isVerticalFlip = false)
+    PolarView(polarisX = -0.2, polarisY = 0.0, isHorizontalFlip = false, isVerticalFlip = true)
 }

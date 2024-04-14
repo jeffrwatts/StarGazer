@@ -1,10 +1,18 @@
 package com.jeffrwatts.stargazer.ui.info
 
+import UpdateCelestialObjImageWorker
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
+import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +25,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class InfoViewModel @Inject constructor (
-    private val locationRepository: LocationRepository
+    private val locationRepository: LocationRepository,
+    private val workManager: WorkManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(InfoUiState(currentTime = "",
@@ -27,7 +36,10 @@ class InfoViewModel @Inject constructor (
         accuracy = "",
         altitude = "",
         polarisX = 0.0,
-        polarisY = 0.0))
+        polarisY = 0.0,
+        lastUpdated = getLastUpdate(),
+        downloadStatus = "",
+        isDownloading = false))
     val state: StateFlow<InfoUiState> = _state
 
     companion object {
@@ -42,18 +54,25 @@ class InfoViewModel @Inject constructor (
         observeLocationUpdates()
     }
 
-    fun startLocationUpdates() {
-        locationRepository.startLocationUpdates()
-    }
+    fun triggerImageUpdate() {
+        val updateRequest = OneTimeWorkRequestBuilder<UpdateCelestialObjImageWorker>().build()
+        workManager.enqueue(updateRequest)
 
-    fun toggleHorizontalFlip() {
-        _state.value = _state.value.copy(isHorizontalFlip = !_state.value.isHorizontalFlip)
+        // Observe the work status and update the state
+        viewModelScope.launch {
+            workManager.getWorkInfoByIdLiveData(updateRequest.id).asFlow().collect { workInfo ->
+                when (workInfo.state) {
+                    WorkInfo.State.RUNNING -> _state.value = _state.value.copy(isDownloading = true)
+                    WorkInfo.State.SUCCEEDED -> _state.value = _state.value.copy(
+                        isDownloading = false,
+                        lastUpdated = getLastUpdate()
+                    )
+                    WorkInfo.State.FAILED -> _state.value = _state.value.copy(isDownloading = false)
+                    else -> _state.value = _state.value.copy(isDownloading = false)
+                }
+            }
+        }
     }
-
-    fun toggleVerticalFlip() {
-        _state.value = _state.value.copy(isVerticalFlip = !_state.value.isVerticalFlip)
-    }
-
 
     // Updates the time every second
     private fun observeDateTimeUpdates() {
@@ -101,6 +120,12 @@ class InfoViewModel @Inject constructor (
         return dateFormat.format(Date())
     }
 
+    private fun getLastUpdate(): String {
+        // UPDATE: pull this from the last download time.
+        val dateFormat = SimpleDateFormat("MM/dd/yyyy HH:mm:ss", Locale.getDefault())
+        return dateFormat.format(Date())
+    }
+
     private fun updatePolarisCoords(lat: Double, lon: Double): Pair<Double, Double> {
         val jdNow = Utils.calculateJulianDateNow()
 
@@ -113,8 +138,6 @@ class InfoViewModel @Inject constructor (
 
         return Pair(polarisX, polarisY)
     }
-
-
 }
 
 data class InfoUiState(
@@ -126,6 +149,7 @@ data class InfoUiState(
     val altitude: String,
     val polarisX: Double,
     val polarisY: Double,
-    val isHorizontalFlip: Boolean = true,
-    val isVerticalFlip: Boolean = false
+    val lastUpdated: String,
+    val downloadStatus: String,
+    val isDownloading: Boolean = false
 )
