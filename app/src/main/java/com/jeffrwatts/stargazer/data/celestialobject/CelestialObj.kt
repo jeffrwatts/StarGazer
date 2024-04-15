@@ -35,24 +35,24 @@ fun CelestialObj.getImageResource(): Int {
         "Uranus" -> R.drawable.uranus
         "Neptune" -> R.drawable.neptune
         "Moon" -> R.drawable.moon
-        "M1" -> R.drawable.m1
-        "M13" -> R.drawable.m13
-        "M31" -> R.drawable.m31
-        "M33" -> R.drawable.m33
-        "M42" -> R.drawable.m42
-        "M44" -> R.drawable.m44
-        "M45" -> R.drawable.m45
-        "M51" -> R.drawable.m51
-        "M63" -> R.drawable.m63
-        "M78" -> R.drawable.m78
-        "M81" -> R.drawable.m81
-        "M82" -> R.drawable.m82
-        "M97" -> R.drawable.m97
-        "M101" -> R.drawable.m101
-        "M104" -> R.drawable.m104
-        "C14" -> R.drawable.caldwell14
-        "C49" -> R.drawable.caldwell49
-        "C64" -> R.drawable.caldwell64
+        "m1" -> R.drawable.m1
+        "m13" -> R.drawable.m13
+        "m31" -> R.drawable.m31
+        "m33" -> R.drawable.m33
+        "m42" -> R.drawable.m42
+        "m44" -> R.drawable.m44
+        "m45" -> R.drawable.m45
+        "m51" -> R.drawable.m51
+        "m63" -> R.drawable.m63
+        "m78" -> R.drawable.m78
+        "m81" -> R.drawable.m81
+        "m82" -> R.drawable.m82
+        "m97" -> R.drawable.m97
+        "m101" -> R.drawable.m101
+        "m104" -> R.drawable.m104
+        "c14" -> R.drawable.caldwell14
+        "c49" -> R.drawable.caldwell49
+        "c64" -> R.drawable.caldwell64
         else -> when (this.type) {
             ObjectType.STAR -> R.drawable.star
             ObjectType.GALAXY -> R.drawable.galaxy

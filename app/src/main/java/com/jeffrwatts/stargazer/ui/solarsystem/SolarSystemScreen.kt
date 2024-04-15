@@ -161,17 +161,6 @@ fun SolarSystemItem(
                 color = textColor
             )
             Text(
-                text = listOfNotNull(
-                    celestialObjPos.celestialObj.ngcId,
-                    celestialObjPos.celestialObj.objectId
-                )
-                    .joinToString(", "),
-                style = MaterialTheme.typography.bodyMedium,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                color = textColor
-            )
-            Text(
                 text = "Alt: ${formatToDegreeAndMinutes(celestialObjPos.alt)}, Azm: ${
                     formatToDegreeAndMinutes(
                         celestialObjPos.azm

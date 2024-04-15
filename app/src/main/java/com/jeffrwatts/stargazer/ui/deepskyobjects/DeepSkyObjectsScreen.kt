@@ -53,6 +53,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -64,6 +65,7 @@ import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
     ExperimentalPermissionsApi::class
@@ -219,7 +221,7 @@ fun DeepSkyObjectsItem(
             Text(
                 text = listOfNotNull(
                     celestialObjPos.celestialObj.ngcId,
-                    celestialObjPos.celestialObj.objectId
+                    celestialObjPos.celestialObj.objectId.uppercase(Locale.getDefault())
                 )
                     .joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,
