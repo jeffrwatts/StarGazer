@@ -116,7 +116,6 @@ fun DeepSkyDetailContent(celestialObj: CelestialObj, entries: List<Utils.Altitud
         Spacer(modifier = Modifier.height(16.dp))
 
         // Data Fields
-        LabeledField(label = "Catalog ID", value = celestialObj.catalogId ?: "N/A")
         LabeledField(label = "NGC ID", value = celestialObj.ngcId ?: "N/A")
         LabeledField(label = "Subtype", value = celestialObj.subType ?: "N/A")
         LabeledField(label = "Constellation", value = celestialObj.constellation ?: "N/A")

@@ -219,7 +219,7 @@ fun DeepSkyObjectsItem(
             Text(
                 text = listOfNotNull(
                     celestialObjPos.celestialObj.ngcId,
-                    celestialObjPos.celestialObj.catalogId
+                    celestialObjPos.celestialObj.objectId
                 )
                     .joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,

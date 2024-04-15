@@ -3,7 +3,7 @@ package com.jeffrwatts.stargazer.data.celestialobject
 data class CelestialObjJson(
     val id: Int,
     val friendlyName: String,
-    val catalogId: String?,
+    val objectId: String,
     val ngcId: String?,
     val ra: Double,
     val dec: Double,
@@ -20,7 +20,7 @@ fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
     return CelestialObj(
         id = this.id,
         friendlyName = this.friendlyName,
-        catalogId = this.catalogId,
+        objectId = this.objectId,
         ngcId = this.ngcId,
         ra = this.ra,
         dec = this.dec,

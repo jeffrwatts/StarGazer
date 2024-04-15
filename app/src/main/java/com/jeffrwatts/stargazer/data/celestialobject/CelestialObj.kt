@@ -9,11 +9,10 @@ enum class ObjectType {
 }
 
 @Entity(tableName = "celestial_objects")
-//@TypeConverters(Converters::class)
 data class CelestialObj(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val friendlyName: String,
-    val catalogId: String?,
+    val objectId: String,
     val ngcId: String?,
     val ra: Double,
     val dec: Double,
@@ -27,7 +26,7 @@ data class CelestialObj(
 )
 
 fun CelestialObj.getImageResource(): Int {
-    return when (this.catalogId) {
+    return when (this.objectId) {
         "Mercury" -> R.drawable.mercury
         "Venus" -> R.drawable.venus
         "Mars" -> R.drawable.mars
@@ -51,9 +50,9 @@ fun CelestialObj.getImageResource(): Int {
         "M97" -> R.drawable.m97
         "M101" -> R.drawable.m101
         "M104" -> R.drawable.m104
-        "Caldwell 14" -> R.drawable.caldwell14
-        "Caldwell 49" -> R.drawable.caldwell49
-        "Caldwell 64" -> R.drawable.caldwell64
+        "C14" -> R.drawable.caldwell14
+        "C49" -> R.drawable.caldwell49
+        "C64" -> R.drawable.caldwell64
         else -> when (this.type) {
             ObjectType.STAR -> R.drawable.star
             ObjectType.GALAXY -> R.drawable.galaxy
