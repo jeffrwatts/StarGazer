@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.WorkManager
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.StarGazerApplication
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageDao
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.planetaryposition.SolarSystemRepository
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
@@ -120,6 +121,12 @@ object DatabaseModule {
     @Provides
     fun provideVariableStarObjDao(@ApplicationContext context: Context): VariableStarObjDao {
         return StarGazerDatabase.getDatabase(context).variableStarObjDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideCelestiaLObjImageDao(@ApplicationContext context: Context): CelestialObjImageDao {
+        return StarGazerDatabase.getDatabase(context).celestialObjImageDao()
     }
 }
 

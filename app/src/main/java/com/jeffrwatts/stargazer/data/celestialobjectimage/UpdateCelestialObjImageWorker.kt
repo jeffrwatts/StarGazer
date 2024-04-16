@@ -5,9 +5,13 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.jeffrwatts.stargazer.BuildConfig
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImage
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageDao
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.ImageApi
+import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -22,12 +26,18 @@ import java.util.concurrent.TimeUnit
 @HiltWorker
 class UpdateCelestialObjImageWorker @AssistedInject constructor(
     @Assisted context: Context,
-    @Assisted workerParams: WorkerParameters
+    @Assisted workerParams: WorkerParameters,
+    //private val celestialObjImageDao: CelestialObjImageDao
 ) : CoroutineWorker(context, workerParams) {
 
     private val imageApi = provideImageApi()
+    private val celestialObjImageDao = provideCelestiaLObjImageDao(context)
 
     // Determine why dependency injection wasn't working here.
+    private fun provideCelestiaLObjImageDao(context: Context): CelestialObjImageDao {
+        return StarGazerDatabase.getDatabase(context).celestialObjImageDao()
+    }
+
     private fun provideImageApi(): ImageApi {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -54,6 +64,7 @@ class UpdateCelestialObjImageWorker @AssistedInject constructor(
             setProgressAsync(buildStatusUpdate("Getting Images..."))
             val imageUpdates = imageApi.getImages() // Assume this returns a list of image data with URLs and catalogIds
             setProgressAsync(buildStatusUpdate("Downloading ${imageUpdates.size} images"))
+            celestialObjImageDao.deleteAllImages()
             imageUpdates.forEachIndexed() { index, image ->
                 try {
                     val imageUrl = image.url
@@ -64,6 +75,7 @@ class UpdateCelestialObjImageWorker @AssistedInject constructor(
                         imageStream.copyTo(fileOutputStream)
                     }
                     setProgressAsync(buildStatusUpdate("Downloaded ${index + 1} of ${imageUpdates.size}: ${image.objectId}"))
+                    celestialObjImageDao.insertImage(CelestialObjImage(objectId = image.objectId, crop = image.crop, filename = outputFile.toString()))
                     succeeded+=1
                 } catch (e: IOException) {
                     Log.e("ImageDownload", "Failed to download image for catalogId: ${image.objectId}", e)
