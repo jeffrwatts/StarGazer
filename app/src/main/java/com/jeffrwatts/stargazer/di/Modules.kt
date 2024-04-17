@@ -5,7 +5,7 @@ import androidx.work.WorkManager
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.StarGazerApplication
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageDao
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.planetaryposition.SolarSystemRepository
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.solarsystem.SolarSystemRepository
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.ImageApi
@@ -14,7 +14,7 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.orientation.OrientationRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
-import com.jeffrwatts.stargazer.data.solarsystem.PlanetPosDao
+import com.jeffrwatts.stargazer.data.solarsystem.EphemerisDao
 import com.jeffrwatts.stargazer.network.EphemerisApi
 import dagger.Module
 import dagger.Provides
@@ -107,8 +107,8 @@ object NetworkModule {
 object DatabaseModule {
     @Singleton
     @Provides
-    fun providePlanetPosDao(@ApplicationContext context: Context): PlanetPosDao {
-        return StarGazerDatabase.getDatabase(context).planetPosDao()
+    fun provideEphermerisDao(@ApplicationContext context: Context): EphemerisDao {
+        return StarGazerDatabase.getDatabase(context).ephemerisDao()
     }
 
     @Singleton
@@ -146,7 +146,7 @@ object RepositoryModule {
     @Singleton
     @Provides
     fun provideSolarSystemRepository(
-        dao: PlanetPosDao,
+        dao: EphemerisDao,
         ephemerisApi: EphemerisApi,
         @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): SolarSystemRepository {

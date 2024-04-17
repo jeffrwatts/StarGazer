@@ -1,11 +1,11 @@
 package com.jeffrwatts.stargazer.network
 
-import com.jeffrwatts.stargazer.data.solarsystem.PlanetPosJson
+import com.jeffrwatts.stargazer.data.solarsystem.EphemerisEntryJson
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface EphemerisApi {
     @GET("get_ephemeris")
     suspend fun getEphemeris(@Query("start") start:Double,
-                            @Query("length") length: Double) : List<PlanetPosJson>
+                            @Query("length") length: Double) : List<EphemerisEntryJson>
 }

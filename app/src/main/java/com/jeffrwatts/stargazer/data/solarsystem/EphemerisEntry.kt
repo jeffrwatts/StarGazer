@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "ephemeris")
-data class PlanetPos(
+data class EphemerisEntry(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val planetName: String,
     val time: Double,

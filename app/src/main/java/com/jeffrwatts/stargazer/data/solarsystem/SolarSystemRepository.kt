@@ -1,13 +1,10 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.planetaryposition
+package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.solarsystem
 
 import android.location.Location
 import android.util.Log
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
-import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
-import com.jeffrwatts.stargazer.data.solarsystem.PlanetPos
-import com.jeffrwatts.stargazer.data.solarsystem.PlanetPosDao
-import com.jeffrwatts.stargazer.data.solarsystem.toPlanetPosEntity
+import com.jeffrwatts.stargazer.data.solarsystem.EphemerisDao
+import com.jeffrwatts.stargazer.data.solarsystem.EphemerisEntry
+import com.jeffrwatts.stargazer.data.solarsystem.toEphemerisEntry
 import com.jeffrwatts.stargazer.di.IoDispatcher
 import com.jeffrwatts.stargazer.network.EphemerisApi
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,31 +17,30 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class SolarSystemRepository @Inject constructor (
-    private val dao: PlanetPosDao,
+    private val dao: EphemerisDao,
     private val ephemerisApi: EphemerisApi,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 )
 {
     companion object {
         const val JULIAN_DAY = 1.0
-        const val JULIAN_MINUTE = 1.0 / (24.0 * 60.0)   // Data is stale after 1 minute (for testing)
-        const val PLANET_START_ID = 10000
+        const val JULIAN_MINUTE = 1.0 / (24.0 * 60.0)
+        const val PLANET_ID_START = 10000
     }
 
     private var ephemerisStartTime: Double? = null
     private val lengthOfDataDays = 2 * JULIAN_DAY
     private val staleDataOffsetMinutes = 2 * JULIAN_MINUTE
 
-
-    private val solarSystem : List<CelestialObj> = listOf (
-        CelestialObj(PLANET_START_ID, "Mercury", "Mercury", null, 0.0, 0.0, ObjectType.PLANET, null, null, null, null, true, ""),
-        CelestialObj(PLANET_START_ID+1, "Venus", "Venus", null, 0.0, 0.0, ObjectType.PLANET, null, null, null, null, true, ""),
-        CelestialObj(PLANET_START_ID+2, "Mars", "Mars", null, 0.0, 0.0, ObjectType.PLANET, null, null, null, null, true, ""),
-        CelestialObj(PLANET_START_ID+3, "Jupiter", "Jupiter", null, 0.0, 0.0, ObjectType.PLANET, null, null, null, null, true, ""),
-        CelestialObj(PLANET_START_ID+4, "Saturn", "Saturn", null, 0.0, 0.0, ObjectType.PLANET, null, null, null, null, true, ""),
-        CelestialObj(PLANET_START_ID+5, "Uranus", "Uranus", null, 0.0, 0.0, ObjectType.PLANET, null, null, null, null, true, ""),
-        CelestialObj(PLANET_START_ID+6, "Neptune", "Neptune", null, 0.0, 0.0, ObjectType.PLANET, null, null, null, null, true, ""),
-        CelestialObj(PLANET_START_ID+7, "Moon", "Moon", null, 0.0, 0.0, ObjectType.PLANET, null, null, null, null, true, "")
+    private val solarSystem : List<PlanetObj> = listOf (
+        PlanetObj(PLANET_ID_START, "Mercury", 0.0, 0.0),
+        PlanetObj( PLANET_ID_START +1, "Venus", 0.0, 0.0),
+        PlanetObj( PLANET_ID_START+2, "Mars", 0.0, 0.0),
+        PlanetObj( PLANET_ID_START+3, "Jupiter", 0.0, 0.0),
+        PlanetObj( PLANET_ID_START+4, "Saturn", 0.0, 0.0),
+        PlanetObj( PLANET_ID_START+5, "Uranus", 0.0, 0.0),
+        PlanetObj( PLANET_ID_START+6, "Neptune", 0.0, 0.0),
+        PlanetObj( PLANET_ID_START+7, "Moon", 0.0, 0.0)
     )
 
     init {
@@ -53,10 +49,10 @@ class SolarSystemRepository @Inject constructor (
         }
     }
 
-    suspend fun getAllPlanets(location: Location, date: Double): Flow<List<CelestialObjPos>> = flow {
+    suspend fun getAllPlanets(location: Location, date: Double): Flow<List<PlanetObjPos>> = flow {
         // Emit cached data immediately
         val cachedData = solarSystem.map {
-            CelestialObjPos.fromCelestialObj(updatePlanetPosition(it, date), date, location.latitude, location.longitude)
+            PlanetObjPos.fromPlanetObj(updatePlanetPosition(it, date), date, location.latitude, location.longitude)
         }
         emit(cachedData)
 
@@ -64,19 +60,19 @@ class SolarSystemRepository @Inject constructor (
         if (shouldUpdate(date)) {
             updateFromApi(date)
             val freshData = solarSystem.map {
-                CelestialObjPos.fromCelestialObj(updatePlanetPosition(it, date), date, location.latitude, location.longitude)
+                PlanetObjPos.fromPlanetObj(updatePlanetPosition(it, date), date, location.latitude, location.longitude)
             }
             emit(freshData)
         }
     }
 
-    private suspend fun updatePlanetPosition(celestialObj: CelestialObj, time: Double): CelestialObj {
+    private suspend fun updatePlanetPosition(planetObj: PlanetObj, time: Double): PlanetObj {
         return try {
-            val planetPos = dao.getPlanetPosition(celestialObj.friendlyName, time).firstOrNull()
-            planetPos?.let { celestialObj.copy(ra = it.ra, dec = it.dec) } ?: celestialObj
+            val planetPos = dao.getPlanetPosition(planetObj.planetName, time).firstOrNull()
+            planetPos?.let { planetObj.copy(ra = it.ra, dec = it.dec) } ?: planetObj
         } catch (e: Exception) {
             Log.e("OfflineCelestialObjRepo", "Error updating planet position", e)
-            celestialObj
+            planetObj
         }
     }
 
@@ -94,14 +90,14 @@ class SolarSystemRepository @Inject constructor (
         }
     }
 
-    private suspend fun getFromApi(time: Double) : List<PlanetPos> {
+    private suspend fun getFromApi(time: Double) : List<EphemerisEntry> {
         return withContext(ioDispatcher){
             try {
                 ephemerisApi.getEphemeris(time, lengthOfDataDays).map {
-                    it.toPlanetPosEntity()
+                    it.toEphemerisEntry()
                 }
             } catch (exception: Exception) {
-                emptyList<PlanetPos>()
+                emptyList()
             }
         }
     }

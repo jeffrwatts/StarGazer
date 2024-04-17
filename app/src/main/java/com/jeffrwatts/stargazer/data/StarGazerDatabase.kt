@@ -10,17 +10,17 @@ import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
-import com.jeffrwatts.stargazer.data.solarsystem.PlanetPos
-import com.jeffrwatts.stargazer.data.solarsystem.PlanetPosDao
+import com.jeffrwatts.stargazer.data.solarsystem.EphemerisDao
+import com.jeffrwatts.stargazer.data.solarsystem.EphemerisEntry
 
 @Database(entities = [
     CelestialObj::class,
-    PlanetPos::class,
+    EphemerisEntry::class,
     VariableStarObj::class,
     CelestialObjImage::class], version = 1, exportSchema = false)
 abstract class StarGazerDatabase : RoomDatabase() {
     abstract fun celestialObjDao(): CelestialObjDao
-    abstract fun planetPosDao(): PlanetPosDao
+    abstract fun ephemerisDao(): EphemerisDao
     abstract fun variableStarObjDao(): VariableStarObjDao
     abstract fun celestialObjImageDao(): CelestialObjImageDao
 

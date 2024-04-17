@@ -7,15 +7,12 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface PlanetPosDao {
+interface EphemerisDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(planetPos: List<PlanetPos>)
+    suspend fun insertAll(planetPos: List<EphemerisEntry>)
 
     @Query("SELECT * FROM ephemeris WHERE planetName = :planetName ORDER BY ABS(time - :time) ASC, time DESC LIMIT 1")
-    fun getPlanetPosition(planetName: String, time: Double): Flow<PlanetPos>
-
-    @Query("SELECT COUNT(*) FROM celestial_objects")
-    fun getCount(): Int
+    fun getPlanetPosition(planetName: String, time: Double): Flow<EphemerisEntry>
 
     @Query("SELECT MIN(time) FROM ephemeris")
     suspend fun getEphemerisStartTime(): Double?

@@ -36,8 +36,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
-import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.solarsystem.PlanetObjPos
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.solarsystem.getImageResource
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
@@ -78,7 +78,7 @@ fun SolarSystemScreen(
                 }
 
                 is SolarSystemUiState.Success -> {
-                    SolarSystemBody(celestialObjs = (solarSystemUiState as SolarSystemUiState.Success).data,
+                    SolarSystemBody(planetObjs = (solarSystemUiState as SolarSystemUiState.Success).data,
                         onSightClick = onSightClick,
                         modifier = contentModifier)
                 }
@@ -101,11 +101,11 @@ fun SolarSystemScreen(
 
 @Composable
 private fun SolarSystemBody(
-    celestialObjs: List<CelestialObjPos>,
+    planetObjs: List<PlanetObjPos>,
     onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (celestialObjs.isEmpty()) {
+    if (planetObjs.isEmpty()) {
         Text(
             text = stringResource(R.string.no_item_description),
             textAlign = TextAlign.Center,
@@ -113,10 +113,10 @@ private fun SolarSystemBody(
         )
     } else {
         LazyColumn(modifier = modifier) {
-            items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
+            items(items = planetObjs, key = { it.planetObj.id }) { planetObjPos ->
                 SolarSystemItem(
-                    celestialObjPos = celestialObj,
-                    onItemClick = {onSightClick(celestialObj.celestialObj.id)},
+                    planetObjPos = planetObjPos,
+                    onItemClick = {onSightClick(planetObjPos.planetObj.id)},
                     modifier = Modifier
                         .padding(8.dp)
                 )
@@ -131,11 +131,11 @@ private fun SolarSystemBody(
 
 @Composable
 fun SolarSystemItem(
-    celestialObjPos: CelestialObjPos,
+    planetObjPos: PlanetObjPos,
     onItemClick:() -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val prominenceAlpha = if (celestialObjPos.observable) 1f else 0.6f
+    val prominenceAlpha = if (planetObjPos.observable) 1f else 0.6f
     val textColor = MaterialTheme.colorScheme.onSurface.copy(alpha = prominenceAlpha)
 
     Row(
@@ -147,30 +147,26 @@ fun SolarSystemItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = painterResource(id = celestialObjPos.celestialObj.getImageResource()),
+            painter = painterResource(id = planetObjPos.planetObj.getImageResource()),
             contentDescription = "Celestial Object",
             modifier = Modifier.size(72.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
-                text = celestialObjPos.celestialObj.friendlyName,
+                text = planetObjPos.planetObj.planetName,
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
                 color = textColor
             )
             Text(
-                text = "Alt: ${formatToDegreeAndMinutes(celestialObjPos.alt)}, Azm: ${
-                    formatToDegreeAndMinutes(
-                        celestialObjPos.azm
-                    )
-                }",
+                text = "Alt: ${formatToDegreeAndMinutes(planetObjPos.alt)}, Azm: ${formatToDegreeAndMinutes(planetObjPos.azm)}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
             Text(
-                text = "Meridian: ${formatHoursToHoursMinutes(celestialObjPos.timeUntilMeridian)}",
+                text = "Meridian: ${formatHoursToHoursMinutes(planetObjPos.timeUntilMeridian)}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )

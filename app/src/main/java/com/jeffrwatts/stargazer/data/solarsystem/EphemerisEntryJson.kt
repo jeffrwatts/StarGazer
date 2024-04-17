@@ -1,14 +1,14 @@
 package com.jeffrwatts.stargazer.data.solarsystem
 
-data class PlanetPosJson (
+data class EphemerisEntryJson (
     val name: String,
     val time: Double,
     val ra: Double,
     val dec: Double
 )
 
-fun PlanetPosJson.toPlanetPosEntity(): PlanetPos {
-    return PlanetPos(
+fun EphemerisEntryJson.toEphemerisEntry(): EphemerisEntry {
+    return EphemerisEntry(
         id=0,
         planetName = this.name,
         time = this.time,
