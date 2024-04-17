@@ -12,8 +12,8 @@ import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.solarsystem.SolarSys
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.updatescreen.UpdateScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestardetail.VariableStarDetailScreen
+import com.jeffrwatts.stargazer.ui.altazmtool.AltAzmToolScreen
 import com.jeffrwatts.stargazer.ui.deepskydetail.DeepSkyDetailScreen
-import com.jeffrwatts.stargazer.ui.starfinder.StarFinderScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
 
 @Composable
@@ -46,8 +46,8 @@ fun StarGazerNavGraph(
         composable(StarGazerDestinations.INFO_ROUTE) {
             InfoScreen(openDrawer = openDrawer, modifier = modifier)
         }
-        composable(route = StarGazerDestinations.STAR_FINDER_ROUTE) {
-            StarFinderScreen(openDrawer = openDrawer, modifier = modifier)
+        composable(route = StarGazerDestinations.ALT_AZM_TOOL_ROUTE) {
+            AltAzmToolScreen(openDrawer = openDrawer, modifier = modifier)
         }
         composable(route = StarGazerDestinations.UPDATE_ROUTE) {
             UpdateScreen(openDrawer = openDrawer, modifier = modifier)

@@ -33,7 +33,7 @@ fun AppDrawer(
     navigateToSolarSystem: () -> Unit,
     navigateToVariableStar: () -> Unit,
     navigateToInfo: () -> Unit,
-    navigateToStarFinder: () -> Unit,
+    navigateToAltAzmTool: () -> Unit,
     navigateToUpdate:()->Unit,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier
@@ -71,10 +71,10 @@ fun AppDrawer(
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(
-            label = { Text(stringResource(id = R.string.star_finder)) },
+            label = { Text(stringResource(id = R.string.alt_azm_tool)) },
             icon = { Icon(Icons.Filled.AddCircleOutline, null) },
-            selected = currentRoute == StarGazerDestinations.STAR_FINDER_ROUTE,
-            onClick = { navigateToStarFinder(); closeDrawer() },
+            selected = currentRoute == StarGazerDestinations.ALT_AZM_TOOL_ROUTE,
+            onClick = { navigateToAltAzmTool(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(

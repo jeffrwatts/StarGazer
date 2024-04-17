@@ -8,7 +8,7 @@ object StarGazerDestinations {
     const val SOLAR_SYSTEM_ROUTE = "solarSystem"
     const val VARIABLE_STAR_ROUTE = "variableStar"
     const val INFO_ROUTE = "info"
-    const val STAR_FINDER_ROUTE = "starFinder"
+    const val ALT_AZM_TOOL_ROUTE = "altazmTool"
     const val UPDATE_ROUTE = "update"
     const val DEEP_SKY_DETAIL_ROUTE = "deepSkyDetail"
     const val VARIABLE_STAR_DETAIL_ROUTE = "variableStarDetail"
@@ -65,8 +65,8 @@ class StarGazerNavigationActions(navController: NavHostController) {
         }
     }
 
-    val navigateToStarFinder: () -> Unit = {
-        navController.navigate(StarGazerDestinations.STAR_FINDER_ROUTE) {
+    val navigateToAltAzmTool: () -> Unit = {
+        navController.navigate(StarGazerDestinations.ALT_AZM_TOOL_ROUTE) {
             popUpTo(navController.graph.findStartDestination().id) {
                 saveState = true
             }

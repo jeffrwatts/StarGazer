@@ -15,4 +15,5 @@
     <string name="solarsystem">Solar System</string>
     <string name="deepskyobjects">Deep Sky Objects</string>
     <string name="update_title">Update</string>
+    <string name="alt_azm_tool">Alt/Azm Tool</string>
 </resources>
