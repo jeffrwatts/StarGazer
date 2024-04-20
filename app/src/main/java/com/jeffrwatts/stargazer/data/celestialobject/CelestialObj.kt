@@ -11,16 +11,15 @@ enum class ObjectType {
 @Entity(tableName = "celestial_objects")
 data class CelestialObj(
     @PrimaryKey(autoGenerate = true) val id: Int,
-    val friendlyName: String,
+    val displayName: String,
     val objectId: String,
-    val ngcId: String?,
     val ra: Double,
     val dec: Double,
     val type: ObjectType,
     val subType: String?,
-    val constellation: String?,
     val magnitude: Double?,
-    val observationNotes: String?,
+    val constellation: String?,
+    val ngcId: String?,
     val recommended: Boolean,
     val tags: String
 )
@@ -50,9 +49,9 @@ fun CelestialObj.getImageResource(): Int {
         "m97" -> R.drawable.m97
         "m101" -> R.drawable.m101
         "m104" -> R.drawable.m104
-        "c14" -> R.drawable.caldwell14
-        "c49" -> R.drawable.caldwell49
-        "c64" -> R.drawable.caldwell64
+        "ngc869" -> R.drawable.caldwell14
+        "ldn1625" -> R.drawable.caldwell49
+        "ngc2362" -> R.drawable.caldwell64
         else -> when (this.type) {
             ObjectType.STAR -> R.drawable.star
             ObjectType.GALAXY -> R.drawable.galaxy

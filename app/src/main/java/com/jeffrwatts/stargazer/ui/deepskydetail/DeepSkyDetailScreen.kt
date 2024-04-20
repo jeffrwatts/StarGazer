@@ -63,7 +63,7 @@ fun DeepSkyDetailScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is SightDetailUiState.Success) {
-            title = (uiState as SightDetailUiState.Success).data.friendlyName
+            title = (uiState as SightDetailUiState.Success).data.displayName
         }
     }
 
@@ -105,7 +105,7 @@ fun DeepSkyDetailContent(celestialObj: CelestialObj, entries: List<Utils.Altitud
         // Banner Image
         Image(
             painter = painterResource(id = celestialObj.getImageResource()),
-            contentDescription = "Banner image for ${celestialObj.friendlyName}",
+            contentDescription = "Banner image for ${celestialObj.displayName}",
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 4.dp)
                 .fillMaxWidth()
@@ -123,19 +123,6 @@ fun DeepSkyDetailContent(celestialObj: CelestialObj, entries: List<Utils.Altitud
 
         Spacer(modifier = Modifier.height(16.dp))
         AltitudeChart(entries)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Observation Notes",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-        )
-        Text(
-            text = celestialObj.observationNotes ?: "No notes available.",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                .verticalScroll(rememberScrollState())
-        )
     }
 }
 

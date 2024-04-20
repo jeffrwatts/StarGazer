@@ -212,7 +212,7 @@ fun DeepSkyObjectsItem(
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
-                text = celestialObjPos.celestialObj.friendlyName,
+                text = celestialObjPos.celestialObj.displayName,
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
