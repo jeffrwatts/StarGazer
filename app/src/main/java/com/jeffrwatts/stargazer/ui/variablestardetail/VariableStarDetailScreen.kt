@@ -62,7 +62,7 @@ fun VariableStarDetailScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is VariableStarDetailUiState.Success) {
-            title = (uiState as VariableStarDetailUiState.Success).data.variableStarObj.friendlyName
+            title = (uiState as VariableStarDetailUiState.Success).data.variableStarObj.displayName
         }
     }
 
@@ -104,7 +104,7 @@ fun VariableStarDetailContent(variableStarObj: VariableStarObj, entries: List<Ut
         // Banner Image
         Image(
             painter = painterResource(id = R.drawable.star),
-            contentDescription = "Banner image for ${variableStarObj.friendlyName}",
+            contentDescription = "Banner image for ${variableStarObj.displayName}",
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 4.dp)
                 .fillMaxWidth()

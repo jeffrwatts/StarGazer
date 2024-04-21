@@ -154,7 +154,7 @@ fun VariableStarItem(
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
-                text = variableStarObjPos.variableStarObj.friendlyName,
+                text = variableStarObjPos.variableStarObj.displayName,
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,

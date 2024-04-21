@@ -2,7 +2,7 @@ package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobjec
 
 data class VariableStarObjJson (
     val id: Int,
-    val friendlyName: String,
+    val displayName: String,
     val ra: Double,
     val dec: Double,
     val period: Double,
@@ -16,7 +16,7 @@ data class VariableStarObjJson (
 fun VariableStarObjJson.toVariableStarObjEntity(): VariableStarObj {
     return VariableStarObj(
         id = this.id,
-        friendlyName = this.friendlyName,
+        displayName = this.displayName,
         ra = this.ra,
         dec = this.dec,
         period = this.period,

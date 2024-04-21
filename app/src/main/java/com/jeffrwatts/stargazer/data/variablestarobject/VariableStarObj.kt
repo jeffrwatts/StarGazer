@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "variable_star_objects")
 data class VariableStarObj (
     @PrimaryKey(autoGenerate = true) val id: Int,
-    val friendlyName: String,
+    val displayName: String,
     val ra: Double,
     val dec: Double,
     val period: Double,
