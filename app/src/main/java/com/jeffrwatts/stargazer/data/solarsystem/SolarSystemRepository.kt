@@ -1,10 +1,7 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.solarsystem
+package com.jeffrwatts.stargazer.data.solarsystem
 
 import android.location.Location
 import android.util.Log
-import com.jeffrwatts.stargazer.data.solarsystem.EphemerisDao
-import com.jeffrwatts.stargazer.data.solarsystem.EphemerisEntry
-import com.jeffrwatts.stargazer.data.solarsystem.toEphemerisEntry
 import com.jeffrwatts.stargazer.di.IoDispatcher
 import com.jeffrwatts.stargazer.network.EphemerisApi
 import kotlinx.coroutines.CoroutineDispatcher

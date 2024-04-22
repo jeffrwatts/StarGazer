@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.deepskyobjects
+package com.jeffrwatts.stargazer.ui.deepskyobjects
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,3 +1,5 @@
+package com.jeffrwatts.stargazer.data.celestialobjectimage
+
 import android.content.Context
 import android.util.Log
 import androidx.hilt.work.HiltWorker
@@ -5,13 +7,10 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.jeffrwatts.stargazer.BuildConfig
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImage
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageDao
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.ImageApi
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
+import com.jeffrwatts.stargazer.network.ImageApi
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient

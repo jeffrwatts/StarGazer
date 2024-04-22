@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.deepskyobjects
+package com.jeffrwatts.stargazer.ui.deepskyobjects
 
 import android.Manifest
 import androidx.compose.foundation.Image
@@ -53,7 +53,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi

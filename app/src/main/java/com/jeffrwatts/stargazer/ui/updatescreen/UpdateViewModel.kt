@@ -1,12 +1,12 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.updatescreen
+package com.jeffrwatts.stargazer.ui.updatescreen
 
-import UpdateCelestialObjImageWorker
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.jeffrwatts.stargazer.data.celestialobjectimage.UpdateCelestialObjImageWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

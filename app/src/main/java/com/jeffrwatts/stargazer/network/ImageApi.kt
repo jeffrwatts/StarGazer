@@ -1,6 +1,6 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network
+package com.jeffrwatts.stargazer.network
 
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimagejson.CelestialObjImageJson
+import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageJson
 import retrofit2.http.GET
 
 interface ImageApi {

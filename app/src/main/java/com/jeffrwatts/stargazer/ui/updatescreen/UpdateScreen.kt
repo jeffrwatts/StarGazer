@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.updatescreen
+package com.jeffrwatts.stargazer.ui.updatescreen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,7 +14,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -36,7 +35,6 @@ fun UpdateScreen(
     viewModel: UpdateViewModel = hiltViewModel(),
 ) {
     val topAppBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val uiState by viewModel.state.collectAsState()
     val statusMessages by viewModel.statusMessages.collectAsState()
 

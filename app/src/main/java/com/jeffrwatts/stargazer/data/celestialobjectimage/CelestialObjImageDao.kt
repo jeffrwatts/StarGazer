@@ -1,10 +1,9 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimage
+package com.jeffrwatts.stargazer.data.celestialobjectimage
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CelestialObjImageDao {

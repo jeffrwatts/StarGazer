@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimagejson
+package com.jeffrwatts.stargazer.data.celestialobjectimage
 
 data class CelestialObjImageJson (
     val objectId: String,

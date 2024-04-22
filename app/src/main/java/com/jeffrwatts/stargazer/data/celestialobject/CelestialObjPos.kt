@@ -1,7 +1,6 @@
 package com.jeffrwatts.stargazer.data.celestialobject
 
 import com.jeffrwatts.stargazer.utils.Utils
-import java.time.LocalDateTime
 
 data class CelestialObjPos(
     val celestialObj: CelestialObj,

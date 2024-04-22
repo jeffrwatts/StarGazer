@@ -4,14 +4,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImage
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageDao
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
+import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImage
+import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageDao
 import com.jeffrwatts.stargazer.data.solarsystem.EphemerisDao
 import com.jeffrwatts.stargazer.data.solarsystem.EphemerisEntry
+import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
+import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 
 @Database(entities = [
     CelestialObj::class,

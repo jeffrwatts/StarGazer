@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.solarsystem
+package com.jeffrwatts.stargazer.ui.solarsystem
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -36,8 +36,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.solarsystem.PlanetObjPos
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.solarsystem.getImageResource
+import com.jeffrwatts.stargazer.data.solarsystem.PlanetObjPos
+import com.jeffrwatts.stargazer.data.solarsystem.getImageResource
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen

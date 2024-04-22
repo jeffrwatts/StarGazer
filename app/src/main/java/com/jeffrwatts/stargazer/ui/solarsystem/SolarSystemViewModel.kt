@@ -1,10 +1,10 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.solarsystem
+package com.jeffrwatts.stargazer.ui.solarsystem
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.solarsystem.PlanetObjPos
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.solarsystem.SolarSystemRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
+import com.jeffrwatts.stargazer.data.solarsystem.PlanetObjPos
+import com.jeffrwatts.stargazer.data.solarsystem.SolarSystemRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -31,8 +31,8 @@ class SolarSystemViewModel @Inject constructor(
     fun fetchObjects() {
         collectionJob?.cancel() // Cancel the previous collection job if it exists
         collectionJob = viewModelScope.launch {
-            locationRepository.locationFlow.collect { location ->
-                location?.let { location ->
+            locationRepository.locationFlow.collect {
+                it?.let { location ->
                     val date = Utils.calculateJulianDateNow()
 
                     solarSystemRepository.getAllPlanets(location, date)

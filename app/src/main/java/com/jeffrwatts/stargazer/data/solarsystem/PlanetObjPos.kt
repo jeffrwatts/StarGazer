@@ -1,4 +1,5 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.solarsystem
+package com.jeffrwatts.stargazer.data.solarsystem
+
 import com.jeffrwatts.stargazer.utils.Utils
 
 data class PlanetObjPos(

@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.celestialobjectimage
+package com.jeffrwatts.stargazer.data.celestialobjectimage
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

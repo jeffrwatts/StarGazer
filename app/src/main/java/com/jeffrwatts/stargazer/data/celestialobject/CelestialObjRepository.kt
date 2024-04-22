@@ -11,10 +11,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.abs
 
 class CelestialObjRepository @Inject constructor (
     private val celestialObjDao: CelestialObjDao,

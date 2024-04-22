@@ -7,14 +7,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.deepskyobjects.DeepSkyObjectsScreen
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.solarsystem.SolarSystemScreen
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.updatescreen.UpdateScreen
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestardetail.VariableStarDetailScreen
 import com.jeffrwatts.stargazer.ui.altazmtool.AltAzmToolScreen
 import com.jeffrwatts.stargazer.ui.deepskydetail.DeepSkyDetailScreen
+import com.jeffrwatts.stargazer.ui.deepskyobjects.DeepSkyObjectsScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
+import com.jeffrwatts.stargazer.ui.solarsystem.SolarSystemScreen
+import com.jeffrwatts.stargazer.ui.updatescreen.UpdateScreen
+import com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
+import com.jeffrwatts.stargazer.ui.variablestardetail.VariableStarDetailScreen
 
 @Composable
 fun StarGazerNavGraph(

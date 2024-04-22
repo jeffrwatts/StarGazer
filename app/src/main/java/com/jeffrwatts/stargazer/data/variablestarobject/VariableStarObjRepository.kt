@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.variablestarobject
+package com.jeffrwatts.stargazer.data.variablestarobject
 
 import android.content.Context
 import android.location.Location
