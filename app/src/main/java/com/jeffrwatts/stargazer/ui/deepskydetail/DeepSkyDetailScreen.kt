@@ -1,6 +1,5 @@
 package com.jeffrwatts.stargazer.ui.deepskydetail
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,18 +26,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
-import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
+import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
 import com.jeffrwatts.stargazer.utils.AltitudeChart
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LabeledField
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.Utils
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +64,7 @@ fun DeepSkyDetailScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is SightDetailUiState.Success) {
-            title = (uiState as SightDetailUiState.Success).data.displayName
+            title = (uiState as SightDetailUiState.Success).data.celestialObj.displayName
         }
     }
 
@@ -81,11 +85,11 @@ fun DeepSkyDetailScreen(
                 LoadingScreen(modifier = contentModifier)
             }
             is SightDetailUiState.Success -> {
-                val celestialObj = (uiState as SightDetailUiState.Success).data
+                val celestialObjWithImage = (uiState as SightDetailUiState.Success).data
                 val altitudes = (uiState as SightDetailUiState.Success).altitudes
-                DeepSkyDetailContent(celestialObj = celestialObj, entries = altitudes, modifier = contentModifier)
+                DeepSkyDetailContent(celestialObjWithImage = celestialObjWithImage, entries = altitudes, modifier = contentModifier)
             }
-            is SightDetailUiState.Error -> {
+            else -> {//is SightDetailUiState.Error -> {
                 ErrorScreen(
                     message = (uiState as SightDetailUiState.Error).message,
                     modifier = contentModifier,
@@ -97,26 +101,39 @@ fun DeepSkyDetailScreen(
 }
 
 @Composable
-fun DeepSkyDetailContent(celestialObj: CelestialObj, entries: List<Utils.AltitudeEntry>, modifier: Modifier = Modifier) {
+fun DeepSkyDetailContent(celestialObjWithImage: CelestialObjWithImage, entries: List<Utils.AltitudeEntry>, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         // Banner Image
-        Image(
-            painter = painterResource(id = celestialObj.getImageResource()),
-            contentDescription = "Banner image for ${celestialObj.displayName}",
+        val imageFile = celestialObjWithImage.image?.let { image ->
+            File(image.filename)
+        }
+
+        val defaultImagePainter: Painter = painterResource(id = celestialObjWithImage.celestialObj.getDefaultImageResource())
+
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageFile)
+                .error(celestialObjWithImage.celestialObj.getDefaultImageResource())
+                .build(),
+            contentDescription = "Celestial Object",
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 4.dp)
                 .fillMaxWidth()
                 .height(200.dp),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            placeholder = defaultImagePainter,  // Use as a placeholder as well
+            onError = {
+                // Handle errors if necessary, for instance logging
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Data Fields
-        LabeledField(label = "NGC ID", value = celestialObj.ngcId ?: "N/A")
-        LabeledField(label = "Subtype", value = celestialObj.subType ?: "N/A")
-        LabeledField(label = "Constellation", value = celestialObj.constellation ?: "N/A")
-        LabeledField(label = "Magnitude", value = celestialObj.magnitude?.toString() ?: "N/A")
+        LabeledField(label = "NGC ID", value = celestialObjWithImage.celestialObj.ngcId ?: "N/A")
+        LabeledField(label = "Subtype", value = celestialObjWithImage.celestialObj.subType ?: "N/A")
+        LabeledField(label = "Constellation", value = celestialObjWithImage.celestialObj.constellation ?: "N/A")
+        LabeledField(label = "Magnitude", value = celestialObjWithImage.celestialObj.magnitude?.toString() ?: "N/A")
 
         Spacer(modifier = Modifier.height(16.dp))
         AltitudeChart(entries)

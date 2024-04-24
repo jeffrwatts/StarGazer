@@ -2,8 +2,8 @@ package com.jeffrwatts.stargazer.ui.deepskydetail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,15 +36,15 @@ class DeepSkyDetailViewModel @Inject constructor(
                                 .withSecond(0)
 
                             val altitudeEntries = Utils.getAltitudeEntries(
-                                celestialObjPos.celestialObj.ra,
-                                celestialObjPos.celestialObj.dec,
+                                celestialObjPos.celestialObjWithImage.celestialObj.ra,
+                                celestialObjPos.celestialObjWithImage.celestialObj.dec,
                                 location,
                                 timeStart,
                                 24,
                                 10
                             )
 
-                            _uiState.value = SightDetailUiState.Success(celestialObjPos.celestialObj, altitudeEntries)
+                            _uiState.value = SightDetailUiState.Success(celestialObjPos.celestialObjWithImage, altitudeEntries)
                         }
                 }
             }
@@ -54,6 +54,6 @@ class DeepSkyDetailViewModel @Inject constructor(
 
 sealed class SightDetailUiState {
     object Loading : SightDetailUiState()
-    data class Success(val data: CelestialObj, val altitudes: List<Utils.AltitudeEntry>) : SightDetailUiState()
+    data class Success(val data: CelestialObjWithImage, val altitudes: List<Utils.AltitudeEntry>) : SightDetailUiState()
     data class Error(val message: String) : SightDetailUiState()
 }

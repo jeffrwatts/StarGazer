@@ -59,7 +59,7 @@ class DeepSkyObjectsViewModel @Inject constructor(
                             var listFiltered = celestialObjPosList
 
                             if (selectedFilter.value) {
-                                listFiltered = listFiltered.filter { it.celestialObj.recommended }
+                                listFiltered = listFiltered.filter { it.celestialObjWithImage.celestialObj.recommended }
                             }
 
                             listFiltered = listFiltered.sortedWith(compareByDescending { it.observable })

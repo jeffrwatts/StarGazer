@@ -1,7 +1,6 @@
 package com.jeffrwatts.stargazer.ui.deepskyobjects
 
 import android.Manifest
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,21 +48,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
-import com.jeffrwatts.stargazer.data.celestialobject.getImageResource
+import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
+import java.io.File
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
@@ -123,7 +127,7 @@ fun DeepSkyObjectsScreen(
                     }
 
                     is DeepSkyObjectsUiState.Success -> {
-                        DeepSkyObjectsBody(celestialObjs = (deepSkyObjectsUiState as DeepSkyObjectsUiState.Success).data,
+                        DeepSkyObjectsBody(celestialObjPosList = (deepSkyObjectsUiState as DeepSkyObjectsUiState.Success).data,
                             onSightClick = onSightClick,
                             modifier = contentModifier)
                     }
@@ -158,11 +162,11 @@ fun DeepSkyObjectsScreen(
 
 @Composable
 private fun DeepSkyObjectsBody(
-    celestialObjs: List<CelestialObjPos>,
+    celestialObjPosList: List<CelestialObjPos>,
     onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (celestialObjs.isEmpty()) {
+    if (celestialObjPosList.isEmpty()) {
         Text(
             text = stringResource(R.string.no_item_description),
             textAlign = TextAlign.Center,
@@ -170,10 +174,10 @@ private fun DeepSkyObjectsBody(
         )
     } else {
         LazyColumn(modifier = modifier) {
-            items(items = celestialObjs, key = { it.celestialObj.id }) { celestialObj ->
+            items(items = celestialObjPosList, key = { it.celestialObjWithImage.celestialObj.id }) { celestialObjPos ->
                 DeepSkyObjectsItem(
-                    celestialObjPos = celestialObj,
-                    onItemClick = {onSightClick(celestialObj.celestialObj.id)},
+                    celestialObjPos = celestialObjPos,
+                    onItemClick = {onSightClick(celestialObjPos.celestialObjWithImage.celestialObj.id)},
                     modifier = Modifier
                         .padding(8.dp)
                 )
@@ -189,7 +193,7 @@ private fun DeepSkyObjectsBody(
 @Composable
 fun DeepSkyObjectsItem(
     celestialObjPos: CelestialObjPos,
-    onItemClick:() -> Unit,
+    onItemClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val prominenceAlpha = if (celestialObjPos.observable) 1f else 0.6f
@@ -200,18 +204,33 @@ fun DeepSkyObjectsItem(
             .fillMaxWidth()
             .padding(16.dp)
             .alpha(prominenceAlpha)
-            .clickable(onClick = onItemClick), // Apply the alpha here
+            .clickable(onClick = onItemClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = celestialObjPos.celestialObj.getImageResource()),
+        val imageFile = celestialObjPos.celestialObjWithImage.image?.let { image ->
+            File(image.filename)
+        }
+
+        val defaultImagePainter: Painter = painterResource(id = celestialObjPos.celestialObjWithImage.celestialObj.getDefaultImageResource())
+
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageFile)
+                .error(celestialObjPos.celestialObjWithImage.celestialObj.getDefaultImageResource())
+                .build(),
             contentDescription = "Celestial Object",
-            modifier = Modifier.size(72.dp)
+            modifier = Modifier.size(72.dp),
+            placeholder = defaultImagePainter,  // Use as a placeholder as well
+            onError = {
+                // Handle errors if necessary, for instance logging
+            }
         )
+
+
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
-                text = celestialObjPos.celestialObj.displayName,
+                text = celestialObjPos.celestialObjWithImage.celestialObj.displayName,
                 style = MaterialTheme.typography.titleMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
@@ -219,10 +238,9 @@ fun DeepSkyObjectsItem(
             )
             Text(
                 text = listOfNotNull(
-                    celestialObjPos.celestialObj.ngcId,
-                    celestialObjPos.celestialObj.objectId.uppercase(Locale.getDefault())
-                )
-                    .joinToString(", "),
+                    celestialObjPos.celestialObjWithImage.celestialObj.ngcId,
+                    celestialObjPos.celestialObjWithImage.celestialObj.objectId.uppercase(Locale.getDefault())
+                ).joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
@@ -243,7 +261,7 @@ fun DeepSkyObjectsItem(
                 color = textColor
             )
             Text(
-                text = "Obs Tags: ${celestialObjPos.celestialObj.tags}",
+                text = "Obs Tags: ${celestialObjPos.celestialObjWithImage.celestialObj.tags}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )

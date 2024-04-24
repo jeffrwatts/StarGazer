@@ -106,7 +106,8 @@ dependencies {
     implementation ("androidx.camera:camera-view:1.4.0-alpha04")
     implementation ("androidx.camera:camera-extensions:$1.4.0-alpha04")
 
-
+    implementation("io.coil-kt:coil:2.6.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Google Play Services for Location.
     implementation ("com.google.android.gms:play-services-location:21.2.0")

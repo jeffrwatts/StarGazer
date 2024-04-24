@@ -28,14 +28,14 @@ class CelestialObjRepository @Inject constructor (
     fun getAllCelestialObjsByType(types: List<ObjectType>, location: Location, date: Double): Flow<List<CelestialObjPos>> {
         return celestialObjDao.getByTypes(types).map { objects->
             objects.map { obj->
-                CelestialObjPos.fromCelestialObj(obj, date, location.latitude, location.longitude)
+                CelestialObjPos.fromCelestialObjWithImage(obj, date, location.latitude, location.longitude)
             }
         }
     }
 
     fun getCelestialObj(id: Int, location: Location, date: Double): Flow<CelestialObjPos> {
         return celestialObjDao.get(id).map { obj->
-            CelestialObjPos.fromCelestialObj(obj, date, location.latitude, location.longitude)
+            CelestialObjPos.fromCelestialObjWithImage(obj, date, location.latitude, location.longitude)
         }
     }
 

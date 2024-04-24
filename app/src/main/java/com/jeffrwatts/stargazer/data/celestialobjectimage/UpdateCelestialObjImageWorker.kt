@@ -1,6 +1,8 @@
 package com.jeffrwatts.stargazer.data.celestialobjectimage
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
@@ -64,18 +66,39 @@ class UpdateCelestialObjImageWorker @AssistedInject constructor(
             val imageUpdates = imageApi.getImages() // Assume this returns a list of image data with URLs and catalogIds
             setProgressAsync(buildStatusUpdate("Downloading ${imageUpdates.size} images"))
             celestialObjImageDao.deleteAllImages()
-            imageUpdates.forEachIndexed() { index, image ->
+            imageUpdates.forEachIndexed { index, image ->
                 try {
                     val imageUrl = image.url
                     val imageStream = URL(imageUrl).openStream()
-                    val outputFile = File(applicationContext.cacheDir, "${image.objectId}.webp")
+                    val originalBitmap = BitmapFactory.decodeStream(imageStream)
 
-                    outputFile.outputStream().use { fileOutputStream ->
-                        imageStream.copyTo(fileOutputStream)
+                    val croppedBitmap = if (image.crop > 0 && originalBitmap.height > image.crop) {
+                        val aspectRatio = originalBitmap.width.toFloat() / originalBitmap.height.toFloat()
+                        val targetWidth = (image.crop * aspectRatio).toInt()
+
+                        val xOffset = (originalBitmap.width - targetWidth) / 2
+                        val yOffset = (originalBitmap.height - image.crop) / 2
+                        Bitmap.createBitmap(originalBitmap, xOffset, yOffset, targetWidth, image.crop)
+                    } else {
+                        originalBitmap
                     }
+
+                    val finalBitmap = if (croppedBitmap.height != 1080) {
+                        val aspectRatio = croppedBitmap.width.toFloat() / croppedBitmap.height.toFloat()
+                        val targetWidth = (1080 * aspectRatio).toInt()
+                        Bitmap.createScaledBitmap(croppedBitmap, targetWidth, 1080, true)
+                    } else {
+                        croppedBitmap
+                    }
+
+                    val outputFile = File(applicationContext.cacheDir, "${image.objectId}.webp")
+                    outputFile.outputStream().use { fos ->
+                        finalBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 100, fos)
+                    }
+
                     setProgressAsync(buildStatusUpdate("Downloaded ${index + 1} of ${imageUpdates.size}: ${image.objectId}"))
                     celestialObjImageDao.insertImage(CelestialObjImage(objectId = image.objectId, crop = image.crop, filename = outputFile.toString()))
-                    succeeded+=1
+                    succeeded += 1
                 } catch (e: IOException) {
                     Log.e("ImageDownload", "Failed to download image for catalogId: ${image.objectId}", e)
                     setProgressAsync(buildStatusUpdate("${image.objectId} failed"))
@@ -87,7 +110,6 @@ class UpdateCelestialObjImageWorker @AssistedInject constructor(
             Result.failure(buildStatusUpdate("Failed to get images: ${e.message}"))
         }
     }
-
     private fun buildStatusUpdate(statusUpdate: String): Data {
         return Data.Builder().putString("Status", statusUpdate).build()
     }

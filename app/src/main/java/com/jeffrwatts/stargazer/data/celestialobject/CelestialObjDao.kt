@@ -12,10 +12,10 @@ interface CelestialObjDao {
     suspend fun insertAll(celestialObjs: List<CelestialObj>)
 
     @Query("SELECT * FROM celestial_objects WHERE id = :itemId")
-    fun get(itemId: Int): Flow<CelestialObj>
+    fun get(itemId: Int): Flow<CelestialObjWithImage>
 
     @Query("SELECT * FROM celestial_objects WHERE type IN (:types)")
-    fun getByTypes(types: List<ObjectType>): Flow<List<CelestialObj>>
+    fun getByTypes(types: List<ObjectType>): Flow<List<CelestialObjWithImage>>
 
     @Query("SELECT COUNT(*) FROM celestial_objects")
     fun getCount(): Int
