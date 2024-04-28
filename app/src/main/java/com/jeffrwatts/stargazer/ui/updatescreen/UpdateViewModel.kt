@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.jeffrwatts.stargazer.data.celestialobjectimage.UpdateCelestialObjImageWorker
+import com.jeffrwatts.stargazer.workers.UpdateWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +31,7 @@ class UpdateViewModel @Inject constructor (
     val statusMessages: StateFlow<List<String>> = _statusMessages
 
     fun triggerImageUpdate() {
-        val updateRequest = OneTimeWorkRequestBuilder<UpdateCelestialObjImageWorker>().build()
+        val updateRequest = OneTimeWorkRequestBuilder<UpdateWorker>().build()
         workManager.enqueue(updateRequest)
 
         // Observe the work status and update the state

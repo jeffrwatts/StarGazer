@@ -2,8 +2,8 @@ package com.jeffrwatts.stargazer.data.solarsystem
 
 import android.location.Location
 import android.util.Log
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.StarGazerApi
 import com.jeffrwatts.stargazer.di.IoDispatcher
-import com.jeffrwatts.stargazer.network.EphemerisApi
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 class SolarSystemRepository @Inject constructor (
     private val dao: EphemerisDao,
-    private val ephemerisApi: EphemerisApi,
+    private val starGazerApi: StarGazerApi,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 )
 {
@@ -90,7 +90,7 @@ class SolarSystemRepository @Inject constructor (
     private suspend fun getFromApi(time: Double) : List<EphemerisEntry> {
         return withContext(ioDispatcher){
             try {
-                ephemerisApi.getEphemeris(time, lengthOfDataDays).map {
+                starGazerApi.getEphemeris(time, lengthOfDataDays).map {
                     it.toEphemerisEntry()
                 }
             } catch (exception: Exception) {

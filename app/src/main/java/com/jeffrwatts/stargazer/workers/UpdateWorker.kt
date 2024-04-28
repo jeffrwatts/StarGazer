@@ -1,18 +1,24 @@
-package com.jeffrwatts.stargazer.data.celestialobjectimage
+package com.jeffrwatts.stargazer.workers
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
-import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.jeffrwatts.stargazer.BuildConfig
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.StarGazerApi
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
-import com.jeffrwatts.stargazer.network.ImageApi
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
+import com.jeffrwatts.stargazer.data.celestialobject.toCelestialObjEntity
+import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImage
+import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageDao
+import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
+import com.jeffrwatts.stargazer.data.variablestarobject.toVariableStarObjEntity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -24,22 +30,30 @@ import java.io.IOException
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
-@HiltWorker
-class UpdateCelestialObjImageWorker @AssistedInject constructor(
+
+class UpdateWorker @AssistedInject constructor(
     @Assisted context: Context,
-    @Assisted workerParams: WorkerParameters,
-    //private val celestialObjImageDao: CelestialObjImageDao
+    @Assisted workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
 
-    private val imageApi = provideImageApi()
+    private val starGazerApi = provideStarGazerApi()
+    private val celestialObjDao = provideCelestialObjDao(context)
     private val celestialObjImageDao = provideCelestiaLObjImageDao(context)
+    private val variableStarObjDao = provideVariableStarObjDao(context)
 
-    // Determine why dependency injection wasn't working here.
-    private fun provideCelestiaLObjImageDao(context: Context): CelestialObjImageDao {
+    private fun provideCelestialObjDao(@ApplicationContext context: Context): CelestialObjDao {
+        return StarGazerDatabase.getDatabase(context).celestialObjDao()
+    }
+
+    private fun provideVariableStarObjDao(@ApplicationContext context: Context): VariableStarObjDao {
+        return StarGazerDatabase.getDatabase(context).variableStarObjDao()
+    }
+
+    fun provideCelestiaLObjImageDao(@ApplicationContext context: Context): CelestialObjImageDao {
         return StarGazerDatabase.getDatabase(context).celestialObjImageDao()
     }
 
-    private fun provideImageApi(): ImageApi {
+    private fun provideStarGazerApi(): StarGazerApi {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
@@ -56,14 +70,54 @@ class UpdateCelestialObjImageWorker @AssistedInject constructor(
             .client(okHttpClient)
             .build()
 
-        return retrofit.create(ImageApi::class.java)
+        return retrofit.create(StarGazerApi::class.java)
     }
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        updateDSOObjects()
+        updateVariableStarObjects()
+        updateImages()
+        Result.success(buildStatusUpdate("Updates Complete"))
+    }
+
+    private suspend fun updateDSOObjects() {
+        try {
+            setProgressAsync(buildStatusUpdate("Getting DSO Objects"))
+            val dsoObjects = starGazerApi.getDso()
+            setProgressAsync(buildStatusUpdate("Updating DSO DB"))
+            val celestialObjs = dsoObjects.map { it.toCelestialObjEntity() }
+            celestialObjDao.deleteAll()
+            celestialObjDao.insertAll(celestialObjs)
+            setProgressAsync(buildStatusUpdate("Updated DSO DB"))
+        } catch (e: Exception) {
+            Log.e("WorkManager", "Failed to get DSO Objects", e)
+            setProgressAsync(buildStatusUpdate("Failed to get DSO Objects ${e.message}"))
+        }
+    }
+
+    private suspend fun updateVariableStarObjects() {
+        try {
+            setProgressAsync(buildStatusUpdate("Getting Variable Star Objects"))
+            val variableStarObjects = starGazerApi.getVariableStars()
+            setProgressAsync(buildStatusUpdate("Updating Variable Star DB"))
+            val variableStarObjs = variableStarObjects.map { it.toVariableStarObjEntity() }
+            variableStarObjDao.deleteAll()
+            variableStarObjDao.insertAll(variableStarObjs)
+            setProgressAsync(buildStatusUpdate("Updated Variable Star DB"))
+        } catch (e: Exception) {
+            Log.e("WorkManager", "Failed to get Variable Star Objects", e)
+            setProgressAsync(buildStatusUpdate("Failed to get Variable Star Objects ${e.message}"))
+        }
+    }
+    private fun buildStatusUpdate(statusUpdate: String): Data {
+        return Data.Builder().putString("Status", statusUpdate).build()
+    }
+
+    private suspend fun updateImages() {
         try {
             var succeeded = 0
             setProgressAsync(buildStatusUpdate("Getting Images..."))
-            val imageUpdates = imageApi.getImages() // Assume this returns a list of image data with URLs and catalogIds
+            val imageUpdates = starGazerApi.getImages() // Assume this returns a list of image data with URLs and catalogIds
             setProgressAsync(buildStatusUpdate("Downloading ${imageUpdates.size} images"))
             celestialObjImageDao.deleteAllImages()
             imageUpdates.forEachIndexed { index, image ->
@@ -109,8 +163,5 @@ class UpdateCelestialObjImageWorker @AssistedInject constructor(
             Log.e("WorkManager", "Failed during image download work", e)
             Result.failure(buildStatusUpdate("Failed to get images: ${e.message}"))
         }
-    }
-    private fun buildStatusUpdate(statusUpdate: String): Data {
-        return Data.Builder().putString("Status", statusUpdate).build()
     }
 }

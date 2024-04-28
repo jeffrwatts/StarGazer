@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.WorkManager
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.StarGazerApplication
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.StarGazerApi
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
@@ -14,8 +15,6 @@ import com.jeffrwatts.stargazer.data.solarsystem.EphemerisDao
 import com.jeffrwatts.stargazer.data.solarsystem.SolarSystemRepository
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
-import com.jeffrwatts.stargazer.network.EphemerisApi
-import com.jeffrwatts.stargazer.network.ImageApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -59,7 +58,7 @@ object AppModule {
 object NetworkModule {
     @Provides
     @Singleton
-    fun provideEphemerisApi(): EphemerisApi {
+    fun provideStarGazerApi(): StarGazerApi {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
@@ -76,29 +75,7 @@ object NetworkModule {
             .client(okHttpClient)
             .build()
 
-        return retrofit.create(EphemerisApi::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideImageApi(): ImageApi {
-        val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-
-        val okHttpClient = OkHttpClient.Builder()
-            .readTimeout(60, TimeUnit.SECONDS)
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .addInterceptor(logging)
-            .build()
-
-        val retrofit = Retrofit.Builder()
-            .baseUrl(BuildConfig.API_BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(okHttpClient)
-            .build()
-
-        return retrofit.create(ImageApi::class.java)
+        return retrofit.create(StarGazerApi::class.java)
     }
 }
 
@@ -136,31 +113,27 @@ object RepositoryModule {
     @Singleton
     @Provides
     fun provideCelestialObjRepository(
-        @ApplicationContext context: Context,
-        celestialObjDao: CelestialObjDao,
-        @IoDispatcher ioDispatcher: CoroutineDispatcher
+        celestialObjDao: CelestialObjDao
     ): CelestialObjRepository {
-        return CelestialObjRepository(celestialObjDao, context, ioDispatcher)
+        return CelestialObjRepository(celestialObjDao)
     }
 
     @Singleton
     @Provides
     fun provideSolarSystemRepository(
         dao: EphemerisDao,
-        ephemerisApi: EphemerisApi,
+        starGazerApi: StarGazerApi,
         @IoDispatcher ioDispatcher: CoroutineDispatcher
     ): SolarSystemRepository {
-        return SolarSystemRepository(dao, ephemerisApi, ioDispatcher)
+        return SolarSystemRepository(dao, starGazerApi, ioDispatcher)
     }
 
     @Singleton
     @Provides
     fun provideVariableStarObjRepository(
-        @ApplicationContext context: Context,
-        variableStarObjDao: VariableStarObjDao,
-        @IoDispatcher ioDispatcher: CoroutineDispatcher
+        variableStarObjDao: VariableStarObjDao
     ): VariableStarObjRepository {
-        return VariableStarObjRepository(variableStarObjDao, context, ioDispatcher)
+        return VariableStarObjRepository(variableStarObjDao)
     }
 
     // Provide CoroutineScope separately
