@@ -1,11 +1,8 @@
 package com.jeffrwatts.stargazer.ui.updatescreen
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -48,35 +45,54 @@ fun UpdateScreen(
         },
         modifier = modifier
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+        Column(modifier = Modifier.padding(innerPadding).fillMaxWidth()) {
             Text("Last Updated: ${uiState.lastUpdated}", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(16.dp))
 
-            Row(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                // Update Button
-                Button(
-                    onClick = { viewModel.triggerImageUpdate() },
-                    enabled = !uiState.isDownloading,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(contentColor = Color.White)
-                ) {
-                    Text("Update")
-                }
+            Button(
+                onClick = { viewModel.triggerDSOVariableUpdate() },
+                enabled = !uiState.isDSOVariableUpdating,
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                colors = ButtonDefaults.buttonColors(contentColor = Color.White)
+            ) {
+                Text("Update DSO & Variables")
+            }
 
-                Spacer(modifier = Modifier.width(8.dp)) // Space between buttons
+            Button(
+                onClick = { viewModel.triggerImageUpdate() },
+                enabled = !uiState.isImageUpdating,
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                colors = ButtonDefaults.buttonColors(contentColor = Color.White)
+            ) {
+                Text("Update Images")
+            }
 
-                // Clear Button
-                Button(
-                    onClick = { viewModel.clearStatus() },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(contentColor = Color.White)
-                ) {
-                    Text("Clear")
-                }
+            Button(
+                onClick = { viewModel.triggerEphemerisUpdate() },
+                enabled = !uiState.isEphemerisUpdating,
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                colors = ButtonDefaults.buttonColors(contentColor = Color.White)
+            ) {
+                Text("Update Ephemeris")
+            }
+
+            // Clear Button
+            Button(
+                onClick = { viewModel.clearStatus() },
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                colors = ButtonDefaults.buttonColors(contentColor = Color.White)
+            ) {
+                Text("Clear Status")
             }
 
             LazyColumn(modifier = Modifier.weight(1f).padding(top = 8.dp)) {
                 items(statusMessages) { message ->
-                    Text(text = message, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,  // Optionally set the style if needed
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .fillMaxWidth()  // Ensures the text fills the horizontal space
+                    )
                 }
             }
         }

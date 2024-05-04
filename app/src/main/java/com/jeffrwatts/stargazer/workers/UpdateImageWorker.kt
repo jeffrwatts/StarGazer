@@ -10,12 +10,8 @@ import androidx.work.WorkerParameters
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.StarGazerApi
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
-import com.jeffrwatts.stargazer.data.celestialobject.toCelestialObjEntity
 import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImage
 import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageDao
-import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
-import com.jeffrwatts.stargazer.data.variablestarobject.toVariableStarObjEntity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -30,26 +26,16 @@ import java.io.IOException
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
-
-class UpdateWorker @AssistedInject constructor(
+class UpdateImageWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters
-) : CoroutineWorker(context, workerParams) {
+) : CoroutineWorker(context, workerParams)
+{
 
     private val starGazerApi = provideStarGazerApi()
-    private val celestialObjDao = provideCelestialObjDao(context)
     private val celestialObjImageDao = provideCelestiaLObjImageDao(context)
-    private val variableStarObjDao = provideVariableStarObjDao(context)
 
-    private fun provideCelestialObjDao(@ApplicationContext context: Context): CelestialObjDao {
-        return StarGazerDatabase.getDatabase(context).celestialObjDao()
-    }
-
-    private fun provideVariableStarObjDao(@ApplicationContext context: Context): VariableStarObjDao {
-        return StarGazerDatabase.getDatabase(context).variableStarObjDao()
-    }
-
-    fun provideCelestiaLObjImageDao(@ApplicationContext context: Context): CelestialObjImageDao {
+    private fun provideCelestiaLObjImageDao(@ApplicationContext context: Context): CelestialObjImageDao {
         return StarGazerDatabase.getDatabase(context).celestialObjImageDao()
     }
 
@@ -72,48 +58,7 @@ class UpdateWorker @AssistedInject constructor(
 
         return retrofit.create(StarGazerApi::class.java)
     }
-
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        updateDSOObjects()
-        updateVariableStarObjects()
-        updateImages()
-        Result.success(buildStatusUpdate("Updates Complete"))
-    }
-
-    private suspend fun updateDSOObjects() {
-        try {
-            setProgressAsync(buildStatusUpdate("Getting DSO Objects"))
-            val dsoObjects = starGazerApi.getDso()
-            setProgressAsync(buildStatusUpdate("Updating DSO DB"))
-            val celestialObjs = dsoObjects.map { it.toCelestialObjEntity() }
-            celestialObjDao.deleteAll()
-            celestialObjDao.insertAll(celestialObjs)
-            setProgressAsync(buildStatusUpdate("Updated DSO DB"))
-        } catch (e: Exception) {
-            Log.e("WorkManager", "Failed to get DSO Objects", e)
-            setProgressAsync(buildStatusUpdate("Failed to get DSO Objects ${e.message}"))
-        }
-    }
-
-    private suspend fun updateVariableStarObjects() {
-        try {
-            setProgressAsync(buildStatusUpdate("Getting Variable Star Objects"))
-            val variableStarObjects = starGazerApi.getVariableStars()
-            setProgressAsync(buildStatusUpdate("Updating Variable Star DB"))
-            val variableStarObjs = variableStarObjects.map { it.toVariableStarObjEntity() }
-            variableStarObjDao.deleteAll()
-            variableStarObjDao.insertAll(variableStarObjs)
-            setProgressAsync(buildStatusUpdate("Updated Variable Star DB"))
-        } catch (e: Exception) {
-            Log.e("WorkManager", "Failed to get Variable Star Objects", e)
-            setProgressAsync(buildStatusUpdate("Failed to get Variable Star Objects ${e.message}"))
-        }
-    }
-    private fun buildStatusUpdate(statusUpdate: String): Data {
-        return Data.Builder().putString("Status", statusUpdate).build()
-    }
-
-    private suspend fun updateImages() {
         try {
             var succeeded = 0
             setProgressAsync(buildStatusUpdate("Getting Images..."))
@@ -163,5 +108,14 @@ class UpdateWorker @AssistedInject constructor(
             Log.e("WorkManager", "Failed during image download work", e)
             Result.failure(buildStatusUpdate("Failed to get images: ${e.message}"))
         }
+
+        Result.success(buildStatusUpdate("Updates Complete"))
+    }
+
+    private fun buildStatusUpdate(statusUpdate: String): Data {
+        return Data.Builder()
+            .putString("Status", statusUpdate)
+            .putString("UpdateType", UpdateType.IMAGE.name)
+            .build()
     }
 }

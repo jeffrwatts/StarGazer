@@ -84,7 +84,7 @@ object NetworkModule {
 object DatabaseModule {
     @Singleton
     @Provides
-    fun provideEphermerisDao(@ApplicationContext context: Context): EphemerisDao {
+    fun provideEphemerisDao(@ApplicationContext context: Context): EphemerisDao {
         return StarGazerDatabase.getDatabase(context).ephemerisDao()
     }
 

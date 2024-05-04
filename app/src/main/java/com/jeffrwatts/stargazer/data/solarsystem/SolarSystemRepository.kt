@@ -25,7 +25,7 @@ class SolarSystemRepository @Inject constructor (
         const val PLANET_ID_START = 10000
     }
 
-    private var ephemerisStartTime: Double? = null
+    private var ephemerisEndTime: Double? = null
     private val lengthOfDataDays = 2 * JULIAN_DAY
     private val staleDataOffsetMinutes = 2 * JULIAN_MINUTE
 
@@ -42,7 +42,7 @@ class SolarSystemRepository @Inject constructor (
 
     init {
         CoroutineScope (ioDispatcher).launch {
-            ephemerisStartTime = dao.getEphemerisStartTime()
+            ephemerisEndTime = dao.getEphemerisEndTime()
         }
     }
 
@@ -74,7 +74,7 @@ class SolarSystemRepository @Inject constructor (
     }
 
     private fun shouldUpdate(time: Double):Boolean {
-        return ephemerisStartTime?.let { startTime-> time > startTime+staleDataOffsetMinutes } ?: true
+        return ephemerisEndTime?.let { endTime-> time > endTime } ?: true
     }
 
     private suspend fun updateFromApi(time:Double) {
@@ -83,7 +83,7 @@ class SolarSystemRepository @Inject constructor (
         if (ephemeris.isNotEmpty()) {
             dao.deleteAll()
             dao.insertAll(ephemeris)
-            ephemerisStartTime = dao.getEphemerisStartTime()
+            ephemerisEndTime = dao.getEphemerisEndTime()
         }
     }
 
