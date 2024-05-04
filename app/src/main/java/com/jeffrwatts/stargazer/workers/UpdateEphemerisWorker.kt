@@ -65,6 +65,7 @@ class UpdateEphemerisWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
+            setProgressAsync(buildStatusUpdate("Updating ephemeris"))
             val startDate = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
             val startJulianDate = Utils.calculateJulianDateFromLocal(startDate)
 
