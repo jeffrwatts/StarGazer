@@ -3,6 +3,7 @@ package com.jeffrwatts.stargazer.utils
 import android.location.Location
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.asin
@@ -27,6 +28,19 @@ object Utils {
         val direction = if (decimal >= 0) dirPos else dirNeg
         return "%02d°%02d'%05.2f\"%s".format(abs(degrees), abs(minutes), abs(seconds), direction)
     }
+
+    private fun julianDateToUTC(julianDate: Double): LocalDateTime {
+        // Julian date to seconds since epoch
+        val secondsSinceEpoch = ((julianDate - 2440587.5) * 86400).toLong()
+        // Convert to LocalDateTime in system default timezone
+        return LocalDateTime.ofEpochSecond(secondsSinceEpoch, 0, ZoneOffset.UTC)
+    }
+
+    fun julianDateToLocalTime(julianDate: Double): LocalDateTime {
+        val utcDateTime = julianDateToUTC(julianDate)
+        return utcDateTime.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()
+    }
+
 
     fun calculateJulianDateFromLocal(localTime:LocalDateTime):Double {
         val zonedDateTime = localTime.atZone(ZoneId.systemDefault())

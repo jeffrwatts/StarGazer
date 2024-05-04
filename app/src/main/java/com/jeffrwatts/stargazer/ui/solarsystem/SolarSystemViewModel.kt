@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,9 +32,11 @@ class SolarSystemViewModel @Inject constructor(
     fun fetchObjects() {
         collectionJob?.cancel() // Cancel the previous collection job if it exists
         collectionJob = viewModelScope.launch {
-            locationRepository.locationFlow.collect {
+            locationRepository.locationFlow.collect { it ->
                 it?.let { location ->
                     val date = Utils.calculateJulianDateNow()
+                    val expirationJulianDate = solarSystemRepository.getEphemerisExpiration()
+                    val expirationDate = expirationJulianDate?.let { expireDate-> julianDateToFormattedString(expireDate) }
 
                     solarSystemRepository.getAllPlanets(location, date)
                         .catch { e ->
@@ -42,16 +45,22 @@ class SolarSystemViewModel @Inject constructor(
                         .collect { planetObjPosList ->
                             val listFiltered = planetObjPosList
                                 .sortedWith(compareByDescending { it.observable })
-                            _uiState.value = SolarSystemUiState.Success(listFiltered)
+                            _uiState.value = SolarSystemUiState.Success(listFiltered,expirationDate)
                         }
                 }
             }
         }
     }
+
+    private fun julianDateToFormattedString(julianDate: Double): String {
+        val dateTime = Utils.julianDateToLocalTime(julianDate)
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        return dateTime.format(formatter)
+    }
 }
 
 sealed class SolarSystemUiState {
     object Loading : SolarSystemUiState()
-    data class Success(val data: List<PlanetObjPos>) : SolarSystemUiState()
+    data class Success(val data: List<PlanetObjPos>, val expirationDate: String?) : SolarSystemUiState()
     data class Error(val message: String) : SolarSystemUiState()
 }

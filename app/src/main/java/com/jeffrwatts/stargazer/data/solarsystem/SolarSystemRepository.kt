@@ -21,13 +21,11 @@ class SolarSystemRepository @Inject constructor (
 {
     companion object {
         const val JULIAN_DAY = 1.0
-        const val JULIAN_MINUTE = 1.0 / (24.0 * 60.0)
         const val PLANET_ID_START = 10000
     }
 
     private var ephemerisEndTime: Double? = null
     private val lengthOfDataDays = 2 * JULIAN_DAY
-    private val staleDataOffsetMinutes = 2 * JULIAN_MINUTE
 
     private val solarSystem : List<PlanetObj> = listOf (
         PlanetObj(PLANET_ID_START, "Mercury", 0.0, 0.0),
@@ -60,6 +58,13 @@ class SolarSystemRepository @Inject constructor (
                 PlanetObjPos.fromPlanetObj(updatePlanetPosition(it, date), date, location.latitude, location.longitude)
             }
             emit(freshData)
+        }
+    }
+
+    suspend fun getEphemerisExpiration(): Double? {
+        return withContext(ioDispatcher) {
+            ephemerisEndTime = dao.getEphemerisEndTime()
+            ephemerisEndTime
         }
     }
 

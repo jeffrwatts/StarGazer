@@ -1,6 +1,8 @@
 package com.jeffrwatts.stargazer.ui.solarsystem
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.solarsystem.PlanetObjPos
@@ -78,7 +82,9 @@ fun SolarSystemScreen(
                 }
 
                 is SolarSystemUiState.Success -> {
-                    SolarSystemBody(planetObjs = (solarSystemUiState as SolarSystemUiState.Success).data,
+                    val successState = solarSystemUiState as SolarSystemUiState.Success
+                    SolarSystemBody(planetObjs = successState.data,
+                        successState.expirationDate,
                         onSightClick = onSightClick,
                         modifier = contentModifier)
                 }
@@ -99,9 +105,11 @@ fun SolarSystemScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SolarSystemBody(
     planetObjs: List<PlanetObjPos>,
+    expirationDate: String?,
     onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -113,6 +121,26 @@ private fun SolarSystemBody(
         )
     } else {
         LazyColumn(modifier = modifier) {
+            stickyHeader {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.ephemeris_expires_on, expirationDate ?: "N/A"),
+                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Divider(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                        thickness = 1.dp
+                    )
+                }
+            }
             items(items = planetObjs, key = { it.planetObj.id }) { planetObjPos ->
                 SolarSystemItem(
                     planetObjPos = planetObjPos,
