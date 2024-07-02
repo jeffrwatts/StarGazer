@@ -2,7 +2,6 @@ package com.jeffrwatts.stargazer.ui.deepskyobjects
 
 import android.Manifest
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +21,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -38,7 +36,6 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.TopAppBarState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,20 +55,18 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
+import com.jeffrwatts.stargazer.utils.PermissionWrapper
 import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 import java.io.File
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
-    ExperimentalPermissionsApi::class
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class
 )
 @Composable
 fun DeepSkyObjectsScreen(
@@ -85,14 +80,6 @@ fun DeepSkyObjectsScreen(
     val currentFilter by viewModel.selectedFilter.collectAsState()
     val isRefreshing = deepSkyObjectsUiState is DeepSkyObjectsUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
-
-    val permissionsState = rememberMultiplePermissionsState(
-        permissions = listOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.CAMERA
-        )
-    )
 
     Scaffold(
         topBar = {
@@ -111,14 +98,14 @@ fun DeepSkyObjectsScreen(
         val contentModifier = Modifier
             .padding(innerPadding)
             .fillMaxSize()
-
-        LaunchedEffect(key1 = permissionsState) {
-            if (!permissionsState.allPermissionsGranted) {
-                permissionsState.launchMultiplePermissionRequest()
-            }
-        }
-
-        if (permissionsState.allPermissionsGranted) {
+        PermissionWrapper(
+            permissions = listOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.CAMERA
+            ),
+            rationaleMessage = stringResource(id = R.string.permission_rationale)
+        ) {
             viewModel.startLocationUpdates()
             Box(Modifier.pullRefresh(pullRefreshState)) {
                 when (deepSkyObjectsUiState) {
@@ -127,9 +114,11 @@ fun DeepSkyObjectsScreen(
                     }
 
                     is DeepSkyObjectsUiState.Success -> {
-                        DeepSkyObjectsBody(celestialObjPosList = (deepSkyObjectsUiState as DeepSkyObjectsUiState.Success).data,
+                        DeepSkyObjectsBody(
+                            celestialObjPosList = (deepSkyObjectsUiState as DeepSkyObjectsUiState.Success).data,
                             onSightClick = onSightClick,
-                            modifier = contentModifier)
+                            modifier = contentModifier
+                        )
                     }
 
                     else -> {
@@ -143,18 +132,11 @@ fun DeepSkyObjectsScreen(
                         )
                     }
                 }
-                PullRefreshIndicator(isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
-            }
-        } else {
-            Column(
-                modifier = contentModifier.padding(start = 8.dp, end = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text("Need location permissions to provide the star-gazing experience.")
-                Button(onClick = { permissionsState.launchMultiplePermissionRequest() }) {
-                    Text("Grant Permissions")
-                }
+                PullRefreshIndicator(
+                    isRefreshing,
+                    pullRefreshState,
+                    Modifier.align(Alignment.TopCenter)
+                )
             }
         }
     }

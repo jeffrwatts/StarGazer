@@ -17,4 +17,5 @@
     <string name="update_title">Update</string>
     <string name="alt_azm_tool">Alt/Azm Tool</string>
     <string name="ephemeris_expires_on">Expires: %1$s</string>
+    <string name="permission_rationale">Need location permissions to provide the star-gazing experience.</string>
 </resources>
