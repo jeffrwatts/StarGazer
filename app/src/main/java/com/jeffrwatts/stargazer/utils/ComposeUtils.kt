@@ -36,6 +36,10 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
+object AppConstants {
+    val DATE_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd, hh:mm a")
+}
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun PermissionWrapper(

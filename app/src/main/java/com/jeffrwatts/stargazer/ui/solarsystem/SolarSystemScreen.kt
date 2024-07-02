@@ -22,6 +22,7 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,6 +44,7 @@ import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.solarsystem.PlanetObjPos
 import com.jeffrwatts.stargazer.data.solarsystem.getImageResource
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
+import com.jeffrwatts.stargazer.ui.deepskyobjects.TimeControl
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
@@ -83,10 +85,20 @@ fun SolarSystemScreen(
 
                 is SolarSystemUiState.Success -> {
                     val successState = solarSystemUiState as SolarSystemUiState.Success
-                    SolarSystemBody(planetObjs = successState.data,
-                        successState.expirationDate,
-                        onSightClick = onSightClick,
-                        modifier = contentModifier)
+                    Column(modifier = contentModifier) {
+                        TimeControl(
+                            currentTime = successState.currentTime,
+                            onIncrementTime = { viewModel.incrementTime() },
+                            onDecrementTime = { viewModel.decrementTime() },
+                            onResetTime = { viewModel.resetTime() }
+                        )
+                        SolarSystemBody(
+                            planetObjs = successState.data,
+                            successState.expirationDate,
+                            onSightClick = onSightClick,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 else -> {
@@ -135,9 +147,9 @@ private fun SolarSystemBody(
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Divider(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                        thickness = 1.dp
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
                     )
                 }
             }

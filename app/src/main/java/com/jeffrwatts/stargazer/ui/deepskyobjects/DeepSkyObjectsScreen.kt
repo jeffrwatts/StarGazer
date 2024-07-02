@@ -84,7 +84,6 @@ fun DeepSkyObjectsScreen(
     val currentFilter by viewModel.selectedFilter.collectAsState()
     val isRefreshing = deepSkyObjectsUiState is DeepSkyObjectsUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
-    //val currentTime by viewModel.currentTime.collectAsState(initial = "")
 
     Scaffold(
         topBar = {
@@ -120,7 +119,6 @@ fun DeepSkyObjectsScreen(
 
                     is DeepSkyObjectsUiState.Success -> {
                         val successState = deepSkyObjectsUiState as DeepSkyObjectsUiState.Success
-
                         Column(modifier = contentModifier) {
                             TimeControl(
                                 currentTime = successState.currentTime,

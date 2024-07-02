@@ -6,6 +6,8 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.location.LocationRepository
+import com.jeffrwatts.stargazer.data.timeoffset.TimeOffsetRepository
+import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,16 +23,14 @@ import javax.inject.Inject
 @HiltViewModel
 class DeepSkyObjectsViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
-    private val locationRepository: LocationRepository
+    private val locationRepository: LocationRepository,
+    private val timeOffsetRepository: TimeOffsetRepository
 ) : ViewModel() {
     private val _selectedFilter = MutableStateFlow<Boolean>(true) // true will be Recommended, false will be All
     val selectedFilter = _selectedFilter.asStateFlow()
 
     private val _uiState = MutableStateFlow<DeepSkyObjectsUiState>(DeepSkyObjectsUiState.Loading)
     val uiState: StateFlow<DeepSkyObjectsUiState> = _uiState
-
-    private val formatter = DateTimeFormatter.ofPattern("MMM dd, hh:mm a")
-    private val _hourOffset = MutableStateFlow<Long>(0)
 
     init {
         fetchObjects()
@@ -50,7 +50,7 @@ class DeepSkyObjectsViewModel @Inject constructor(
         viewModelScope.launch {
             locationRepository.locationFlow.collect { location ->
                 location?.let {
-                    val currentTime = LocalDateTime.now().plusHours(_hourOffset.value)
+                    val currentTime = LocalDateTime.now().plusHours(timeOffsetRepository.getTimeOffset())
                     val date = Utils.calculateJulianDateFromLocal(currentTime)
                     val typesToQuery =
                         listOf(ObjectType.CLUSTER, ObjectType.NEBULA, ObjectType.GALAXY)
@@ -70,7 +70,7 @@ class DeepSkyObjectsViewModel @Inject constructor(
 
                             listFiltered = listFiltered.sortedWith(compareByDescending { it.observable })
 
-                            _uiState.value = DeepSkyObjectsUiState.Success(listFiltered, currentTime.format(formatter))
+                            _uiState.value = DeepSkyObjectsUiState.Success(listFiltered, currentTime.format(DATE_TIME_FORMATTER))
                         }
                 }
             }
@@ -78,17 +78,17 @@ class DeepSkyObjectsViewModel @Inject constructor(
     }
 
     fun incrementTime() {
-        _hourOffset.value += 1
+        timeOffsetRepository.incrementTime()
         fetchObjects()
     }
 
     fun decrementTime() {
-        _hourOffset.value -= 1
+        timeOffsetRepository.decrementTime()
         fetchObjects()
     }
 
     fun resetTime() {
-        _hourOffset.value = 0
+        timeOffsetRepository.resetTime()
         fetchObjects()
     }
 }

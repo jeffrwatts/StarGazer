@@ -38,6 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjPos
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
+import com.jeffrwatts.stargazer.ui.deepskyobjects.TimeControl
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
@@ -78,11 +79,20 @@ fun VariableStarScreen(
                 }
 
                 is VariableStarUiState.Success -> {
-                    VariableStarBody(
-                        variableStarObjs = (variableStarUiState as VariableStarUiState.Success).data,
-                        onSightClick = onSightClick,
-                        modifier = contentModifier
-                    )
+                    val successState = variableStarUiState as VariableStarUiState.Success
+                    Column(modifier = contentModifier) {
+                        TimeControl(
+                            currentTime = successState.currentTime,
+                            onIncrementTime = { viewModel.incrementTime() },
+                            onDecrementTime = { viewModel.decrementTime() },
+                            onResetTime = { viewModel.resetTime() }
+                        )
+                        VariableStarBody(
+                            variableStarObjs = successState.data,
+                            onSightClick = onSightClick,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 else -> {
