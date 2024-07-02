@@ -28,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -44,9 +45,9 @@ import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.solarsystem.PlanetObjPos
 import com.jeffrwatts.stargazer.data.solarsystem.getImageResource
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
-import com.jeffrwatts.stargazer.ui.deepskyobjects.TimeControl
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
+import com.jeffrwatts.stargazer.utils.TimeControl
 import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 
@@ -84,6 +85,11 @@ fun SolarSystemScreen(
                 }
 
                 is SolarSystemUiState.Success -> {
+                    LaunchedEffect(Unit) {
+                        // Sync up with any time changes... note look for a better approach.
+                        viewModel.fetchObjects()
+                    }
+
                     val successState = solarSystemUiState as SolarSystemUiState.Success
                     Column(modifier = contentModifier) {
                         TimeControl(

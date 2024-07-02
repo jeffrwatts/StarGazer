@@ -26,7 +26,7 @@ class DeepSkyObjectsViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val timeOffsetRepository: TimeOffsetRepository
 ) : ViewModel() {
-    private val _selectedFilter = MutableStateFlow<Boolean>(true) // true will be Recommended, false will be All
+    private val _selectedFilter = MutableStateFlow(true) // true will be Recommended, false will be All
     val selectedFilter = _selectedFilter.asStateFlow()
 
     private val _uiState = MutableStateFlow<DeepSkyObjectsUiState>(DeepSkyObjectsUiState.Loading)

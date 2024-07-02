@@ -11,8 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +32,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -70,6 +77,37 @@ fun PermissionWrapper(
             Button(onClick = { permissionsState.launchMultiplePermissionRequest() }) {
                 Text("Grant Permissions")
             }
+        }
+    }
+}
+
+@Composable
+fun TimeControl(
+    currentTime: String,
+    onIncrementTime: () -> Unit,
+    onDecrementTime: () -> Unit,
+    onResetTime: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onDecrementTime) {
+            Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrement Time")
+        }
+        Text(
+            text = currentTime,
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center,
+        )
+        IconButton(onClick = onIncrementTime) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Increment Time")
+        }
+        IconButton(onClick = onResetTime) {
+            Icon(imageVector = Icons.Default.Refresh, contentDescription = "Reset Time")
         }
     }
 }

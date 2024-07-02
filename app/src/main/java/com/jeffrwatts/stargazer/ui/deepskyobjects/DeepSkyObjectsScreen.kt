@@ -30,6 +30,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +41,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.TopAppBarState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +67,7 @@ import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.PermissionWrapper
+import com.jeffrwatts.stargazer.utils.TimeControl
 import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 import java.io.File
@@ -110,7 +113,10 @@ fun DeepSkyObjectsScreen(
             ),
             rationaleMessage = stringResource(id = R.string.permission_rationale)
         ) {
-            viewModel.startLocationUpdates()
+            LaunchedEffect(Unit) {
+                viewModel.startLocationUpdates()
+            }
+
             Box(Modifier.pullRefresh(pullRefreshState)) {
                 when (deepSkyObjectsUiState) {
                     is DeepSkyObjectsUiState.Loading -> {
@@ -156,37 +162,6 @@ fun DeepSkyObjectsScreen(
 }
 
 @Composable
-fun TimeControl(
-    currentTime: String,
-    onIncrementTime: () -> Unit,
-    onDecrementTime: () -> Unit,
-    onResetTime: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = onDecrementTime) {
-            Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrement Time")
-        }
-        Text(
-            text = currentTime,
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Center,
-        )
-        IconButton(onClick = onIncrementTime) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = "Increment Time")
-        }
-        IconButton(onClick = onResetTime) {
-            Icon(imageVector = Icons.Default.Refresh, contentDescription = "Reset Time")
-        }
-    }
-}
-
-@Composable
 private fun DeepSkyObjectsBody(
     celestialObjPosList: List<CelestialObjPos>,
     onSightClick: (Int) -> Unit,
@@ -207,9 +182,9 @@ private fun DeepSkyObjectsBody(
                     modifier = Modifier
                         .padding(8.dp)
                 )
-                Divider(
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                    thickness = 1.dp
+                HorizontalDivider(
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
                 )
             }
         }
