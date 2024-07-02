@@ -2,6 +2,7 @@ package com.jeffrwatts.stargazer.ui.deepskyobjects
 
 import android.Manifest
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,9 +16,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -80,6 +84,7 @@ fun DeepSkyObjectsScreen(
     val currentFilter by viewModel.selectedFilter.collectAsState()
     val isRefreshing = deepSkyObjectsUiState is DeepSkyObjectsUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
+    //val currentTime by viewModel.currentTime.collectAsState(initial = "")
 
     Scaffold(
         topBar = {
@@ -114,11 +119,21 @@ fun DeepSkyObjectsScreen(
                     }
 
                     is DeepSkyObjectsUiState.Success -> {
-                        DeepSkyObjectsBody(
-                            celestialObjPosList = (deepSkyObjectsUiState as DeepSkyObjectsUiState.Success).data,
-                            onSightClick = onSightClick,
-                            modifier = contentModifier
-                        )
+                        val successState = deepSkyObjectsUiState as DeepSkyObjectsUiState.Success
+
+                        Column(modifier = contentModifier) {
+                            TimeControl(
+                                currentTime = successState.currentTime,
+                                onIncrementTime = { viewModel.incrementTime() },
+                                onDecrementTime = { viewModel.decrementTime() },
+                                onResetTime = { viewModel.resetTime() }
+                            )
+                            DeepSkyObjectsBody(
+                                celestialObjPosList = successState.data,
+                                onSightClick = onSightClick,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
 
                     else -> {
@@ -138,6 +153,37 @@ fun DeepSkyObjectsScreen(
                     Modifier.align(Alignment.TopCenter)
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun TimeControl(
+    currentTime: String,
+    onIncrementTime: () -> Unit,
+    onDecrementTime: () -> Unit,
+    onResetTime: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onDecrementTime) {
+            Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrement Time")
+        }
+        Text(
+            text = currentTime,
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center,
+        )
+        IconButton(onClick = onIncrementTime) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Increment Time")
+        }
+        IconButton(onClick = onResetTime) {
+            Icon(imageVector = Icons.Default.Refresh, contentDescription = "Reset Time")
         }
     }
 }
