@@ -22,7 +22,7 @@ fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
         objectId = this.objectId,
         ra = this.ra,
         dec = this.dec,
-        type = ObjectType.values().find { it.name.equals(this.type, true) } ?: ObjectType.UNKNOWN,
+        type = ObjectType.entries.find { it.name.equals(this.type, true) } ?: ObjectType.UNKNOWN,
         subType = this.subType,
         magnitude = this.magnitude,
         constellation = this.constellation,
