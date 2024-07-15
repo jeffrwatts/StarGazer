@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.ui.variablestardetail
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,6 +50,7 @@ import com.jeffrwatts.stargazer.utils.formatPeriodToDHH
 fun VariableStarDetailScreen(
     variableStarId: Int,
     onNavigateBack: () -> Unit,
+    onDisplayEphemeris: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VariableStarDetailViewModel = hiltViewModel(),
 ) {
@@ -84,7 +89,11 @@ fun VariableStarDetailScreen(
             is VariableStarDetailUiState.Success -> {
                 val variableStarObjPos = (uiState as VariableStarDetailUiState.Success).data
                 val altitudes = (uiState as VariableStarDetailUiState.Success).altitudes
-                VariableStarDetailContent(variableStarObj = variableStarObjPos.variableStarObj, entries = altitudes, modifier = contentModifier)
+                VariableStarDetailContent(
+                    variableStarObj = variableStarObjPos.variableStarObj,
+                    onDisplayEphemeris = { oid-> onDisplayEphemeris(buildEphemerisUri(oid)) },
+                    entries = altitudes,
+                    modifier = contentModifier)
             }
             else -> { //is VariableStarDetailUiState.Error -> {
                 ErrorScreen(
@@ -98,7 +107,12 @@ fun VariableStarDetailScreen(
 }
 
 @Composable
-fun VariableStarDetailContent(variableStarObj: VariableStarObj, entries: List<Utils.AltitudeEntry>, modifier: Modifier = Modifier) {
+fun VariableStarDetailContent(
+    variableStarObj: VariableStarObj,
+    entries: List<Utils.AltitudeEntry>,
+    onDisplayEphemeris: (Long) -> Unit,
+    modifier: Modifier = Modifier)
+{
     Column(modifier = modifier) {
         // Banner Image
         Image(
@@ -116,17 +130,28 @@ fun VariableStarDetailContent(variableStarObj: VariableStarObj, entries: List<Ut
         // Data Fields
         LabeledField(label = "RA", value = decimalRaToHmsString(variableStarObj.ra))
         LabeledField(label = "DEC", value = decimalDecToDmsString(variableStarObj.dec))
-        LabeledField(label = "Spectral Type", value = variableStarObj.spectralType)
-        LabeledField(label = "Type", value = variableStarObj.type)
+        //LabeledField(label = "Spectral Type", value = variableStarObj.spectralType)
+        //LabeledField(label = "Type", value = variableStarObj.type)
         LabeledField(label = "Magnitude High", value = variableStarObj.magnitudeHigh.toString())
         LabeledField(label = "Magnitude Low", value = variableStarObj.magnitudeLow.toString())
         LabeledField(label = "Period", value = formatPeriodToDHH(variableStarObj.period))
-        LabeledField(label = "Constellation", value = variableStarObj.constellation)
+        //LabeledField(label = "Constellation", value = variableStarObj.constellation)
+        Button(
+            onClick = { onDisplayEphemeris(variableStarObj.OID) },
+            colors = ButtonDefaults.buttonColors(contentColor = Color.White))
+        {
+            Text(text = "Display Ephemeris")
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
         AltitudeChart(entries)
         Spacer(modifier = Modifier.height(16.dp))
     }
+}
+
+fun buildEphemerisUri(oid: Long): String {
+    val url = "https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=${oid}"
+    return Uri.encode(url)
 }
 
 fun decimalRaToHmsString(raDecimalDegrees: Double): String {

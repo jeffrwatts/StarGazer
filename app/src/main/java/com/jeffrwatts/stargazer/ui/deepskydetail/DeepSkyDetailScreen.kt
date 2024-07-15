@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.ui.deepskydetail
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -49,6 +53,7 @@ import java.io.File
 fun DeepSkyDetailScreen(
     sightId: Int,
     onNavigateBack: () -> Unit,
+    onMoreInfo:(String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeepSkyDetailViewModel = hiltViewModel(),
 ) {
@@ -87,7 +92,11 @@ fun DeepSkyDetailScreen(
             is SightDetailUiState.Success -> {
                 val celestialObjWithImage = (uiState as SightDetailUiState.Success).data
                 val altitudes = (uiState as SightDetailUiState.Success).altitudes
-                DeepSkyDetailContent(celestialObjWithImage = celestialObjWithImage, entries = altitudes, modifier = contentModifier)
+                DeepSkyDetailContent(
+                    celestialObjWithImage = celestialObjWithImage,
+                    entries = altitudes,
+                    onMoreInfo= { onMoreInfo(buildMoreInfoUri(celestialObjWithImage.celestialObj.objectId, celestialObjWithImage.celestialObj.displayName))},
+                    modifier = contentModifier)
             }
             else -> {//is SightDetailUiState.Error -> {
                 ErrorScreen(
@@ -101,7 +110,12 @@ fun DeepSkyDetailScreen(
 }
 
 @Composable
-fun DeepSkyDetailContent(celestialObjWithImage: CelestialObjWithImage, entries: List<Utils.AltitudeEntry>, modifier: Modifier = Modifier) {
+fun DeepSkyDetailContent(
+    celestialObjWithImage: CelestialObjWithImage,
+    entries: List<Utils.AltitudeEntry>,
+    onMoreInfo:() -> Unit,
+    modifier: Modifier = Modifier)
+{
     Column(modifier = modifier) {
         // Banner Image
         val imageFile = celestialObjWithImage.image?.let { image ->
@@ -134,13 +148,37 @@ fun DeepSkyDetailContent(celestialObjWithImage: CelestialObjWithImage, entries: 
         LabeledField(label = "Subtype", value = celestialObjWithImage.celestialObj.subType ?: "N/A")
         LabeledField(label = "Constellation", value = celestialObjWithImage.celestialObj.constellation ?: "N/A")
         LabeledField(label = "Magnitude", value = celestialObjWithImage.celestialObj.magnitude?.toString() ?: "N/A")
-
+        Button(
+            onClick = onMoreInfo,
+            colors = ButtonDefaults.buttonColors(contentColor = Color.White))
+        {
+            Text(text = "Display More Info")
+        }
         Spacer(modifier = Modifier.height(16.dp))
         AltitudeChart(entries)
     }
 }
 
+fun buildMoreInfoUri(objectId: String, displayName: String): String {
+    val baseUrl = "https://en.wikipedia.org/wiki/"
 
+    val url =  when {
+        objectId.startsWith("m", ignoreCase = true) -> {
+            val number = objectId.substring(1)
+            "$baseUrl" + "Messier_$number"
+        }
+        objectId.startsWith("ngc", ignoreCase = true) -> {
+            val number = objectId.substring(3)
+            "$baseUrl" + "NGC_$number"
+        }
+        else -> {
+            val formattedName = displayName.replace(' ', '_')
+            "$baseUrl$formattedName"
+        }
+    }
+
+    return Uri.encode(url)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

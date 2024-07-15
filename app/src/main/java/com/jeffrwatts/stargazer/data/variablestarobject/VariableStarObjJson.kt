@@ -10,7 +10,8 @@ data class VariableStarObjJson (
     val magnitudeLow: Double,
     val constellation: String,
     val type: String,
-    val spectralType: String
+    val spectralType: String,
+    val OID: Long
 )
 
 fun VariableStarObjJson.toVariableStarObjEntity(): VariableStarObj {
@@ -24,6 +25,7 @@ fun VariableStarObjJson.toVariableStarObjEntity(): VariableStarObj {
         magnitudeLow = this.magnitudeLow,
         constellation = this.constellation,
         type = this.type,
-        spectralType = this.spectralType
+        spectralType = this.spectralType,
+        OID = this.OID
     )
 }

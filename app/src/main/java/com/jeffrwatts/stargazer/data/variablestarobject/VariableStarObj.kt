@@ -14,5 +14,6 @@ data class VariableStarObj (
     val magnitudeLow: Double,
     val constellation: String,
     val type: String,
-    val spectralType: String
+    val spectralType: String,
+    val OID: Long // Link to object in AAVSO VSX
 )

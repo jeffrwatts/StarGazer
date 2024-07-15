@@ -12,6 +12,7 @@ object StarGazerDestinations {
     const val UPDATE_ROUTE = "update"
     const val DEEP_SKY_DETAIL_ROUTE = "deepSkyDetail"
     const val VARIABLE_STAR_DETAIL_ROUTE = "variableStarDetail"
+    const val WEBVIEW_ADDITIONAL_INFO_ROUTE = "webViewAdditionalInfo"
 }
 
 /**
@@ -54,7 +55,6 @@ class StarGazerNavigationActions(navController: NavHostController) {
         }
     }
 
-
     val navigateToInfo: () -> Unit = {
         navController.navigate(StarGazerDestinations.INFO_ROUTE) {
             popUpTo(navController.graph.findStartDestination().id) {
@@ -91,5 +91,9 @@ class StarGazerNavigationActions(navController: NavHostController) {
 
     val navigateToVariableStarDetail: (Int) -> Unit = { variableStarId ->
         navController.navigate("${StarGazerDestinations.VARIABLE_STAR_DETAIL_ROUTE}/$variableStarId")
+    }
+
+    val navigateToWebViewAdditionalInfo:(String) -> Unit = { url ->
+        navController.navigate("${StarGazerDestinations.WEBVIEW_ADDITIONAL_INFO_ROUTE}/$url")
     }
 }
