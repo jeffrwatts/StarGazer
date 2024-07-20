@@ -2,6 +2,7 @@ package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.webviewscreen
 
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -40,17 +41,19 @@ fun WebViewScreen(
         val contentModifier = modifier
             .padding(innerPadding)
             .fillMaxSize()
+        Column(modifier = modifier) {
 
-        AndroidView(
-            factory = { context ->
-                WebView(context).apply {
-                    webViewClient = WebViewClient()
-                    settings.javaScriptEnabled = true
-                    loadUrl(url)
-                }
-            },
-            modifier = contentModifier
-        )
+            AndroidView(
+                factory = { context ->
+                    WebView(context).apply {
+                        webViewClient = WebViewClient()
+                        settings.javaScriptEnabled = true
+                        loadUrl(url)
+                    }
+                },
+                modifier = contentModifier
+            )
+        }
     }
 }
 
