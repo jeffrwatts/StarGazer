@@ -26,7 +26,8 @@ class EphemerisUtilsTest {
 
     @Test
     fun calculatePlanetPosition() {
-        val threshold = 5.0/60.0 // 5 minute accuracy threshold.
+        val angle_threshold = 5.0/60.0 // 5 minute accuracy threshold.
+        val dist_threshold = 0.05 // 0.05 AU accuracy threshold
 
         val jsonFile = File(javaClass.classLoader?.getResource("ephemeris_test.json")!!.file).readText()
         val gson = Gson()
@@ -39,8 +40,9 @@ class EphemerisUtilsTest {
             planet?.let {
                 print(data.julianDate)
                 val (ra, dec, dist) = EphemerisUtils.calculatePlanetPosition(data.julianDate, it)
-                Assert.assertEquals(0.0, angularDifference(ra, data.ra), threshold)
-                Assert.assertEquals(dec, data.dec, threshold)
+                Assert.assertEquals(0.0, angularDifference(ra, data.ra), angle_threshold)
+                Assert.assertEquals(dec, data.dec, angle_threshold)
+                Assert.assertEquals(dist, data.distance, dist_threshold)
             }
         }
     }
