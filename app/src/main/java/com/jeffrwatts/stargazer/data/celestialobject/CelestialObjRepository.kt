@@ -9,12 +9,8 @@ class CelestialObjRepository @Inject constructor (
     private val celestialObjDao: CelestialObjDao
 )
 {
-    fun getAllCelestialObjsByType(types: List<ObjectType>, location: Location, date: Double): Flow<List<CelestialObjPos>> {
-        return celestialObjDao.getByTypes(types).map { objects->
-            objects.map { obj->
-                CelestialObjPos.fromCelestialObjWithImage(obj, date, location.latitude, location.longitude)
-            }
-        }
+    fun getAllCelestialObjects(): Flow<List<CelestialObjWithImage>> {
+        return celestialObjDao.getAll()
     }
 
     fun getCelestialObj(id: Int, location: Location, date: Double): Flow<CelestialObjPos> {

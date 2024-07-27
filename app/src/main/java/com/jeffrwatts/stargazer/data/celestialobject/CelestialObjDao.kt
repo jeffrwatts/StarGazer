@@ -17,8 +17,8 @@ interface CelestialObjDao {
     fun get(itemId: Int): Flow<CelestialObjWithImage>
 
     @Transaction
-    @Query("SELECT * FROM celestial_objects WHERE type IN (:types)")
-    fun getByTypes(types: List<ObjectType>): Flow<List<CelestialObjWithImage>>
+    @Query("SELECT * FROM celestial_objects")
+    fun getAll(): Flow<List<CelestialObjWithImage>>
 
     @Query("SELECT COUNT(*) FROM celestial_objects")
     fun getCount(): Int

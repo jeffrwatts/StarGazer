@@ -84,9 +84,9 @@ fun DeepSkyObjectsScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val deepSkyObjectsUiState by viewModel.uiState.collectAsState()
-    val currentFilter by viewModel.selectedFilter.collectAsState()
+    val currentFilter by viewModel.recommendedFilter.collectAsState()
     val isRefreshing = deepSkyObjectsUiState is DeepSkyObjectsUiState.Loading
-    val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
+    val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.refresh() })
 
     Scaffold(
         topBar = {
@@ -128,12 +128,13 @@ fun DeepSkyObjectsScreen(
                         Column(modifier = contentModifier) {
                             TimeControl(
                                 currentTime = successState.currentTime,
-                                onIncrementTime = { viewModel.incrementTime() },
-                                onDecrementTime = { viewModel.decrementTime() },
-                                onResetTime = { viewModel.resetTime() }
+                                onIncrementTime = { viewModel.incrementOffset() },
+                                onDecrementTime = { viewModel.decrementOffset() },
+                                onResetTime = { viewModel.resetOffset() }
                             )
                             DeepSkyObjectsBody(
                                 celestialObjPosList = successState.data,
+                                locationAvailable = successState.locationAvailable,
                                 onSightClick = onSightClick,
                                 modifier = Modifier.weight(1f)
                             )
@@ -147,7 +148,7 @@ fun DeepSkyObjectsScreen(
                         ErrorScreen(
                             message = (deepSkyObjectsUiState as DeepSkyObjectsUiState.Error).message,
                             modifier = contentModifier,
-                            onRetryClick = { viewModel.fetchObjects() }
+                            onRetryClick = { viewModel.refresh() }
                         )
                     }
                 }
@@ -164,12 +165,13 @@ fun DeepSkyObjectsScreen(
 @Composable
 private fun DeepSkyObjectsBody(
     celestialObjPosList: List<CelestialObjPos>,
+    locationAvailable: Boolean,
     onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (celestialObjPosList.isEmpty()) {
         Text(
-            text = stringResource(R.string.no_item_description),
+            text = stringResource(id = if (locationAvailable) R.string.no_item_description else R.string.getting_location),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.titleLarge
         )
