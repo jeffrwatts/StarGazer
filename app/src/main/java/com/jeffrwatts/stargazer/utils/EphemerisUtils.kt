@@ -128,17 +128,30 @@ data class OrbitalElements(
     var L: Double
 )
 
+
+const val SUN = "Sun"
+const val MERCURY = "Mercury"
+const val VENUS = "Venus"
+const val EARTH = "Earth"
+const val MARS = "Mars"
+const val JUPITER = "Jupiter"
+const val SATURN = "Saturn"
+const val URANUS = "Uranus"
+const val NEPTUNE = "Neptune"
+const val PLUTO = "Pluto"
+
 fun mapPlanet(name: String): Planet? {
     return when (name) {
-        "Mercury" -> Planet.Mercury
-        "Venus" -> Planet.Venus
-        "Sun" -> Planet.Sun
-        "Mars" -> Planet.Mars
-        "Jupiter" -> Planet.Jupiter
-        "Saturn" -> Planet.Saturn
-        "Uranus" -> Planet.Uranus
-        "Neptune" -> Planet.Neptune
-        "Pluto" -> Planet.Pluto
+        SUN -> Planet.Sun
+        MERCURY -> Planet.Mercury
+        VENUS -> Planet.Venus
+        EARTH -> Planet.Earth
+        MARS -> Planet.Mars
+        JUPITER -> Planet.Jupiter
+        SATURN -> Planet.Saturn
+        URANUS -> Planet.Uranus
+        NEPTUNE -> Planet.Neptune
+        PLUTO -> Planet.Pluto
         else -> null
     }
 }

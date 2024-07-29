@@ -7,8 +7,18 @@ import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.StarGazerApi
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.JUPITER
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.MARS
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.MERCURY
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.NEPTUNE
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.PLUTO
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.SATURN
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.URANUS
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.VENUS
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
+import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.toCelestialObjEntity
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.data.variablestarobject.toVariableStarObjEntity
@@ -67,6 +77,17 @@ class UpdateDSOVariableWorker @AssistedInject constructor(
         Result.success(buildStatusUpdate("Updates Complete"))
     }
 
+    private val solarSystem : List<CelestialObj> = listOf (
+        CelestialObj(0, MERCURY, MERCURY, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
+        CelestialObj(0, VENUS, VENUS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
+        CelestialObj(0, MARS, MARS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
+        CelestialObj(0, JUPITER, JUPITER, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
+        CelestialObj(0, SATURN, SATURN, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
+        CelestialObj(0, URANUS, URANUS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
+        CelestialObj(0, NEPTUNE, NEPTUNE, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
+        CelestialObj(0, PLUTO, PLUTO, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
+    )
+
     private suspend fun updateDSOObjects() {
         try {
             setProgressAsync(buildStatusUpdate("Getting DSO Objects"))
@@ -74,6 +95,7 @@ class UpdateDSOVariableWorker @AssistedInject constructor(
             setProgressAsync(buildStatusUpdate("Updating DSO DB"))
             val celestialObjs = dsoObjects.map { it.toCelestialObjEntity() }
             celestialObjDao.deleteAll()
+            celestialObjDao.insertAll(solarSystem)
             celestialObjDao.insertAll(celestialObjs)
             setProgressAsync(buildStatusUpdate("Updated DSO DB"))
         } catch (e: Exception) {

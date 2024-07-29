@@ -2,8 +2,11 @@ package com.jeffrwatts.stargazer.ui.deepskyobjects
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.EphemerisUtils
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.mapPlanet
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
+import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.Utils
@@ -51,6 +54,13 @@ class DeepSkyObjectsViewModel @Inject constructor(
                         val celestialObjPosList = celestialObjs
                             .filter { !recommended || it.celestialObj.recommended }
                             .map {celestialObj->
+                                if (celestialObj.celestialObj.type == ObjectType.PLANET) {
+                                    mapPlanet(celestialObj.celestialObj.objectId)?.let { planet->
+                                        val (ra, dec, _) = EphemerisUtils.calculatePlanetPosition(julianDate, planet)
+                                        celestialObj.celestialObj.ra = ra
+                                        celestialObj.celestialObj.dec= dec
+                                    }
+                                }
                                 CelestialObjPos.fromCelestialObjWithImage(celestialObj, julianDate, loc.latitude, loc.longitude)
                             }
                             .sortedWith(compareByDescending { it.observable })

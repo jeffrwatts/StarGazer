@@ -2,7 +2,6 @@ package com.jeffrwatts.stargazer.ui.deepskyobjects
 
 import android.Manifest
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,17 +15,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -63,6 +58,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
+import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
@@ -229,6 +225,7 @@ fun DeepSkyObjectsItem(
             }
         )
 
+        val isPlanet = celestialObjPos.celestialObjWithImage.celestialObj.type == ObjectType.PLANET
 
         Spacer(modifier = Modifier.width(16.dp))
         Column {
@@ -239,16 +236,19 @@ fun DeepSkyObjectsItem(
                 maxLines = 1,
                 color = textColor
             )
-            Text(
-                text = listOfNotNull(
-                    celestialObjPos.celestialObjWithImage.celestialObj.ngcId,
-                    celestialObjPos.celestialObjWithImage.celestialObj.objectId.uppercase(Locale.getDefault())
-                ).joinToString(", "),
-                style = MaterialTheme.typography.bodyMedium,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                color = textColor
-            )
+            if (!isPlanet) {
+                Text(
+                    text = listOfNotNull(
+                        celestialObjPos.celestialObjWithImage.celestialObj.ngcId,
+                        celestialObjPos.celestialObjWithImage.celestialObj.objectId.uppercase(Locale.getDefault())
+                    ).joinToString(", "),
+                    style = MaterialTheme.typography.bodyMedium,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    color = textColor
+                )
+            }
+
             Text(
                 text = "Alt: ${formatToDegreeAndMinutes(celestialObjPos.alt)}, Azm: ${
                     formatToDegreeAndMinutes(
@@ -263,11 +263,13 @@ fun DeepSkyObjectsItem(
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
-            Text(
-                text = "Obs Tags: ${celestialObjPos.celestialObjWithImage.celestialObj.tags}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = textColor
-            )
+            if (!isPlanet) {
+                Text(
+                    text = "Obs Tags: ${celestialObjPos.celestialObjWithImage.celestialObj.tags}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = textColor
+                )
+            }
         }
     }
 }
