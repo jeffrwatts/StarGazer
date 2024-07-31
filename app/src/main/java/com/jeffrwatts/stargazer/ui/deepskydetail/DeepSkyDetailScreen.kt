@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -61,7 +61,7 @@ fun DeepSkyDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(sightId) {
-        viewModel.fetchSightDetail(sightId)
+        viewModel.initDetail(sightId)
     }
 
     // Update the title when uiState changes
@@ -102,7 +102,7 @@ fun DeepSkyDetailScreen(
                 ErrorScreen(
                     message = (uiState as SightDetailUiState.Error).message,
                     modifier = contentModifier,
-                    onRetryClick = { viewModel.fetchSightDetail(sightId) }
+                    onRetryClick = { viewModel.initDetail(sightId) }
                 )
             }
         }
@@ -165,11 +165,11 @@ fun buildMoreInfoUri(objectId: String, displayName: String): String {
     val url =  when {
         objectId.startsWith("m", ignoreCase = true) -> {
             val number = objectId.substring(1)
-            "$baseUrl" + "Messier_$number"
+            baseUrl + "Messier_$number"
         }
         objectId.startsWith("ngc", ignoreCase = true) -> {
             val number = objectId.substring(3)
-            "$baseUrl" + "NGC_$number"
+            baseUrl + "NGC_$number"
         }
         else -> {
             val formattedName = displayName.replace(' ', '_')
@@ -200,7 +200,7 @@ fun DeepSkyDetailTopAppBar(
         navigationIcon = {
             IconButton(onClick = { onNavigateBack() }) {
                 Icon(
-                    imageVector = Icons.Filled.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back"
                 )
             }
