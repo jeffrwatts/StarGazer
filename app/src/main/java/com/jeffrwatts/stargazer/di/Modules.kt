@@ -11,8 +11,6 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageDao
 import com.jeffrwatts.stargazer.data.orientation.OrientationRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
-import com.jeffrwatts.stargazer.data.solarsystem.EphemerisDao
-import com.jeffrwatts.stargazer.data.solarsystem.SolarSystemRepository
 import com.jeffrwatts.stargazer.data.timeoffset.TimeOffsetRepository
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
@@ -85,12 +83,6 @@ object NetworkModule {
 object DatabaseModule {
     @Singleton
     @Provides
-    fun provideEphemerisDao(@ApplicationContext context: Context): EphemerisDao {
-        return StarGazerDatabase.getDatabase(context).ephemerisDao()
-    }
-
-    @Singleton
-    @Provides
     fun provideCelestialObjDao(@ApplicationContext context: Context): CelestialObjDao {
         return StarGazerDatabase.getDatabase(context).celestialObjDao()
     }
@@ -117,16 +109,6 @@ object RepositoryModule {
         celestialObjDao: CelestialObjDao
     ): CelestialObjRepository {
         return CelestialObjRepository(celestialObjDao)
-    }
-
-    @Singleton
-    @Provides
-    fun provideSolarSystemRepository(
-        dao: EphemerisDao,
-        starGazerApi: StarGazerApi,
-        @IoDispatcher ioDispatcher: CoroutineDispatcher
-    ): SolarSystemRepository {
-        return SolarSystemRepository(dao, starGazerApi, ioDispatcher)
     }
 
     @Singleton

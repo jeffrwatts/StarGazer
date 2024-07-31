@@ -2,7 +2,6 @@ package com.jeffrwatts.stargazer.workers
 
 enum class UpdateType {
     IMAGE,
-    EPHEMERIS,
     DSO_VARIABLE
 }
 

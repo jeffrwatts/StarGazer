@@ -9,7 +9,6 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.await
 import com.jeffrwatts.stargazer.workers.UpdateDSOVariableWorker
-import com.jeffrwatts.stargazer.workers.UpdateEphemerisWorker
 import com.jeffrwatts.stargazer.workers.UpdateImageWorker
 import com.jeffrwatts.stargazer.workers.UpdateType
 import com.jeffrwatts.stargazer.workers.toUpdateType
@@ -53,14 +52,6 @@ class UpdateViewModel @Inject constructor (
         monitorJobStatus(updateRequest.id)
     }
 
-    fun triggerEphemerisUpdate() {
-        val updateRequest = OneTimeWorkRequestBuilder<UpdateEphemerisWorker>()
-            .addTag(UpdateType.EPHEMERIS.name)
-            .build()
-        workManager.enqueue(updateRequest)
-        monitorJobStatus(updateRequest.id)
-    }
-
     fun triggerDSOVariableUpdate() {
         val updateRequest = OneTimeWorkRequestBuilder<UpdateDSOVariableWorker>()
             .addTag(UpdateType.DSO_VARIABLE.name)
@@ -73,7 +64,7 @@ class UpdateViewModel @Inject constructor (
         viewModelScope.launch {
             //workManager.pruneWork()  // Reconsider whether to prune or not
 
-            listOf(UpdateType.IMAGE, UpdateType.EPHEMERIS, UpdateType.DSO_VARIABLE).forEach { type ->
+            listOf(UpdateType.IMAGE, UpdateType.DSO_VARIABLE).forEach { type ->
                 val workInfos = workManager.getWorkInfosByTag(type.name).await()
                 workInfos.filter { it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED }
                     .forEach { monitorJobStatus(it.id) }
@@ -102,7 +93,6 @@ class UpdateViewModel @Inject constructor (
             _statusMessages.value = _statusMessages.value + status
             _state.value = when (updateType) {
                 UpdateType.IMAGE -> _state.value.copy(isImageUpdating = downloading)
-                UpdateType.EPHEMERIS -> _state.value.copy(isEphemerisUpdating = downloading)
                 UpdateType.DSO_VARIABLE -> _state.value.copy(isDSOVariableUpdating = downloading)
                 else -> _state.value
             }

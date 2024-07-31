@@ -66,15 +66,6 @@ fun UpdateScreen(
                 Text("Update Images")
             }
 
-            Button(
-                onClick = { viewModel.triggerEphemerisUpdate() },
-                enabled = !uiState.isEphemerisUpdating,
-                modifier = Modifier.fillMaxWidth().padding(8.dp),
-                colors = ButtonDefaults.buttonColors(contentColor = Color.White)
-            ) {
-                Text("Update Ephemeris")
-            }
-
             // Clear Button
             Button(
                 onClick = { viewModel.clearStatus() },
