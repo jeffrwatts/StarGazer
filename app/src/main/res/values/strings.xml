@@ -19,4 +19,5 @@
     <string name="ephemeris_expires_on">Expires: %1$s</string>
     <string name="permission_rationale">Need location permissions to provide the star-gazing experience.</string>
     <string name="getting_location">Getting location</string>
+    <string name="sky_tonight">Sky Tonight</string>
 </resources>

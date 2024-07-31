@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.Adjust
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.Star
@@ -30,7 +29,6 @@ import com.jeffrwatts.stargazer.R
 fun AppDrawer(
     currentRoute: String,
     navigateToDeepSkyObjects: () -> Unit,
-    navigateToSolarSystem: () -> Unit,
     navigateToVariableStar: () -> Unit,
     navigateToInfo: () -> Unit,
     navigateToAltAzmTool: () -> Unit,
@@ -43,17 +41,10 @@ fun AppDrawer(
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 24.dp)
         )
         NavigationDrawerItem(
-            label = { Text(stringResource(id = R.string.deepskyobjects)) },
+            label = { Text(stringResource(id = R.string.sky_tonight)) },
             icon = { Icon(Icons.Filled.Radar, null) },
-            selected = currentRoute == StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE,
+            selected = currentRoute == StarGazerDestinations.SKY_TONIGHT_ROUTE,
             onClick = { navigateToDeepSkyObjects(); closeDrawer() },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-        NavigationDrawerItem(
-            label = { Text(stringResource(id = R.string.solarsystem)) },
-            icon = { Icon(Icons.Filled.Adjust, null) },
-            selected = currentRoute == StarGazerDestinations.SOLAR_SYSTEM_ROUTE,
-            onClick = { navigateToSolarSystem(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(

@@ -87,7 +87,7 @@ fun DeepSkyObjectsScreen(
     Scaffold(
         topBar = {
             DeepSkyObjectsTopAppBar(
-                title = stringResource(R.string.deepskyobjects),
+                title = stringResource(R.string.sky_tonight),
                 openDrawer = openDrawer,
                 onFilterSelected = { newFilter ->
                     viewModel.setRecommendedFilter(newFilter)

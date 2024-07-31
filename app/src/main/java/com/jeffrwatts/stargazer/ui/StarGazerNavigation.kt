@@ -4,13 +4,12 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 
 object StarGazerDestinations {
-    const val DEEP_SKY_OBJECTS_ROUTE = "deepSkyObjects"
-    const val SOLAR_SYSTEM_ROUTE = "solarSystem"
+    const val SKY_TONIGHT_ROUTE = "skyTonight"
     const val VARIABLE_STAR_ROUTE = "variableStar"
     const val INFO_ROUTE = "info"
     const val ALT_AZM_TOOL_ROUTE = "altazmTool"
     const val UPDATE_ROUTE = "update"
-    const val DEEP_SKY_DETAIL_ROUTE = "deepSkyDetail"
+    const val CELESTIAL_OBJ_DETAIL_ROUTE = "celestialObjDetail"
     const val VARIABLE_STAR_DETAIL_ROUTE = "variableStarDetail"
     const val WEBVIEW_ADDITIONAL_INFO_ROUTE = "webViewAdditionalInfo"
 }
@@ -19,8 +18,8 @@ object StarGazerDestinations {
  * Models the navigation actions in the app.
  */
 class StarGazerNavigationActions(navController: NavHostController) {
-    val navigateToDeepSkyObjects: () -> Unit = {
-        navController.navigate(StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE) {
+    val navigateToSkyTonight: () -> Unit = {
+        navController.navigate(StarGazerDestinations.SKY_TONIGHT_ROUTE) {
             // Pop up to the start destination of the graph to
             // avoid building up a large stack of destinations
             // on the back stack as users select items
@@ -31,16 +30,6 @@ class StarGazerNavigationActions(navController: NavHostController) {
             // reselecting the same item
             launchSingleTop = true
             // Restore state when reselecting a previously selected item
-            restoreState = true
-        }
-    }
-
-    val navigateToSolarSystem: () -> Unit = {
-        navController.navigate(StarGazerDestinations.SOLAR_SYSTEM_ROUTE) {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
-            launchSingleTop = true
             restoreState = true
         }
     }
@@ -85,8 +74,8 @@ class StarGazerNavigationActions(navController: NavHostController) {
         }
     }
 
-    val navigateToDeepSkyDetail: (Int) -> Unit = { deepSkyId ->
-        navController.navigate("${StarGazerDestinations.DEEP_SKY_DETAIL_ROUTE}/$deepSkyId")
+    val navigateToCelestialObjDetail: (Int) -> Unit = { deepSkyId ->
+        navController.navigate("${StarGazerDestinations.CELESTIAL_OBJ_DETAIL_ROUTE}/$deepSkyId")
     }
 
     val navigateToVariableStarDetail: (Int) -> Unit = { variableStarId ->

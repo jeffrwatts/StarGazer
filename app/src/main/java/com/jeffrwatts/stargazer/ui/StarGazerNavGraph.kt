@@ -13,7 +13,6 @@ import com.jeffrwatts.stargazer.ui.altazmtool.AltAzmToolScreen
 import com.jeffrwatts.stargazer.ui.deepskydetail.DeepSkyDetailScreen
 import com.jeffrwatts.stargazer.ui.deepskyobjects.DeepSkyObjectsScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
-import com.jeffrwatts.stargazer.ui.solarsystem.SolarSystemScreen
 import com.jeffrwatts.stargazer.ui.updatescreen.UpdateScreen
 import com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
 import com.jeffrwatts.stargazer.ui.variablestardetail.VariableStarDetailScreen
@@ -23,21 +22,18 @@ fun StarGazerNavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     openDrawer: () -> Unit = {},
-    startDestination: String = StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE,
+    startDestination: String = StarGazerDestinations.SKY_TONIGHT_ROUTE,
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier
     ) {
-        composable(route = StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE) {
+        composable(route = StarGazerDestinations.SKY_TONIGHT_ROUTE) {
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
             DeepSkyObjectsScreen(openDrawer = openDrawer,
-                onSightClick = actions.navigateToDeepSkyDetail,
+                onSightClick = actions.navigateToCelestialObjDetail,
                 modifier = modifier)
-        }
-        composable(StarGazerDestinations.SOLAR_SYSTEM_ROUTE) {
-            SolarSystemScreen(openDrawer = openDrawer, {}, modifier = modifier)
         }
         composable(StarGazerDestinations.VARIABLE_STAR_ROUTE) {
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
@@ -54,9 +50,9 @@ fun StarGazerNavGraph(
         composable(route = StarGazerDestinations.UPDATE_ROUTE) {
             UpdateScreen(openDrawer = openDrawer, modifier = modifier)
         }
-        composable("${StarGazerDestinations.DEEP_SKY_DETAIL_ROUTE}/{deepSkyId}") { backStackEntry ->
+        composable("${StarGazerDestinations.CELESTIAL_OBJ_DETAIL_ROUTE}/{objectId}") { backStackEntry ->
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
-            val deepSkyId = backStackEntry.arguments?.getString("deepSkyId")?.toIntOrNull()
+            val deepSkyId = backStackEntry.arguments?.getString("objectId")?.toIntOrNull()
 
             // Only navigate to the detail screen if both sightId is not null
             deepSkyId?.let {

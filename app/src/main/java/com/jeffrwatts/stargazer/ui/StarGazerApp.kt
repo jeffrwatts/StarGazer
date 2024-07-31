@@ -23,7 +23,7 @@ fun StarGazerApp() {
         val coroutineScope = rememberCoroutineScope()
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route ?: StarGazerDestinations.DEEP_SKY_OBJECTS_ROUTE
+        val currentRoute = navBackStackEntry?.destination?.route ?: StarGazerDestinations.SKY_TONIGHT_ROUTE
 
         val drawerState = rememberDrawerState(DrawerValue.Closed)
 
@@ -31,8 +31,7 @@ fun StarGazerApp() {
             drawerContent = {
                 AppDrawer(
                     currentRoute = currentRoute,
-                    navigateToDeepSkyObjects = navigationActions.navigateToDeepSkyObjects,
-                    navigateToSolarSystem = navigationActions.navigateToSolarSystem,
+                    navigateToDeepSkyObjects = navigationActions.navigateToSkyTonight,
                     navigateToVariableStar = navigationActions.navigateToVariableStar,
                     navigateToInfo = navigationActions.navigateToInfo,
                     navigateToAltAzmTool = navigationActions.navigateToAltAzmTool,
