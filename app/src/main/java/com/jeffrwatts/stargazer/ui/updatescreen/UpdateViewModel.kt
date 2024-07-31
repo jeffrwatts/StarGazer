@@ -7,7 +7,6 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import androidx.work.await
 import com.jeffrwatts.stargazer.workers.UpdateDSOVariableWorker
 import com.jeffrwatts.stargazer.workers.UpdateImageWorker
 import com.jeffrwatts.stargazer.workers.UpdateType
@@ -15,6 +14,7 @@ import com.jeffrwatts.stargazer.workers.toUpdateType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.guava.asDeferred
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -65,8 +65,8 @@ class UpdateViewModel @Inject constructor (
             //workManager.pruneWork()  // Reconsider whether to prune or not
 
             listOf(UpdateType.IMAGE, UpdateType.DSO_VARIABLE).forEach { type ->
-                val workInfos = workManager.getWorkInfosByTag(type.name).await()
-                workInfos.filter { it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED }
+                val workInfo = workManager.getWorkInfosByTag(type.name).asDeferred().await()
+                workInfo.filter { it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.ENQUEUED }
                     .forEach { monitorJobStatus(it.id) }
             }
         }

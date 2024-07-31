@@ -99,6 +99,8 @@ dependencies {
 
     implementation ("androidx.work:work-runtime-ktx:2.9.0")
 
+    // Guava for await solution in Worker
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
 
     // CameraX
     implementation ("androidx.camera:camera-camera2:1.3.4")
