@@ -28,7 +28,7 @@ import com.jeffrwatts.stargazer.R
 @Composable
 fun AppDrawer(
     currentRoute: String,
-    navigateToDeepSkyObjects: () -> Unit,
+    navigateToSkyTonight: () -> Unit,
     navigateToVariableStar: () -> Unit,
     navigateToInfo: () -> Unit,
     navigateToAltAzmTool: () -> Unit,
@@ -44,7 +44,7 @@ fun AppDrawer(
             label = { Text(stringResource(id = R.string.sky_tonight)) },
             icon = { Icon(Icons.Filled.Radar, null) },
             selected = currentRoute == StarGazerDestinations.SKY_TONIGHT_ROUTE,
-            onClick = { navigateToDeepSkyObjects(); closeDrawer() },
+            onClick = { navigateToSkyTonight(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(

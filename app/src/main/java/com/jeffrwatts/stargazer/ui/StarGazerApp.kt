@@ -31,7 +31,7 @@ fun StarGazerApp() {
             drawerContent = {
                 AppDrawer(
                     currentRoute = currentRoute,
-                    navigateToDeepSkyObjects = navigationActions.navigateToSkyTonight,
+                    navigateToSkyTonight = navigationActions.navigateToSkyTonight,
                     navigateToVariableStar = navigationActions.navigateToVariableStar,
                     navigateToInfo = navigationActions.navigateToInfo,
                     navigateToAltAzmTool = navigationActions.navigateToAltAzmTool,

@@ -90,9 +90,9 @@ class UpdateDSOVariableWorker @AssistedInject constructor(
 
     private suspend fun updateDSOObjects() {
         try {
-            setProgressAsync(buildStatusUpdate("Getting DSO Objects"))
+            setProgressAsync(buildStatusUpdate("Getting Celestial Objects"))
             val dsoObjects = starGazerApi.getDso()
-            setProgressAsync(buildStatusUpdate("Updating DSO DB"))
+            setProgressAsync(buildStatusUpdate("Updating Celestial Object DB"))
             val celestialObjs = dsoObjects.map { it.toCelestialObjEntity() }
             celestialObjDao.deleteAll()
             celestialObjDao.insertAll(solarSystem)

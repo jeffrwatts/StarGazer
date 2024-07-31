@@ -12,8 +12,6 @@
     <string name="photo_planner_title">Photo Planner</string>
     <string name="variable_star_title">Variable Stars</string>
     <string name="planets">Planets</string>
-    <string name="solarsystem">Solar System</string>
-    <string name="deepskyobjects">Deep Sky Objects</string>
     <string name="update_title">Update</string>
     <string name="alt_azm_tool">Alt/Azm Tool</string>
     <string name="ephemeris_expires_on">Expires: %1$s</string>

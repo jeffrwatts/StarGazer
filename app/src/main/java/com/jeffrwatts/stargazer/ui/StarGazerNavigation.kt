@@ -74,8 +74,8 @@ class StarGazerNavigationActions(navController: NavHostController) {
         }
     }
 
-    val navigateToCelestialObjDetail: (Int) -> Unit = { deepSkyId ->
-        navController.navigate("${StarGazerDestinations.CELESTIAL_OBJ_DETAIL_ROUTE}/$deepSkyId")
+    val navigateToCelestialObjDetail: (Int) -> Unit = { objectId ->
+        navController.navigate("${StarGazerDestinations.CELESTIAL_OBJ_DETAIL_ROUTE}/$objectId")
     }
 
     val navigateToVariableStarDetail: (Int) -> Unit = { variableStarId ->
