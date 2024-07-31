@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.deepskydetail
+package com.jeffrwatts.stargazer.ui.celestialobjdetail
 
 import android.net.Uri
 import androidx.compose.foundation.layout.Column
@@ -50,12 +50,12 @@ import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeepSkyDetailScreen(
+fun CelestialObjDetailScreen(
     sightId: Int,
     onNavigateBack: () -> Unit,
     onMoreInfo:(String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DeepSkyDetailViewModel = hiltViewModel(),
+    viewModel: CelestialObjDetailViewModel = hiltViewModel(),
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
@@ -68,14 +68,14 @@ fun DeepSkyDetailScreen(
     var title by remember { mutableStateOf("Loading...") } // default title
 
     LaunchedEffect(uiState) {
-        if (uiState is SightDetailUiState.Success) {
-            title = (uiState as SightDetailUiState.Success).data.celestialObj.displayName
+        if (uiState is CelestialObjDetailUiState.Success) {
+            title = (uiState as CelestialObjDetailUiState.Success).data.celestialObj.displayName
         }
     }
 
     Scaffold(
         topBar = {
-            DeepSkyDetailTopAppBar(
+            CelestialObjDetailTopAppBar(
                 title = title,
                 onNavigateBack = onNavigateBack
             )
@@ -86,13 +86,13 @@ fun DeepSkyDetailScreen(
             .fillMaxSize()
 
         when (uiState) {
-            is SightDetailUiState.Loading -> {
+            is CelestialObjDetailUiState.Loading -> {
                 LoadingScreen(modifier = contentModifier)
             }
-            is SightDetailUiState.Success -> {
-                val celestialObjWithImage = (uiState as SightDetailUiState.Success).data
-                val altitudes = (uiState as SightDetailUiState.Success).altitudes
-                DeepSkyDetailContent(
+            is CelestialObjDetailUiState.Success -> {
+                val celestialObjWithImage = (uiState as CelestialObjDetailUiState.Success).data
+                val altitudes = (uiState as CelestialObjDetailUiState.Success).altitudes
+                CelestialObjDetailContent(
                     celestialObjWithImage = celestialObjWithImage,
                     entries = altitudes,
                     onMoreInfo= { onMoreInfo(buildMoreInfoUri(celestialObjWithImage.celestialObj.objectId, celestialObjWithImage.celestialObj.displayName))},
@@ -100,7 +100,7 @@ fun DeepSkyDetailScreen(
             }
             else -> {//is SightDetailUiState.Error -> {
                 ErrorScreen(
-                    message = (uiState as SightDetailUiState.Error).message,
+                    message = (uiState as CelestialObjDetailUiState.Error).message,
                     modifier = contentModifier,
                     onRetryClick = { viewModel.initDetail(sightId) }
                 )
@@ -110,7 +110,7 @@ fun DeepSkyDetailScreen(
 }
 
 @Composable
-fun DeepSkyDetailContent(
+fun CelestialObjDetailContent(
     celestialObjWithImage: CelestialObjWithImage,
     entries: List<Utils.AltitudeEntry>,
     onMoreInfo:() -> Unit,
@@ -182,7 +182,7 @@ fun buildMoreInfoUri(objectId: String, displayName: String): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeepSkyDetailTopAppBar(
+fun CelestialObjDetailTopAppBar(
     title: String,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,

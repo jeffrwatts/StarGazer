@@ -10,9 +10,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.webviewscreen.WebViewScreen
 import com.jeffrwatts.stargazer.ui.altazmtool.AltAzmToolScreen
-import com.jeffrwatts.stargazer.ui.deepskydetail.DeepSkyDetailScreen
-import com.jeffrwatts.stargazer.ui.deepskyobjects.DeepSkyObjectsScreen
+import com.jeffrwatts.stargazer.ui.celestialobjdetail.CelestialObjDetailScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
+import com.jeffrwatts.stargazer.ui.skytonight.SkyTonightScreen
 import com.jeffrwatts.stargazer.ui.updatescreen.UpdateScreen
 import com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
 import com.jeffrwatts.stargazer.ui.variablestardetail.VariableStarDetailScreen
@@ -31,7 +31,7 @@ fun StarGazerNavGraph(
     ) {
         composable(route = StarGazerDestinations.SKY_TONIGHT_ROUTE) {
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
-            DeepSkyObjectsScreen(openDrawer = openDrawer,
+            SkyTonightScreen(openDrawer = openDrawer,
                 onSightClick = actions.navigateToCelestialObjDetail,
                 modifier = modifier)
         }
@@ -52,11 +52,11 @@ fun StarGazerNavGraph(
         }
         composable("${StarGazerDestinations.CELESTIAL_OBJ_DETAIL_ROUTE}/{objectId}") { backStackEntry ->
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
-            val deepSkyId = backStackEntry.arguments?.getString("objectId")?.toIntOrNull()
+            val objectId = backStackEntry.arguments?.getString("objectId")?.toIntOrNull()
 
             // Only navigate to the detail screen if both sightId is not null
-            deepSkyId?.let {
-                DeepSkyDetailScreen(
+            objectId?.let {
+                CelestialObjDetailScreen(
                     sightId = it,
                     onNavigateBack = { navController.popBackStack() },
                     onMoreInfo = { url -> actions.navigateToWebViewAdditionalInfo(url) })

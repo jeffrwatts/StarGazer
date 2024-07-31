@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.deepskyobjects
+package com.jeffrwatts.stargazer.ui.skytonight
 
 import android.Manifest
 import androidx.compose.foundation.clickable
@@ -72,21 +72,21 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class
 )
 @Composable
-fun DeepSkyObjectsScreen(
+fun SkyTonightScreen(
     openDrawer: () -> Unit,
     onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DeepSkyObjectsViewModel = hiltViewModel()
+    viewModel: SkyTonightViewModel = hiltViewModel()
 ) {
     val topAppBarState = rememberTopAppBarState()
-    val deepSkyObjectsUiState by viewModel.uiState.collectAsState()
+    val skyTonightUiState by viewModel.uiState.collectAsState()
     val currentFilter by viewModel.recommendedFilter.collectAsState()
-    val isRefreshing = deepSkyObjectsUiState is DeepSkyObjectsUiState.Loading
+    val isRefreshing = skyTonightUiState is SkyTonightUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.refresh() })
 
     Scaffold(
         topBar = {
-            DeepSkyObjectsTopAppBar(
+            SkyTonightTopAppBar(
                 title = stringResource(R.string.sky_tonight),
                 openDrawer = openDrawer,
                 onFilterSelected = { newFilter ->
@@ -114,13 +114,13 @@ fun DeepSkyObjectsScreen(
             }
 
             Box(Modifier.pullRefresh(pullRefreshState)) {
-                when (deepSkyObjectsUiState) {
-                    is DeepSkyObjectsUiState.Loading -> {
+                when (skyTonightUiState) {
+                    is SkyTonightUiState.Loading -> {
                         LoadingScreen(modifier = contentModifier)
                     }
 
-                    is DeepSkyObjectsUiState.Success -> {
-                        val successState = deepSkyObjectsUiState as DeepSkyObjectsUiState.Success
+                    is SkyTonightUiState.Success -> {
+                        val successState = skyTonightUiState as SkyTonightUiState.Success
                         Column(modifier = contentModifier) {
                             TimeControl(
                                 currentTime = successState.currentTime,
@@ -128,7 +128,7 @@ fun DeepSkyObjectsScreen(
                                 onDecrementTime = { viewModel.decrementOffset() },
                                 onResetTime = { viewModel.resetOffset() }
                             )
-                            DeepSkyObjectsBody(
+                            SkyTonightBody(
                                 celestialObjPosList = successState.data,
                                 locationAvailable = successState.locationAvailable,
                                 onSightClick = onSightClick,
@@ -142,7 +142,7 @@ fun DeepSkyObjectsScreen(
                         // It will build and run fine, but adding this else here to avoid the annoying compile failure warnings.
                         //is DeepSkyObjectsUiState.Error -> {
                         ErrorScreen(
-                            message = (deepSkyObjectsUiState as DeepSkyObjectsUiState.Error).message,
+                            message = (skyTonightUiState as SkyTonightUiState.Error).message,
                             modifier = contentModifier,
                             onRetryClick = { viewModel.refresh() }
                         )
@@ -159,7 +159,7 @@ fun DeepSkyObjectsScreen(
 }
 
 @Composable
-private fun DeepSkyObjectsBody(
+private fun SkyTonightBody(
     celestialObjPosList: List<CelestialObjPos>,
     locationAvailable: Boolean,
     onSightClick: (Int) -> Unit,
@@ -174,7 +174,7 @@ private fun DeepSkyObjectsBody(
     } else {
         LazyColumn(modifier = modifier) {
             items(items = celestialObjPosList, key = { it.celestialObjWithImage.celestialObj.id }) { celestialObjPos ->
-                DeepSkyObjectsItem(
+                CelestialObjItem(
                     celestialObjPos = celestialObjPos,
                     onItemClick = {onSightClick(celestialObjPos.celestialObjWithImage.celestialObj.id)},
                     modifier = Modifier
@@ -190,7 +190,7 @@ private fun DeepSkyObjectsBody(
 }
 
 @Composable
-fun DeepSkyObjectsItem(
+fun CelestialObjItem(
     celestialObjPos: CelestialObjPos,
     onItemClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -276,7 +276,7 @@ fun DeepSkyObjectsItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeepSkyObjectsTopAppBar(
+fun SkyTonightTopAppBar(
     title: String,
     openDrawer: () -> Unit,
     onFilterSelected: (Boolean) -> Unit,

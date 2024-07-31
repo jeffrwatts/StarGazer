@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.deepskydetail
+package com.jeffrwatts.stargazer.ui.celestialobjdetail
 
 import android.location.Location
 import androidx.lifecycle.ViewModel
@@ -22,13 +22,12 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
-class DeepSkyDetailViewModel @Inject constructor(
+class CelestialObjDetailViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow<SightDetailUiState>(SightDetailUiState.Loading)
-    val uiState: StateFlow<SightDetailUiState> = _uiState.asStateFlow()
-
+    private val _uiState = MutableStateFlow<CelestialObjDetailUiState>(CelestialObjDetailUiState.Loading)
+    val uiState: StateFlow<CelestialObjDetailUiState> = _uiState.asStateFlow()
 
     fun initDetail(sightId: Int) {
         viewModelScope.launch {
@@ -41,10 +40,10 @@ class DeepSkyDetailViewModel @Inject constructor(
                     location?.let { loc->
                         altitudes = generateAltitudes(celestialObjWithImage.celestialObj, loc)
                     }
-                    _uiState.value = SightDetailUiState.Success(celestialObjWithImage, altitudes)
+                    _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, altitudes)
                 }.collect()
             } catch (e: Exception) {
-                _uiState.value = SightDetailUiState.Error("Error loading data")
+                _uiState.value = CelestialObjDetailUiState.Error("Error loading data")
             }
         }
     }
@@ -87,8 +86,8 @@ class DeepSkyDetailViewModel @Inject constructor(
     }
 }
 
-sealed class SightDetailUiState {
-    object Loading : SightDetailUiState()
-    data class Success(val data: CelestialObjWithImage, val altitudes: List<Utils.AltitudeEntry>) : SightDetailUiState()
-    data class Error(val message: String) : SightDetailUiState()
+sealed class CelestialObjDetailUiState {
+    object Loading : CelestialObjDetailUiState()
+    data class Success(val data: CelestialObjWithImage, val altitudes: List<Utils.AltitudeEntry>) : CelestialObjDetailUiState()
+    data class Error(val message: String) : CelestialObjDetailUiState()
 }

@@ -1,4 +1,4 @@
-package com.jeffrwatts.stargazer.ui.deepskyobjects
+package com.jeffrwatts.stargazer.ui.skytonight
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,7 +23,7 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
-class DeepSkyObjectsViewModel @Inject constructor(
+class SkyTonightViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
@@ -34,8 +34,8 @@ class DeepSkyObjectsViewModel @Inject constructor(
 
     private val _pullToRefresh = MutableSharedFlow<Unit>(replay = 1)
 
-    private val _uiState = MutableStateFlow<DeepSkyObjectsUiState>(DeepSkyObjectsUiState.Loading)
-    val uiState: StateFlow<DeepSkyObjectsUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<SkyTonightUiState>(SkyTonightUiState.Loading)
+    val uiState: StateFlow<SkyTonightUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -64,13 +64,13 @@ class DeepSkyObjectsViewModel @Inject constructor(
                                 CelestialObjPos.fromCelestialObjWithImage(celestialObj, julianDate, loc.latitude, loc.longitude)
                             }
                             .sortedWith(compareByDescending { it.observable })
-                        _uiState.value = DeepSkyObjectsUiState.Success(celestialObjPosList, true, date.format(DATE_TIME_FORMATTER))
+                        _uiState.value = SkyTonightUiState.Success(celestialObjPosList, true, date.format(DATE_TIME_FORMATTER))
                     }?: run {
-                        _uiState.value = DeepSkyObjectsUiState.Success(emptyList(), false, date.format(DATE_TIME_FORMATTER))
+                        _uiState.value = SkyTonightUiState.Success(emptyList(), false, date.format(DATE_TIME_FORMATTER))
                     }
 
                 } catch (e: Exception) {
-                    _uiState.value = DeepSkyObjectsUiState.Error(e.message ?: "Unknown error")
+                    _uiState.value = SkyTonightUiState.Error(e.message ?: "Unknown error")
                 }
             }.collect()
         }
@@ -111,8 +111,8 @@ class DeepSkyObjectsViewModel @Inject constructor(
     }
 }
 
-sealed class DeepSkyObjectsUiState {
-    object Loading : DeepSkyObjectsUiState()
-    data class Success(val data: List<CelestialObjPos>, val locationAvailable: Boolean, val currentTime: String) : DeepSkyObjectsUiState()
-    data class Error(val message: String) : DeepSkyObjectsUiState()
+sealed class SkyTonightUiState {
+    object Loading : SkyTonightUiState()
+    data class Success(val data: List<CelestialObjPos>, val locationAvailable: Boolean, val currentTime: String) : SkyTonightUiState()
+    data class Error(val message: String) : SkyTonightUiState()
 }
