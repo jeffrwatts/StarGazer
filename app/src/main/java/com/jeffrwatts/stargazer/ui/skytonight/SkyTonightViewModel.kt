@@ -31,7 +31,6 @@ class SkyTonightViewModel @Inject constructor(
     val recommendedFilter: StateFlow<Boolean> = _recommendedFilter.asStateFlow()
 
     private val _timeOffset = MutableStateFlow(0L)
-
     private val _pullToRefresh = MutableSharedFlow<Unit>(replay = 1)
 
     private val _uiState = MutableStateFlow<SkyTonightUiState>(SkyTonightUiState.Loading)

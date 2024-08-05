@@ -24,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -57,7 +56,7 @@ fun VariableStarScreen(
     val topAppBarState = rememberTopAppBarState()
     val variableStarUiState by viewModel.uiState.collectAsState()
     val isRefreshing = variableStarUiState is VariableStarUiState.Loading
-    val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.fetchObjects() })
+    val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.refresh() })
 
     Scaffold(
         topBar = {
@@ -80,18 +79,13 @@ fun VariableStarScreen(
                 }
 
                 is VariableStarUiState.Success -> {
-                    LaunchedEffect(Unit) {
-                        // Sync up with any time changes... note look for a better approach.
-                        viewModel.fetchObjects()
-                    }
-
                     val successState = variableStarUiState as VariableStarUiState.Success
                     Column(modifier = contentModifier) {
                         TimeControl(
                             currentTime = successState.currentTime,
-                            onIncrementTime = { viewModel.incrementTime() },
-                            onDecrementTime = { viewModel.decrementTime() },
-                            onResetTime = { viewModel.resetTime() }
+                            onIncrementTime = { viewModel.incrementOffset() },
+                            onDecrementTime = { viewModel.decrementOffset() },
+                            onResetTime = { viewModel.resetOffset() }
                         )
                         VariableStarBody(
                             variableStarObjs = successState.data,
@@ -108,7 +102,7 @@ fun VariableStarScreen(
                     ErrorScreen(
                         message = (variableStarUiState as VariableStarUiState.Error).message,
                         modifier = contentModifier,
-                        onRetryClick = { viewModel.fetchObjects() }
+                        onRetryClick = { viewModel.refresh() }
                     )
                 }
             }

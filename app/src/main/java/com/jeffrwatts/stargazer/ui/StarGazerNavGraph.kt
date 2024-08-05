@@ -8,13 +8,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarPlannerScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.webviewscreen.WebViewScreen
 import com.jeffrwatts.stargazer.ui.altazmtool.AltAzmToolScreen
 import com.jeffrwatts.stargazer.ui.celestialobjdetail.CelestialObjDetailScreen
 import com.jeffrwatts.stargazer.ui.info.InfoScreen
 import com.jeffrwatts.stargazer.ui.skytonight.SkyTonightScreen
 import com.jeffrwatts.stargazer.ui.updatescreen.UpdateScreen
-import com.jeffrwatts.stargazer.ui.variablestar.VariableStarScreen
 import com.jeffrwatts.stargazer.ui.variablestardetail.VariableStarDetailScreen
 
 @Composable
@@ -37,7 +37,7 @@ fun StarGazerNavGraph(
         }
         composable(StarGazerDestinations.VARIABLE_STAR_ROUTE) {
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
-            VariableStarScreen(openDrawer = openDrawer,
+            VariableStarPlannerScreen(openDrawer = openDrawer,
                 onSightClick = actions.navigateToVariableStarDetail,
                 modifier = modifier)
         }
