@@ -1,5 +1,7 @@
 package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils
 
+import com.jeffrwatts.stargazer.utils.Utils
+import java.time.LocalDateTime
 import kotlin.math.*
 
 const val EPS = 1e-6
@@ -156,6 +158,11 @@ fun mapPlanet(name: String): Planet? {
     }
 }
 
+const val SUNRISE_SUNSET_ANGLE = 0.833
+const val CIVIL_TWILIGHT_ANGLE = 6.0
+const val NAUTICAL_TWILIGHT_ANGLE = 12.0
+const val ASTRONOMICAL_TWILIGHT_ANGLE = 18.0
+
 object EphemerisUtils {
 
     fun calculatePlanetPosition(date: Double, planet: Planet): Triple<Double, Double, Double> {
@@ -234,5 +241,46 @@ object EphemerisUtils {
         val y = r * sin(v + w)
         val z = 0.0
         return Triple(x, y, z)
+    }
+
+    fun calculateEquationOfTime(date: Double): Double {
+        val cy = date / 36525  // Centuries since J2000.0
+        val epsilon = Math.toRadians(23.4392911 - 0.0130042 * cy)  // Obliquity of the ecliptic
+
+        val L0 = Math.toRadians(280.46646 + 36000.76983 * cy).mod2pi()  // Mean longitude of the Sun
+        val M = Math.toRadians(357.52911 + 35999.05029 * cy).mod2pi()  // Mean anomaly of the Sun
+        val e = 0.016708634 - 0.000042037 * cy  // Eccentricity of Earth's orbit
+
+        val y = tan(epsilon / 2).pow(2)
+
+        val EoTRad = (y * sin(2 * L0) - 2 * e * sin(M) + 4 * e * y * sin(M) * cos(2 * L0) -
+                0.5 * y.pow(2) * sin(4 * L0) - 1.25 * e.pow(2) * sin(2 * M))
+
+        return 4 * Math.toDegrees(EoTRad)  // Convert to minutes
+    }
+
+    fun calculateTwilightHourAngle(latitude: Double, dec: Double, angle: Double): Double {
+        val latitudeRad = Math.toRadians(latitude)
+        val decRad = Math.toRadians(dec)
+        val angleRad = Math.toRadians(90 + angle)
+
+        // Calculate the hour angle argument
+        var HAarg = (cos(angleRad) / (cos(latitudeRad) * cos(decRad)) - tan(latitudeRad) * tan(decRad))
+        // Clamp HAarg to the range [-1, 1] to avoid domain errors in acos
+        HAarg = HAarg.coerceIn(-1.0, 1.0)
+
+        // Calculate the hour angle
+        return acos(HAarg)
+    }
+
+    fun calculateRiseSetUtc(year: Int, month: Int, day: Int, latitude: Double, longitude: Double, rise: Boolean, angle: Double):Double {
+        val date = Utils.calculateJulianDateUtc(LocalDateTime.of(year, month, day, 0, 0, 0))
+        val (_, dec, _) = calculatePlanetPosition(date, Planet.Sun)
+        val eot = calculateEquationOfTime(date)
+        var hourAngle = calculateTwilightHourAngle(latitude, dec, angle)
+        if (!rise) hourAngle*=-1.0
+        val delta = longitude + Math.toDegrees(hourAngle)
+        val timeMinUtc = 720.0 - (4.0 * delta) - eot
+        return date + timeMinUtc / 1440.0
     }
 }

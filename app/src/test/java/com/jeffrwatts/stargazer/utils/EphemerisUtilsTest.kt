@@ -2,11 +2,14 @@ package com.jeffrwatts.stargazer.utils
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.ASTRONOMICAL_TWILIGHT_ANGLE
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.EphemerisUtils
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.SUNRISE_SUNSET_ANGLE
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.mapPlanet
 import org.junit.Assert
 import org.junit.Test
 import java.io.File
+import java.time.LocalDateTime
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -45,5 +48,47 @@ class EphemerisUtilsTest {
                 Assert.assertEquals(dist, data.distance, dist_threshold)
             }
         }
+    }
+
+    @Test
+    fun calculateEquationOfTime() {
+        // REVIEW - Need more tests and check on the large delta needed for this to pass.
+        val date = 2460526.5
+        val eot = EphemerisUtils.calculateEquationOfTime(date)
+        Assert.assertEquals(eot, -6.120717181609098, 0.6)
+    }
+
+    @Test
+    fun calculateTwilightHourAngle() {
+        // REVIEW - Need more test cases
+        val latitude= 19.639994
+        val dec = 17.25457627315962
+        val hourAngleSunrise = EphemerisUtils.calculateTwilightHourAngle(latitude, dec, SUNRISE_SUNSET_ANGLE)
+        Assert.assertEquals(hourAngleSunrise, 1.6981463545913114, 0.01)
+
+        val hourAngleAstronomical = EphemerisUtils.calculateTwilightHourAngle(latitude, dec, ASTRONOMICAL_TWILIGHT_ANGLE)
+        Assert.assertEquals(hourAngleAstronomical, 2.0425055334420623, 0.01)
+    }
+
+    @Test
+    fun calculateRiseSet() {
+        // REVIEW - need more test cases (different locations, more angles, more times)
+        // REVIEW - validation approach exposes internals of the function under test so not that elegant.
+        val year = 2024
+        val month = 8
+        val day = 4
+        val date = Utils.calculateJulianDateUtc(LocalDateTime.of(year, month, day, 0, 0, 0))
+        val latitude = 19.639994
+        val longitude = -155.996926
+        val minInDay = 60.0*24.0
+        val delta = 1.0/minInDay // one minute accuracy
+
+        val timeUtcRise = EphemerisUtils.calculateRiseSetUtc(year, month, day, latitude, longitude, true, ASTRONOMICAL_TWILIGHT_ANGLE)
+        val expectedRise = date + 882.0006343882211/minInDay
+        Assert.assertEquals(timeUtcRise, expectedRise, delta)
+
+        val timeUtcSet = EphemerisUtils.calculateRiseSetUtc(2024, 8, 4, latitude, longitude, false, ASTRONOMICAL_TWILIGHT_ANGLE)
+        val expectedSet = date + 1818.216207974997/minInDay
+        Assert.assertEquals(timeUtcSet, expectedSet, delta)
     }
 }
