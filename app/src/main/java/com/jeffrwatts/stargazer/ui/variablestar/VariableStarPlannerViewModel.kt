@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.ASTRONOMICAL_TWILIGHT_ANGLE
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.EphemerisUtils
 import com.jeffrwatts.stargazer.data.location.LocationRepository
+import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
+import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjPos
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
 import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.Utils
@@ -20,6 +22,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.LocalTime
 import javax.inject.Inject
+import kotlin.math.floor
 
 @HiltViewModel
 class VariableStarPlannerViewModel @Inject constructor(
@@ -48,9 +51,20 @@ class VariableStarPlannerViewModel @Inject constructor(
                         val (start, end, isNight) = getRange(nowAdjusted, loc)
                         val nightStart = Utils.julianDateToLocalTime(start).format(DATE_TIME_FORMATTER)
                         val nightEnd = Utils.julianDateToLocalTime(end).format(DATE_TIME_FORMATTER)
-                        _uiState.value = VariableStarPlannerUiState.Success(currentTime, nightStart, nightEnd, isNight)
+
+                        val variableStarEventList = variableStarObjs.mapNotNull { varStarObj ->
+                            getEventTime(varStarObj, start, end).takeIf { it != 0.0 }?.let { eventTimeJulianDate ->
+                                val variableStarObjPos = VariableStarObjPos.fromVariableStarObj(varStarObj, eventTimeJulianDate, loc.latitude, loc.longitude)
+                                variableStarObjPos.takeIf { it.observable }?.let {
+                                    val eventTime = Utils.julianDateToLocalTime(eventTimeJulianDate).format(DATE_TIME_FORMATTER)
+                                    VariableStarEvent(variableStarObjPos, eventTime)
+                                }
+                            }
+                        }
+
+                        _uiState.value = VariableStarPlannerUiState.Success(currentTime, nightStart, nightEnd, isNight, variableStarEventList)
                     } ?: run {
-                        _uiState.value = VariableStarPlannerUiState.Success(currentTime, "", "", false)
+                        _uiState.value = VariableStarPlannerUiState.Success(currentTime, "", "", false, emptyList())
                     }
                 } catch (e:Exception) {
                     _uiState.value = VariableStarPlannerUiState.Error(e.message ?: "Unknown error")
@@ -115,7 +129,26 @@ class VariableStarPlannerViewModel @Inject constructor(
 
         return Triple(nightStart, nightEnd, isNight)
     }
+
+    private fun getEventTime (variableStarObj: VariableStarObj, nightStart: Double, nightEnd: Double): Double {
+        val periodsSinceEpochStart = (nightStart-variableStarObj.epoch) / variableStarObj.period
+
+        // Find the closest eclipse time after nightStart
+        val nextEclipseAfterStart = variableStarObj.epoch + (floor(periodsSinceEpochStart) + 1) * variableStarObj.period
+
+        // Check if the next eclipse after nightStart is before nightEnd
+        return if (nextEclipseAfterStart in nightStart..nightEnd) {
+            nextEclipseAfterStart
+        } else {
+            0.0
+        }
+    }
 }
+
+data class VariableStarEvent (
+    val variableStarObjPos: VariableStarObjPos,
+    val eventTime: String
+)
 
 sealed class VariableStarPlannerUiState {
     object Loading : VariableStarPlannerUiState()
@@ -124,6 +157,7 @@ sealed class VariableStarPlannerUiState {
         val nightStart: String,
         val nightEnd: String,
         val isNight: Boolean,
+        val variableStarEvents: List<VariableStarEvent>
     ) : VariableStarPlannerUiState()
     data class Error(val message: String) : VariableStarPlannerUiState()
 }
