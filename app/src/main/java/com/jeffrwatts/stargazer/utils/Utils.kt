@@ -29,7 +29,7 @@ object Utils {
         return "%02d°%02d'%05.2f\"%s".format(abs(degrees), abs(minutes), abs(seconds), direction)
     }
 
-    private fun julianDateToUTC(julianDate: Double): LocalDateTime {
+    fun julianDateToUTC(julianDate: Double): LocalDateTime {
         // Julian date to seconds since epoch
         val secondsSinceEpoch = ((julianDate - 2440587.5) * 86400).toLong()
         // Convert to LocalDateTime in system default timezone
@@ -40,7 +40,6 @@ object Utils {
         val utcDateTime = julianDateToUTC(julianDate)
         return utcDateTime.atZone(ZoneOffset.UTC).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()
     }
-
 
     fun calculateJulianDateFromLocal(localTime:LocalDateTime):Double {
         val zonedDateTime = localTime.atZone(ZoneId.systemDefault())

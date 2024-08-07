@@ -12,15 +12,17 @@ enum class VariableType {
 data class VariableStarObj (
     @PrimaryKey(autoGenerate = true) val id: Int,
     val displayName: String,
+    val OID: Long, // Link to object in AAVSO VSX
     val ra: Double,
     val dec: Double,
+    val constellation: String,
     val period: Double,
     val epoch: Double,
-    val magnitudeHigh: Double,
-    val magnitudeLow: Double,
-    val constellation: String,
+    val magnitudeHigh: String,
+    val magnitudeLow: String,
+    val riseDuration: Double?,
     val variableType: VariableType,
     val type: String,
-    val spectralType: String,
-    val OID: Long // Link to object in AAVSO VSX
+    val spectralType: String?,
+
 )

@@ -201,6 +201,13 @@ fun VariableStarEventItem(
                 color = textColor
             )
             Text(
+                text = "UTC Event Time: ${variableStarEvent.UTCTime}",
+                style = MaterialTheme.typography.bodyMedium,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                color = textColor
+            )
+            Text(
                 text = "Period ${variableStarObjPos.variableStarObj.period}", //"Period: ${formatPeriodToDHH(variableStarObjPos.variableStarObj.period)}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
