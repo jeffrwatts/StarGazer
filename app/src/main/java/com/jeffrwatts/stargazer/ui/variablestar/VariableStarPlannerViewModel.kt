@@ -53,11 +53,12 @@ class VariableStarPlannerViewModel @Inject constructor(
                         val nightEnd = Utils.julianDateToLocalTime(end).format(DATE_TIME_FORMATTER)
 
                         val variableStarEventList = variableStarObjs.mapNotNull { varStarObj ->
-                            getEventTime(varStarObj, start, end).takeIf { it != 0.0 }?.let { eventTimeJulianDate ->
-                                val variableStarObjPos = VariableStarObjPos.fromVariableStarObj(varStarObj, eventTimeJulianDate, loc.latitude, loc.longitude)
-                                val eventTime = Utils.julianDateToLocalTime(eventTimeJulianDate).format(DATE_TIME_FORMATTER)
-                                val utcTime = Utils.julianDateToUTC(eventTimeJulianDate).format(DATE_TIME_FORMATTER)
-                                VariableStarEvent(variableStarObjPos, eventTime, utcTime)
+                            getEventTime(varStarObj, start, end).takeIf { eventTime-> eventTime != 0.0 }?.let { eventTimeJulianDate ->
+                                VariableStarObjPos.fromVariableStarObj(varStarObj, eventTimeJulianDate, loc.latitude, loc.longitude).takeIf { it.observable }?.let {
+                                    val eventTime = Utils.julianDateToLocalTime(eventTimeJulianDate).format(DATE_TIME_FORMATTER)
+                                    val utcTime = Utils.julianDateToUTC(eventTimeJulianDate).format(DATE_TIME_FORMATTER)
+                                    VariableStarEvent(it, eventTime, utcTime)
+                                }
                             }
                         }
 
