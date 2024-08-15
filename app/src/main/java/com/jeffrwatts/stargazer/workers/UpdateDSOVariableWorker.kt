@@ -78,6 +78,7 @@ class UpdateDSOVariableWorker @AssistedInject constructor(
     }
 
     private val solarSystem : List<CelestialObj> = listOf (
+        CelestialObj(0, "Moon", "Moon", 0.0, 0.0, ObjectType.MOON, "", 0.0, "", null, true, ""),
         CelestialObj(0, MERCURY, MERCURY, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
         CelestialObj(0, VENUS, VENUS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
         CelestialObj(0, MARS, MARS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),

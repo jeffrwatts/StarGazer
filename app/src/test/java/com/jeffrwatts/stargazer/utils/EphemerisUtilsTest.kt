@@ -51,6 +51,20 @@ class EphemerisUtilsTest {
     }
 
     @Test
+    fun calculateMoonPosition() {
+        // REVIEW Need more tests.
+        val date1 = 2460526.5
+        val (ra1, dec1, _) = EphemerisUtils.calculateMoonPosition(date1)
+        Assert.assertEquals(ra1, 131.38353369982516, 0.1)
+        Assert.assertEquals(dec1, 22.924318942896388, 0.1)
+
+        val date2 = 2460536.5
+        val (ra2, dec2, _) = EphemerisUtils.calculateMoonPosition(date2)
+        Assert.assertEquals(ra2, 245.42028577312414, 0.1)
+        Assert.assertEquals(dec2, -26.229606553934158, 0.1)
+    }
+
+    @Test
     fun calculateEquationOfTime() {
         // REVIEW - Need more tests and check on the large delta needed for this to pass.
         val date = 2460526.5

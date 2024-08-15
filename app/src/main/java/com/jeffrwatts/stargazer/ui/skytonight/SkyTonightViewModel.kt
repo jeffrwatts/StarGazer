@@ -59,6 +59,10 @@ class SkyTonightViewModel @Inject constructor(
                                         celestialObj.celestialObj.ra = ra
                                         celestialObj.celestialObj.dec= dec
                                     }
+                                } else if (celestialObj.celestialObj.type == ObjectType.MOON) {
+                                    val (ra, dec, _) = EphemerisUtils.calculateMoonPosition(julianDate)
+                                    celestialObj.celestialObj.ra = ra
+                                    celestialObj.celestialObj.dec = dec
                                 }
                                 CelestialObjPos.fromCelestialObjWithImage(celestialObj, julianDate, loc.latitude, loc.longitude)
                             }

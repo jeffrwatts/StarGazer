@@ -13,7 +13,7 @@ import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.URANUS
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.VENUS
 
 enum class ObjectType {
-    STAR, GALAXY, NEBULA, CLUSTER, PLANET, UNKNOWN
+    STAR, GALAXY, NEBULA, CLUSTER, PLANET, MOON, UNKNOWN
 }
 
 @Entity(tableName = "celestial_objects")
@@ -38,6 +38,7 @@ fun CelestialObj.getDefaultImageResource(): Int {
         ObjectType.GALAXY -> R.drawable.galaxy
         ObjectType.NEBULA -> R.drawable.nebula
         ObjectType.CLUSTER -> R.drawable.cluster
+        ObjectType.MOON -> R.drawable.moon
         else -> when (this.objectId) {
             MERCURY -> R.drawable.mercury
             VENUS -> R.drawable.venus
@@ -46,7 +47,7 @@ fun CelestialObj.getDefaultImageResource(): Int {
             SATURN -> R.drawable.saturn
             URANUS -> R.drawable.uranus
             NEPTUNE -> R.drawable.neptune
-            PLUTO -> R.drawable.logo
+            PLUTO -> R.drawable.pluto
             else-> R.drawable.logo
         }
     }

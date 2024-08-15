@@ -205,6 +205,31 @@ object EphemerisUtils {
         return Triple(ra, dec, rvec)
     }
 
+    fun calculateMoonPosition(julianDate: Double): Triple<Double, Double, Double> {
+        val d = julianDate - 2451545.0 // Julian date for January 1, 2000
+
+        val L = Math.toRadians(218.316 + 13.176396 * d)
+        val M = Math.toRadians(134.963 + 13.064993 * d)
+        val F = Math.toRadians(93.272 + 13.229350 * d)
+
+        val l = L + Math.toRadians(6.289) * sin(M)
+        val b = Math.toRadians(5.128) * sin(F)
+        val dist = 385001 - 20905 * cos(M)
+
+        // Calculate right ascension
+        val E = Math.toRadians(23.4397) // Obliquity of the Earth
+        var ra = Math.toDegrees(atan2(sin(l) * cos(E) - tan(b) * sin(E), cos(l)))
+        // Calculate declination
+        val dec = Math.toDegrees(asin(sin(b) * cos(E) + cos(b) * sin(E) * sin(l)))
+
+        // Normalize RA to be between 0 and 360 degrees
+        if (ra < 0) {
+            ra += 360.0
+        }
+
+        return Triple(ra, dec, dist)
+    }
+
     private fun meanAnomaly(elements: OrbitalElements): Double {
         return (elements.L - elements.w).mod2pi()
     }
