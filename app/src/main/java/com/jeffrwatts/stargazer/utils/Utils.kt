@@ -1,6 +1,7 @@
 package com.jeffrwatts.stargazer.utils
 
-import android.location.Location
+
+import io.github.cosinekitty.astronomy.Time
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -10,7 +11,20 @@ import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.sin
 
+fun julianDateToAstronomyTime(julianDate: Double): Time {
+    // Step 1: Define the Julian Date for the reference epoch (January 1, 2000, at 12:00 UTC)
+    val referenceJulianDate = 2451545.0
+
+    // Step 2: Calculate UT1/UTC days since the reference epoch
+    val ut = julianDate - referenceJulianDate
+
+    // Step 3: Create and return the Time object using the calculated `ut` value
+    return Time(ut)
+}
+
 object Utils {
+    data class AltitudeEntry(val time: LocalDateTime, val alt: Double)
+
     fun dmsToDegrees(degrees: Int, minutes: Int, seconds: Double): Double {
         val sign = if (degrees >= 0) 1 else -1
         return sign * (abs(degrees) + (minutes / 60.0) + (seconds / 3600.0))
@@ -162,34 +176,20 @@ object Utils {
         return Pair(ra, dec)
     }
 
-    data class AltitudeEntry(val time: LocalDateTime, val alt: Double)
+    fun calculateTimeToMeridian(ra: Double, lst: Double): Double {
+        var hourAngle = ra - lst
 
-    fun getAltitudeEntries(
-        ra: Double,
-        dec: Double,
-        location: Location,
-        timeStart: LocalDateTime,
-        durationHours: Long,
-        incrementMinutes: Long): List<AltitudeEntry> {
-        val altitudeData = mutableListOf<AltitudeEntry>()
+        // Normalize the hour angle to be within 0 to 360 degrees
+        hourAngle = (hourAngle + 360) % 360
 
-        // Set up the start time to be 2 hours before at 0 min and 0 sec.
-        var timeIx = timeStart
-        val endTime = timeIx.plusHours(durationHours)
-
-        while (timeIx.isBefore(endTime)) {
-            val julianDate = calculateJulianDateFromLocal(timeIx)
-            val (alt, _, _) = calculateAltAzm(
-                ra,
-                dec,
-                location.latitude,
-                location.longitude,
-                julianDate
-            )
-            altitudeData.add(AltitudeEntry(timeIx, alt))
-            timeIx = timeIx.plusMinutes(incrementMinutes)
+        // If the hour angle is greater than 180 degrees, it means the object will cross the meridian in the past, adjust it
+        if (hourAngle > 180) {
+            hourAngle -= 360.0
         }
 
-        return altitudeData
+        // Convert hour angle to time, considering the Earth rotates at 15 degrees per hour
+        val timeUntilMeridian = if (hourAngle < 0) (hourAngle + 360) / 15 else hourAngle / 15
+
+        return timeUntilMeridian
     }
 }

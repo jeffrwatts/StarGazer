@@ -3,12 +3,10 @@ package com.jeffrwatts.stargazer.ui.celestialobjdetail
 import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.EphemerisUtils
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.mapPlanet
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
-import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -60,25 +58,8 @@ class CelestialObjDetailViewModel @Inject constructor(
 
         while (timeIx.isBefore(endTime)) {
             val julianDate = Utils.calculateJulianDateFromLocal(timeIx)
-
-            if (celestialObj.type == ObjectType.PLANET) {
-                mapPlanet(celestialObj.objectId)?.let {
-                    val(ra, dec, _) = EphemerisUtils.calculatePlanetPosition(julianDate, it)
-                    celestialObj.ra=ra
-                    celestialObj.dec=dec
-                }?: run {
-                    return emptyList()
-                }
-            }
-
-            val (alt, _, _) = Utils.calculateAltAzm(
-                celestialObj.ra,
-                celestialObj.dec,
-                location.latitude,
-                location.longitude,
-                julianDate
-            )
-            altitudeData.add(Utils.AltitudeEntry(timeIx, alt))
+            val celestialObjPos = CelestialObjPos.fromCelestialObj(celestialObj, julianDate, location)
+            altitudeData.add(Utils.AltitudeEntry(timeIx, celestialObjPos.alt))
             timeIx = timeIx.plusMinutes(incrementMinutes)
         }
 

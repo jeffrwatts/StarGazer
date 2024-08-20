@@ -1,6 +1,23 @@
 package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils
 
+import com.jeffrwatts.stargazer.data.celestialobject.EARTH
+import com.jeffrwatts.stargazer.data.celestialobject.JUPITER
+import com.jeffrwatts.stargazer.data.celestialobject.MARS
+import com.jeffrwatts.stargazer.data.celestialobject.MERCURY
+import com.jeffrwatts.stargazer.data.celestialobject.NEPTUNE
+import com.jeffrwatts.stargazer.data.celestialobject.PLUTO
+import com.jeffrwatts.stargazer.data.celestialobject.SATURN
+import com.jeffrwatts.stargazer.data.celestialobject.SUN
+import com.jeffrwatts.stargazer.data.celestialobject.URANUS
+import com.jeffrwatts.stargazer.data.celestialobject.VENUS
 import com.jeffrwatts.stargazer.utils.Utils
+import com.jeffrwatts.stargazer.utils.julianDateToAstronomyTime
+import io.github.cosinekitty.astronomy.Aberration
+import io.github.cosinekitty.astronomy.Body
+import io.github.cosinekitty.astronomy.EquatorEpoch
+import io.github.cosinekitty.astronomy.Equatorial
+import io.github.cosinekitty.astronomy.Observer
+import io.github.cosinekitty.astronomy.equator
 import java.time.LocalDateTime
 import kotlin.math.*
 
@@ -130,18 +147,6 @@ data class OrbitalElements(
     var L: Double
 )
 
-
-const val SUN = "Sun"
-const val MERCURY = "Mercury"
-const val VENUS = "Venus"
-const val EARTH = "Earth"
-const val MARS = "Mars"
-const val JUPITER = "Jupiter"
-const val SATURN = "Saturn"
-const val URANUS = "Uranus"
-const val NEPTUNE = "Neptune"
-const val PLUTO = "Pluto"
-
 fun mapPlanet(name: String): Planet? {
     return when (name) {
         SUN -> Planet.Sun
@@ -164,6 +169,17 @@ const val NAUTICAL_TWILIGHT_ANGLE = 12.0
 const val ASTRONOMICAL_TWILIGHT_ANGLE = 18.0
 
 object EphemerisUtils {
+
+    fun calculatePlanetPosition2(jd: Double, body: Body): Triple<Double, Double, Double> {
+        //val zonedDateTime = julianDateToZonedDateTime(jd)
+        //val localTime = zonedDateTime.withZoneSameInstant(ZoneOffset.UTC)
+        //val time = localTime.toAstronomyTime()
+
+        val time = julianDateToAstronomyTime(jd)
+        val observer = Observer(0.0, 0.0, 0.0)
+        val equ_2000: Equatorial = equator(body, time, observer, EquatorEpoch.J2000, Aberration.None)
+        return Triple(equ_2000.ra*15.0, equ_2000.dec, equ_2000.dist)
+    }
 
     fun calculatePlanetPosition(date: Double, planet: Planet): Triple<Double, Double, Double> {
         val earthElements = Planet.Earth.meanElements(date)

@@ -7,18 +7,19 @@ import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.StarGazerApi
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.JUPITER
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.MARS
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.MERCURY
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.NEPTUNE
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.PLUTO
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.SATURN
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.URANUS
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.VENUS
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
+import com.jeffrwatts.stargazer.data.celestialobject.JUPITER
+import com.jeffrwatts.stargazer.data.celestialobject.MARS
+import com.jeffrwatts.stargazer.data.celestialobject.MERCURY
+import com.jeffrwatts.stargazer.data.celestialobject.MOON
+import com.jeffrwatts.stargazer.data.celestialobject.NEPTUNE
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
+import com.jeffrwatts.stargazer.data.celestialobject.PLUTO
+import com.jeffrwatts.stargazer.data.celestialobject.SATURN
+import com.jeffrwatts.stargazer.data.celestialobject.URANUS
+import com.jeffrwatts.stargazer.data.celestialobject.VENUS
 import com.jeffrwatts.stargazer.data.celestialobject.toCelestialObjEntity
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.data.variablestarobject.toVariableStarObjEntity
@@ -78,7 +79,7 @@ class UpdateDSOVariableWorker @AssistedInject constructor(
     }
 
     private val solarSystem : List<CelestialObj> = listOf (
-        CelestialObj(0, "Moon", "Moon", 0.0, 0.0, ObjectType.MOON, "", 0.0, "", null, true, ""),
+        CelestialObj(0, MOON, MOON, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
         CelestialObj(0, MERCURY, MERCURY, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
         CelestialObj(0, VENUS, VENUS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),
         CelestialObj(0, MARS, MARS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, ""),

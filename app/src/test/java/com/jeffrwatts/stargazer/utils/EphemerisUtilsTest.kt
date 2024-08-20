@@ -6,6 +6,7 @@ import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.ASTRONOMICAL_TWIL
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.EphemerisUtils
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.SUNRISE_SUNSET_ANGLE
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.mapPlanet
+import com.jeffrwatts.stargazer.data.celestialobject.mapBody
 import org.junit.Assert
 import org.junit.Test
 import java.io.File
@@ -46,6 +47,36 @@ class EphemerisUtilsTest {
                 Assert.assertEquals(0.0, angularDifference(ra, data.ra), angle_threshold)
                 Assert.assertEquals(dec, data.dec, angle_threshold)
                 Assert.assertEquals(dist, data.distance, dist_threshold)
+            }
+        }
+    }
+
+    @Test
+    fun calculatePlanetPosition2() {
+        val planetAngleThreshold = 0.8/60.0
+        val planetDistThreshold = 0.001
+
+        val moonAngleThreshold = 1.15
+        val moonDistThreshold = 0.00005
+
+        val jsonFile = File(javaClass.classLoader?.getResource("ephemeris_test.json")!!.file).readText()
+        val gson = Gson()
+        val ephemerisTestType = object : TypeToken<List<EphemerisTestData>>() {}.type
+        val testData: List<EphemerisTestData> = gson.fromJson(jsonFile, ephemerisTestType)
+
+        // Iterate through the test data and verify the calculations
+        for (data in testData) {
+            val body = mapBody(data.body)
+            body?.let {
+                print(data.julianDate)
+                val (ra, dec, dist) = EphemerisUtils.calculatePlanetPosition2(data.julianDate, it)
+
+                val angleThreshold = if (data.body=="Moon") moonAngleThreshold else planetAngleThreshold
+                val distThreshold = if (data.body=="Moon") moonDistThreshold else planetDistThreshold
+
+                Assert.assertEquals(0.0, angularDifference(ra, data.ra), angleThreshold)
+                Assert.assertEquals(dec, data.dec, angleThreshold)
+                Assert.assertEquals(dist, data.distance, distThreshold)
             }
         }
     }

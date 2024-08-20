@@ -1,8 +1,6 @@
 package com.jeffrwatts.stargazer.data.variablestarobject
 
-import android.location.Location
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 class VariableStarObjRepository (
     private val variableStarObjDao: VariableStarObjDao
@@ -11,9 +9,7 @@ class VariableStarObjRepository (
         return variableStarObjDao.getAll()
     }
 
-    fun getVariableStarObj(id: Int, location: Location, date: Double): Flow<VariableStarObjPos> {
-        return variableStarObjDao.get(id).map { obj->
-            VariableStarObjPos.fromVariableStarObj(obj, date, location.latitude, location.longitude)
-        }
+    fun getVariableStarObj(id: Int): Flow<VariableStarObj> {
+        return variableStarObjDao.get(id)
     }
 }

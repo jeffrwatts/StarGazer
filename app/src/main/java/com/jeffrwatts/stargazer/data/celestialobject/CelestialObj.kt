@@ -3,18 +3,23 @@ package com.jeffrwatts.stargazer.data.celestialobject
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.jeffrwatts.stargazer.R
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.JUPITER
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.MARS
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.MERCURY
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.NEPTUNE
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.PLUTO
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.SATURN
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.URANUS
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.VENUS
+import io.github.cosinekitty.astronomy.Body
 
 enum class ObjectType {
-    STAR, GALAXY, NEBULA, CLUSTER, PLANET, MOON, UNKNOWN
+    STAR, GALAXY, NEBULA, CLUSTER, PLANET, UNKNOWN
 }
+
+const val SUN = "Sun"
+const val MERCURY = "Mercury"
+const val VENUS = "Venus"
+const val EARTH = "Earth"
+const val MARS = "Mars"
+const val JUPITER = "Jupiter"
+const val SATURN = "Saturn"
+const val URANUS = "Uranus"
+const val NEPTUNE = "Neptune"
+const val PLUTO = "Pluto"
+const val MOON = "Moon"
 
 @Entity(tableName = "celestial_objects")
 data class CelestialObj(
@@ -38,7 +43,6 @@ fun CelestialObj.getDefaultImageResource(): Int {
         ObjectType.GALAXY -> R.drawable.galaxy
         ObjectType.NEBULA -> R.drawable.nebula
         ObjectType.CLUSTER -> R.drawable.cluster
-        ObjectType.MOON -> R.drawable.moon
         else -> when (this.objectId) {
             MERCURY -> R.drawable.mercury
             VENUS -> R.drawable.venus
@@ -48,7 +52,24 @@ fun CelestialObj.getDefaultImageResource(): Int {
             URANUS -> R.drawable.uranus
             NEPTUNE -> R.drawable.neptune
             PLUTO -> R.drawable.pluto
+            MOON -> R.drawable.moon
             else-> R.drawable.logo
         }
+    }
+}
+
+fun mapBody(name: String): Body? {
+    return when (name) {
+        SUN -> Body.Sun
+        MERCURY -> Body.Mercury
+        VENUS -> Body.Venus
+        EARTH -> Body.Earth
+        MARS -> Body.Mars
+        JUPITER -> Body.Jupiter
+        SATURN -> Body.Saturn
+        URANUS -> Body.Uranus
+        NEPTUNE -> Body.Neptune
+        PLUTO -> Body.Pluto
+        else -> null
     }
 }

@@ -40,9 +40,9 @@ import com.jeffrwatts.stargazer.utils.AltitudeChart
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LabeledField
 import com.jeffrwatts.stargazer.utils.LoadingScreen
-import com.jeffrwatts.stargazer.utils.Utils
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
+import com.jeffrwatts.stargazer.utils.Utils
 import com.jeffrwatts.stargazer.utils.formatPeriodToDHH
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +58,7 @@ fun VariableStarDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(variableStarId) {
-        viewModel.fetchVariableStar(variableStarId)
+        viewModel.initDetail(variableStarId)
     }
 
     // Update the title when uiState changes
@@ -66,7 +66,7 @@ fun VariableStarDetailScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is VariableStarDetailUiState.Success) {
-            title = (uiState as VariableStarDetailUiState.Success).data.variableStarObj.displayName
+            title = (uiState as VariableStarDetailUiState.Success).data.displayName
         }
     }
 
@@ -87,10 +87,10 @@ fun VariableStarDetailScreen(
                 LoadingScreen(modifier = contentModifier)
             }
             is VariableStarDetailUiState.Success -> {
-                val variableStarObjPos = (uiState as VariableStarDetailUiState.Success).data
+                val variableStarObj = (uiState as VariableStarDetailUiState.Success).data
                 val altitudes = (uiState as VariableStarDetailUiState.Success).altitudes
                 VariableStarDetailContent(
-                    variableStarObj = variableStarObjPos.variableStarObj,
+                    variableStarObj = variableStarObj,
                     onDisplayEphemeris = { oid-> onDisplayEphemeris(buildEphemerisUri(oid)) },
                     entries = altitudes,
                     modifier = contentModifier)
@@ -99,7 +99,7 @@ fun VariableStarDetailScreen(
                 ErrorScreen(
                     message = (uiState as VariableStarDetailUiState.Error).message,
                     modifier = contentModifier,
-                    onRetryClick = { viewModel.fetchVariableStar(variableStarId) }
+                    onRetryClick = { viewModel.initDetail(variableStarId) }
                 )
             }
         }
@@ -132,8 +132,8 @@ fun VariableStarDetailContent(
         LabeledField(label = "DEC", value = decimalDecToDmsString(variableStarObj.dec))
         //LabeledField(label = "Spectral Type", value = variableStarObj.spectralType)
         //LabeledField(label = "Type", value = variableStarObj.type)
-        LabeledField(label = "Magnitude High", value = variableStarObj.magnitudeHigh.toString())
-        LabeledField(label = "Magnitude Low", value = variableStarObj.magnitudeLow.toString())
+        LabeledField(label = "Magnitude High", value = variableStarObj.magnitudeHigh)
+        LabeledField(label = "Magnitude Low", value = variableStarObj.magnitudeLow)
         LabeledField(label = "Period", value = formatPeriodToDHH(variableStarObj.period))
         //LabeledField(label = "Constellation", value = variableStarObj.constellation)
         Button(
