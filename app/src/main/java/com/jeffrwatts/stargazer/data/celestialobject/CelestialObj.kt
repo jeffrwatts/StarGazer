@@ -70,6 +70,7 @@ fun mapBody(name: String): Body? {
         URANUS -> Body.Uranus
         NEPTUNE -> Body.Neptune
         PLUTO -> Body.Pluto
+        MOON -> Body.Moon
         else -> null
     }
 }

@@ -1,7 +1,6 @@
 package com.jeffrwatts.stargazer.data.celestialobject
 
 import android.location.Location
-import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImage
 import com.jeffrwatts.stargazer.utils.Utils
 import com.jeffrwatts.stargazer.utils.julianDateToAstronomyTime
 import io.github.cosinekitty.astronomy.Aberration
@@ -12,6 +11,8 @@ import io.github.cosinekitty.astronomy.Refraction
 import io.github.cosinekitty.astronomy.Topocentric
 import io.github.cosinekitty.astronomy.equator
 import io.github.cosinekitty.astronomy.horizon
+import kotlin.math.abs
+import kotlin.math.min
 
 data class CelestialObjPos(
     val celestialObjWithImage: CelestialObjWithImage,
@@ -23,26 +24,22 @@ data class CelestialObjPos(
     companion object {
         private const val MIN_ALTITUDE = 15
 
-        fun fromCelestialObj(obj: CelestialObj, julianDate: Double, location: Location, image: CelestialObjImage?=null): CelestialObjPos {
+        fun fromCelestialObjWithImage(obj: CelestialObjWithImage, julianDate: Double, location: Location): CelestialObjPos {
             val time = julianDateToAstronomyTime(julianDate)
             val observer = Observer(location.latitude, location.longitude, location.altitude)
 
-            if (obj.type == ObjectType.PLANET) {
-                mapBody(obj.objectId)?.let { body->
+            if (obj.celestialObj.type == ObjectType.PLANET) {
+                mapBody(obj.celestialObj.objectId)?.let { body->
                     val radec: Equatorial = equator(body, time, observer, EquatorEpoch.J2000, Aberration.Corrected)
-                    obj.ra= radec.ra
-                    obj.dec=radec.dec
+                    obj.celestialObj.ra= radec.ra
+                    obj.celestialObj.dec=radec.dec
                 }
             }
 
-            val altazm: Topocentric = horizon(time, observer, obj.ra, obj.dec, Refraction.Normal)
+            val altazm: Topocentric = horizon(time, observer, obj.celestialObj.ra, obj.celestialObj.dec, Refraction.Normal)
             val lst = Utils.calculateLocalSiderealTime(location.longitude,julianDate)
-            val timeUntilMeridian = Utils.calculateTimeToMeridian(obj.ra, lst)
-            return CelestialObjPos(CelestialObjWithImage(obj, image), altazm.altitude, altazm.azimuth, timeUntilMeridian, (altazm.altitude> MIN_ALTITUDE))
-        }
-
-        fun fromCelestialObjWithImage(obj: CelestialObjWithImage, julianDate: Double, location: Location): CelestialObjPos {
-            return fromCelestialObj(obj.celestialObj, julianDate, location, obj.image)
+            val timeUntilMeridian = Utils.calculateTimeToMeridian(obj.celestialObj.ra, lst)
+            return CelestialObjPos(obj, altazm.altitude, altazm.azimuth, timeUntilMeridian, (altazm.altitude> MIN_ALTITUDE))
         }
     }
 }

@@ -3,7 +3,6 @@ package com.jeffrwatts.stargazer.ui.celestialobjdetail
 import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
@@ -36,7 +35,7 @@ class CelestialObjDetailViewModel @Inject constructor(
                 ) { celestialObjWithImage, location ->
                     var altitudes = emptyList<Utils.AltitudeEntry>()
                     location?.let { loc->
-                        altitudes = generateAltitudes(celestialObjWithImage.celestialObj, loc)
+                        altitudes = generateAltitudes(celestialObjWithImage, loc)
                     }
                     _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, altitudes)
                 }.collect()
@@ -46,7 +45,7 @@ class CelestialObjDetailViewModel @Inject constructor(
         }
     }
 
-    private fun generateAltitudes(celestialObj: CelestialObj, location: Location): List<Utils.AltitudeEntry> {
+    private fun generateAltitudes(obj: CelestialObjWithImage, location: Location): List<Utils.AltitudeEntry> {
         val timeStart = LocalDateTime.now().minusHours(2).withMinute(0).withSecond(0)
         val durationHours = 24L
         val incrementMinutes = 10L
@@ -58,7 +57,7 @@ class CelestialObjDetailViewModel @Inject constructor(
 
         while (timeIx.isBefore(endTime)) {
             val julianDate = Utils.calculateJulianDateFromLocal(timeIx)
-            val celestialObjPos = CelestialObjPos.fromCelestialObj(celestialObj, julianDate, location)
+            val celestialObjPos = CelestialObjPos.fromCelestialObjWithImage(obj, julianDate, location)
             altitudeData.add(Utils.AltitudeEntry(timeIx, celestialObjPos.alt))
             timeIx = timeIx.plusMinutes(incrementMinutes)
         }
