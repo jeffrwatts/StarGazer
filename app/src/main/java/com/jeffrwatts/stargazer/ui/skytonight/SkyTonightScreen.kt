@@ -264,8 +264,11 @@ fun CelestialObjItem(
                 color = textColor
             )
             if (!isPlanet) {
+                var tags = celestialObjPos.celestialObjWithImage.celestialObj.field
+                if (celestialObjPos.celestialObjWithImage.celestialObj.UHC) tags += "; UHC"
+                if (celestialObjPos.celestialObjWithImage.celestialObj.OIII) tags += "; O-III"
                 Text(
-                    text = "Obs Tags: ${celestialObjPos.celestialObjWithImage.celestialObj.tags}",
+                    text = "Obs Tags: $tags",
                     style = MaterialTheme.typography.bodyMedium,
                     color = textColor
                 )

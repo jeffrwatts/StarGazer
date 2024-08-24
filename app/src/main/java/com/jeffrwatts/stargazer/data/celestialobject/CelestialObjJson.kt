@@ -12,7 +12,9 @@ data class CelestialObjJson(
     val constellation: String?,
     val ngcId: String?,
     val recommended: Boolean,
-    val tags: String
+    val field: String,
+    val UHC: Boolean,
+    val OIII: Boolean
 )
 
 fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
@@ -28,6 +30,8 @@ fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
         constellation = this.constellation,
         ngcId = this.ngcId,
         recommended = this.recommended,
-        tags = this.tags
+        field = this.field,
+        UHC = this.UHC,
+        OIII = this.OIII
     )
 }
