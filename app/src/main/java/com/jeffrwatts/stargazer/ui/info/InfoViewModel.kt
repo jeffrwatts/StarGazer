@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.ui.info
 
+import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.location.LocationRepository
@@ -8,11 +9,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,95 +23,68 @@ class InfoViewModel @Inject constructor (
     private val locationRepository: LocationRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(InfoUiState(currentTime = "",
-        currentDate = "",
-        latitude = "",
-        longitude = "",
-        accuracy = "",
-        altitude = "",
-        polarisX = 0.0,
-        polarisY = 0.0))
-    val state: StateFlow<InfoUiState> = _state
-
     companion object {
         val POLARIS_RA = Utils.hmsToDegrees(2, 41, 39.0)
-        val POLARIS_DEC = Utils.dmsToDegrees(89, 15, 51.0)
-
-        val CELESTIAL_NORTH_POLE_RA = 0.0
-        val CELESTIAL_NORTH_POLE_DEC = 90.0
     }
+
+    private val _uiState = MutableStateFlow<InfoUiState>(InfoUiState.Loading)
+    val uiState: StateFlow<InfoUiState> = _uiState.asStateFlow()
+
+    private val _timeOffset = MutableStateFlow(0L)
+
     init {
-        observeDateTimeUpdates()
-        observeLocationUpdates()
-    }
-
-    // Updates the time every second
-    private fun observeDateTimeUpdates() {
-        viewModelScope.launch {
+        val timerFlow = flow {
             while (true) {
-                _state.value = _state.value.copy(
-                    currentTime = getCurrentTime(),
-                    currentDate = getCurrentDate()
-                )
-                delay(1000) // Delay for a second
+                emit(Unit)
+                delay(1000L) // Emit every second
             }
         }
-    }
 
-    // Observes location updates
-    private fun observeLocationUpdates() {
         viewModelScope.launch {
-            locationRepository.locationFlow.collect { location ->
-                location?.let {
-                    // Update the UI state with the new location data
-                    val (polarisX, polarisY) = updatePolarisCoords(it.latitude, it.longitude)
-
-                    _state.update { currentState ->
-                        currentState.copy(
-                            latitude = Utils.decimalToDMS(it.latitude, "N", "S"),
-                            longitude = Utils.decimalToDMS(it.longitude, "E", "W"),
-                            accuracy = String.format("%.1f feet", it.accuracy * 3.28084),
-                            altitude = String.format("%.1f feet", it.altitude * 3.28084),
-                            polarisX = polarisX,
-                            polarisY = polarisY
-                        )
+            combine(
+                locationRepository.locationFlow,
+                _timeOffset,
+                timerFlow
+            ) { location, timeOffset, _ ->
+                try {
+                    val date = LocalDateTime.now().plusHours(timeOffset)
+                    val julianDate = Utils.calculateJulianDateFromLocal(date)
+                    var lhaPolaris = 0.0
+                    location?.let {loc->
+                        val lst = Utils.calculateLocalSiderealTime(loc.longitude, julianDate)
+                        lhaPolaris = Utils.calculateLocalHourAngle(lst, POLARIS_RA)
                     }
+                    _uiState.value = InfoUiState.Success(date, location, lhaPolaris)
+                } catch (e: Exception) {
+                    _uiState.value = InfoUiState.Error(e.message ?: "Unknown error")
                 }
-            }
+            }.collect()
         }
     }
 
-    private fun getCurrentTime(): String {
-        val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        return timeFormat.format(Date())
+    fun incrementOffset() {
+        viewModelScope.launch {
+            _timeOffset.update { it + 1 }
+        }
     }
 
-    private fun getCurrentDate(): String {
-        val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-        return dateFormat.format(Date())
+    fun decrementOffset() {
+        viewModelScope.launch {
+            _timeOffset.update { it - 1 }
+        }
     }
 
-    private fun updatePolarisCoords(lat: Double, lon: Double): Pair<Double, Double> {
-        val jdNow = Utils.calculateJulianDateNow()
-
-        val (altPolaris, azmPolaris, _) = Utils.calculateAltAzm(POLARIS_RA, POLARIS_DEC, lat, lon, jdNow)
-        val (altCNP, _, _) = Utils.calculateAltAzm(CELESTIAL_NORTH_POLE_RA, CELESTIAL_NORTH_POLE_DEC, lat, lon, jdNow)
-
-        // Adjust polaris azimuth to be zero based.
-        val polarisX = if (azmPolaris<180.0) azmPolaris else azmPolaris-360.0
-        val polarisY = altCNP-altPolaris
-
-        return Pair(polarisX, polarisY)
+    fun resetOffset() {
+        viewModelScope.launch {
+            _timeOffset.emit(0L)
+        }
     }
 }
 
-data class InfoUiState(
-    val currentTime: String,
-    val currentDate: String,
-    val latitude: String,
-    val longitude: String,
-    val accuracy: String,
-    val altitude: String,
-    val polarisX: Double,
-    val polarisY: Double
-)
+sealed class InfoUiState {
+    object Loading : InfoUiState()
+    data class Success(val localDateTime: LocalDateTime, val location: Location?, val lhaPolaris: Double) : InfoUiState()
+    data class Error(val message: String) : InfoUiState()
+}
+
+

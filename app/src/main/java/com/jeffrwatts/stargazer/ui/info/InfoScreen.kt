@@ -1,41 +1,45 @@
 package com.jeffrwatts.stargazer.ui.info
 
-import androidx.compose.foundation.Canvas
+import android.Manifest
+import android.location.Location
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
-import kotlin.math.abs
-import kotlin.math.sqrt
+import com.jeffrwatts.stargazer.utils.ErrorScreen
+import com.jeffrwatts.stargazer.utils.LoadingScreen
+import com.jeffrwatts.stargazer.utils.PermissionWrapper
+import com.jeffrwatts.stargazer.utils.Utils
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import com.jeffrwatts.stargazer.utils.AppConstants
+import com.jeffrwatts.stargazer.utils.TimeControl
+import kotlin.math.cos
+import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -45,13 +49,12 @@ fun InfoScreen(
     viewModel: InfoViewModel = hiltViewModel(),
 ) {
     val topAppBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
-    val uiState by viewModel.state.collectAsState()
+    val infoUiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             StarGazerTopAppBar(
-                title = stringResource(R.string.info_title),
+                title = stringResource(R.string.variable_star_title),
                 openDrawer = openDrawer,
                 topAppBarState = topAppBarState
             )
@@ -60,10 +63,47 @@ fun InfoScreen(
     ) { innerPadding ->
         val contentModifier = Modifier
             .padding(innerPadding)
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .fillMaxSize()
+        PermissionWrapper(
+            permissions = listOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.CAMERA
+            ),
+            rationaleMessage = stringResource(id = R.string.permission_rationale)
+        ) {
+            when (infoUiState) {
+                is InfoUiState.Loading -> {
+                    LoadingScreen(modifier = contentModifier)
+                }
 
-        InfoContent(uiState = uiState,
-            modifier = contentModifier)
+                is InfoUiState.Success -> {
+                    val successState = infoUiState as InfoUiState.Success
+                    Column(modifier = contentModifier) {
+                        //TimeControl(
+                        //    currentTime = successState.localDateTime.format(AppConstants.DATE_TIME_FORMATTER),
+                        //    onIncrementTime = { viewModel.incrementOffset() },
+                        //    onDecrementTime = { viewModel.decrementOffset() },
+                        //    onResetTime = { viewModel.resetOffset() }
+                        //)
+                        InfoContent(
+                            successState.localDateTime,
+                            successState.location,
+                            successState.lhaPolaris,
+                            contentModifier
+                        )
+                    }
+                }
+
+                else -> {
+                    ErrorScreen(
+                        message = (infoUiState as InfoUiState.Error).message,
+                        modifier = contentModifier,
+                        onRetryClick = {  }
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -71,14 +111,16 @@ fun InfoScreen(
 fun InfoSectionHeader(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.headlineSmall.copy(textDecoration = TextDecoration.Underline)
+        style = MaterialTheme.typography.titleLarge.copy(textDecoration = TextDecoration.Underline)
     )
     Spacer(modifier = Modifier.height(8.dp))
 }
 
 @Composable
 fun InfoContent(
-    uiState: InfoUiState,
+    localDateTime: LocalDateTime,
+    location: Location?,
+    lhaPolaris: Double,
     modifier: Modifier)
 {
     LazyColumn(
@@ -87,96 +129,90 @@ fun InfoContent(
     ) {
         // Date and Time
         item { InfoSectionHeader(title = "Current Date & Time") }
-        item { Text(text = "Time: ${uiState.currentTime}", style = MaterialTheme.typography.bodyLarge) }
+        val time = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+        item { Text(text = "Time: $time", style = MaterialTheme.typography.bodyLarge) }
+        val date = localDateTime.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"))
         item { Spacer(modifier = Modifier.height(4.dp)) }
-        item { Text(text = "Date: ${uiState.currentDate}", style = MaterialTheme.typography.bodyLarge) }
-
-        // Location
+        item { Text(text = "Date: $date", style = MaterialTheme.typography.bodyLarge) }
         item { Spacer(modifier = Modifier.height(16.dp)) }
+
         item { InfoSectionHeader(title = "Current Location") }
-        item { Text(text = "Latitude: ${uiState.latitude}", style = MaterialTheme.typography.bodyLarge) }
-        item { Spacer(modifier = Modifier.height(4.dp)) }
-        item { Text(text = "Longitude: ${uiState.longitude}", style = MaterialTheme.typography.bodyLarge) }
-        item { Spacer(modifier = Modifier.height(4.dp)) }
-        item { Text(text = "Accuracy: ${uiState.accuracy}", style = MaterialTheme.typography.bodyLarge) }
-        item { Spacer(modifier = Modifier.height(4.dp)) }
-        item { Text(text = "Altitude: ${uiState.altitude}", style = MaterialTheme.typography.bodyLarge) }
+        // Location
+        location?.let { loc->
+            item { Text(text ="Latitude: ${Utils.decimalToDMS(loc.latitude, "N", "S")}", style = MaterialTheme.typography.bodyLarge ) }
+            item { Text(text ="Longitude: ${Utils.decimalToDMS(loc.longitude, "E", "W")}", style = MaterialTheme.typography.bodyLarge ) }
+            item { Text(text = "Altitude: ${loc.altitude} meters", style = MaterialTheme.typography.bodyLarge) }
+            item { Text(text = "Accuracy: ${loc.accuracy} meters", style = MaterialTheme.typography.bodyLarge) }
 
-        // Polar View - Note, currently just using finder scope for this, so hard code horizontal/vertical orientation.
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-        item { InfoSectionHeader(title = "Polar View") }
-        item { Spacer(modifier = Modifier.height(32.dp)) }
-        item {
-            PolarView(polarisX = uiState.polarisX,
-                polarisY = uiState.polarisY,
-                isHorizontalFlip = false,
-                isVerticalFlip = true)
+            item {Spacer(modifier = Modifier.height(16.dp))}
+            item { InfoSectionHeader(title = "Position of Polaris") }
+            item {
+                PolarisPlot(lhaPolaris)
+            }
+        } ?: run {
+            item { Text(text ="Getting Position...", style = MaterialTheme.typography.bodyLarge ) }
         }
     }
 }
+
 @Composable
-fun PolarView(polarisX: Double, polarisY: Double, isHorizontalFlip: Boolean, isVerticalFlip: Boolean, circleColor: Color = MaterialTheme.colorScheme.primary) {
-    if (polarisX == 0.0 && polarisY == 0.0)
-        return
+fun PolarisPlot(lhaPolaris: Double) {
+    // Constants for plotting
+    val scaleFactor = 1f  // Use full scale to ensure the dot is on the circle
+    val angularSeparation = 1.0  // Distance on the celestial sphere, use radius directly
 
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val desiredSize = screenWidth - 128.dp // Subtract padding
+    // Convert LHA from degrees to radians
+    val lhaRadians = Math.toRadians(lhaPolaris)
 
-    // Adjust polarisX and polarisY based on desiredSize
-    val scale = desiredSize.value / maxOf(abs(polarisX), abs(polarisY))
-    val adjustedPolarisX = polarisX * scale
-    val adjustedPolarisY = polarisY * scale
+    // Convert to Cartesian coordinates for a circular plot (polar coordinates to Cartesian)
+    val x = -scaleFactor * angularSeparation * sin(lhaRadians)  // Negate x to correct reflection
+    val y = scaleFactor * angularSeparation * cos(lhaRadians)
 
-    // Draw content
-    Canvas(
+    Box(
         modifier = Modifier
-            .size(desiredSize)
-            .graphicsLayer(
-                scaleX = if (isHorizontalFlip) -1f else 1f,
-                scaleY = if (isVerticalFlip) -1f else 1f
+            .fillMaxWidth()
+            .aspectRatio(1f) // Keep the aspect ratio 1:1 to maintain a square shape
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            // Adjust the radius to make the circle slightly smaller
+            val radius = size.minDimension / 2.5f // Smaller radius for the circle
+
+            // Draw the celestial circle (celestial north pole)
+            drawCircle(
+                color = Color.Blue,
+                radius = radius,
+                style = Stroke(width = 3f)
             )
-            .onGloballyPositioned {
-                // Handle the positioning here if needed
-            },
-        onDraw = {
-            drawPolarContent(adjustedPolarisX, adjustedPolarisY, circleColor)
+
+            // Draw a red plus sign at the center of the circle to represent the celestial north pole
+            drawLine(
+                color = Color.Red,
+                start = Offset(size.width / 2, size.height / 2 - 10),
+                end = Offset(size.width / 2, size.height / 2 + 10),
+                strokeWidth = 3f
+            )
+            drawLine(
+                color = Color.Red,
+                start = Offset(size.width / 2 - 10, size.height / 2),
+                end = Offset(size.width / 2 + 10, size.height / 2),
+                strokeWidth = 3f
+            )
+
+            // Plot the position of Polaris on the blue circle
+            val centerX = size.width / 2
+            val centerY = size.height / 2
+
+            // Place the red dot exactly on the circle's circumference
+            val polarisX = centerX + x * radius
+            val polarisY = centerY - y * radius  // Invert y-axis for correct positioning
+
+            drawCircle(
+                color = Color.Red,
+                radius = 12f, // Make the red dot larger
+                center = Offset(polarisX.toFloat(), polarisY.toFloat())
+            )
         }
-    )
-}
-
-fun DrawScope.drawPolarContent(polarisX: Double, polarisY: Double, circleColor: Color) {
-    val center = Offset(size.width / 2, size.height / 2)
-    val radius = sqrt(polarisX * polarisX + polarisY * polarisY)
-
-    drawCircle(
-        color = circleColor,
-        center = center,
-        radius = radius.toFloat(),
-        style = Stroke(width = 4f)
-    )
-    drawCircle(
-        color = Color.Blue,
-        center = center + Offset(polarisX.toFloat(), polarisY.toFloat()),
-        radius = 10f,
-        style = Stroke(width = 10f)
-    )
-    drawLine(
-        color = Color.Red,
-        start = center.copy(y = center.y - 25),
-        end = center.copy(y = center.y + 25),
-        strokeWidth = 10f
-    )
-    drawLine(
-        color = Color.Red,
-        start = center.copy(x = center.x - 25),
-        end = center.copy(x = center.x + 25),
-        strokeWidth = 10f
-    )
-}
-
-@Preview
-@Composable
-fun PolarViewPreview() {
-    PolarView(polarisX = -0.2, polarisY = 0.0, isHorizontalFlip = false, isVerticalFlip = true)
+    }
 }
