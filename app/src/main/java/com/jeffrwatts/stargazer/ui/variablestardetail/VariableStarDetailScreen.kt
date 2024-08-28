@@ -154,13 +154,14 @@ fun buildEphemerisUri(oid: Long): String {
     return Uri.encode(url)
 }
 
-fun decimalRaToHmsString(raDecimalDegrees: Double): String {
-    val totalSeconds = (raDecimalDegrees / 360.0) * 24 * 3600
+fun decimalRaToHmsString(raDecimalHours: Double): String {
+    val totalSeconds = raDecimalHours * 3600  // Convert hours to total seconds
     val hours = (totalSeconds / 3600).toInt()
     val minutes = ((totalSeconds % 3600) / 60).toInt()
     val seconds = totalSeconds % 60
     return String.format("%02dh %02dm %05.2fs", hours, minutes, seconds)
 }
+
 
 fun decimalDecToDmsString(decDecimalDegrees: Double): String {
     val sign = if (decDecimalDegrees < 0) "-" else "+"
