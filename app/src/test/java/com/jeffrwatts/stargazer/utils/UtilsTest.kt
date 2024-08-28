@@ -1,8 +1,12 @@
 package com.jeffrwatts.stargazer.utils
 
+import android.location.Location
+import android.location.LocationManager
+import org.junit.Assert
 import org.junit.Assert.*
 
 import org.junit.Test
+import org.mockito.Mockito
 import java.time.LocalDateTime
 
 class UtilsTest {
@@ -94,97 +98,53 @@ class UtilsTest {
         ha = Utils.calculateLocalHourAngle(110.0, SIRIUS_RA)
         assertEquals(8.712845, ha, 0.1)
     }
-
     @Test
-    fun calculatePosition() {
-        val dateTime = LocalDateTime.of(2000, 1, 1, 12, 0, 0)
-        val julianDate = Utils.calculateJulianDateUtc(dateTime)
-
-        val (alt1, azm1, timeUntilMeridian1) = Utils.calculateAltAzm(SIRIUS_RA, SIRIUS_DEC, KONA_LATITUDE, KONA_LONGITUDE, julianDate)
-        assertEquals(47.10283005268597, alt1, 0.01)
-        assertEquals(213.61455455893736, azm1, 0.01)
-        assertEquals(22.45489503459259, timeUntilMeridian1, 0.01)
-
-        val (ra1, dec1) = Utils.calculateRAandDEC(alt1, azm1, KONA_LATITUDE, KONA_LONGITUDE, julianDate)
-        assertEquals(SIRIUS_RA, ra1, 0.01)
-        assertEquals(SIRIUS_DEC, dec1, 0.01)
-
-        val (alt2, azm2, timeUntilMeridian2) = Utils.calculateAltAzm(SIRIUS_RA, SIRIUS_DEC, TOKYO_LATITUDE, TOKYO_LONGITUDE, julianDate)
-        assertEquals(24.70721174963697, alt2, 0.01)
-        assertEquals(136.08356306211235, azm2, 0.01)
-        assertEquals(2.742322442, timeUntilMeridian2, 0.01)
-
-        val (ra2, dec2) = Utils.calculateRAandDEC(alt2, azm2, TOKYO_LATITUDE, TOKYO_LONGITUDE, julianDate)
-        assertEquals(SIRIUS_RA, ra2, 0.01)
-        assertEquals(SIRIUS_DEC, dec2, 0.01)
-
-        val (alt3, azm3, timeUntilMeridian3) = Utils.calculateAltAzm(SIRIUS_RA, SIRIUS_DEC, CAPE_TOWN_LATITUDE, CAPE_TOWN_LONGITUDE, julianDate)
-        assertEquals(-36.13503221187687, alt3, 0.01)
-        assertEquals(203.02330984433365, azm3, 0.01)
-        assertEquals(13.283375775333328, timeUntilMeridian3, 0.01)
-
-        val (ra3, dec3) = Utils.calculateRAandDEC(alt3, azm3, CAPE_TOWN_LATITUDE, CAPE_TOWN_LONGITUDE, julianDate)
-        assertEquals(SIRIUS_RA, ra3, 0.01)
-        assertEquals(SIRIUS_DEC, dec3, 0.01)
-
-        val (alt4, azm4, timeUntilMeridian4) = Utils.calculateAltAzm(SIRIUS_RA, SIRIUS_DEC, SYDNEY_LATITUDE, SYDNEY_LONGITUDE, julianDate)
-        assertEquals(58.38462821975049, alt4, 0.01)
-        assertEquals(64.56698046413477, azm4, 0.01)
-        assertEquals(1.9744824419999987, timeUntilMeridian4, 0.01)
-
-        val (ra4, dec4) = Utils.calculateRAandDEC(alt4, azm4, SYDNEY_LATITUDE, SYDNEY_LONGITUDE, julianDate)
-        assertEquals(SIRIUS_RA, ra4, 0.01)
-        assertEquals(SIRIUS_DEC, dec4, 0.01)
-
-        val (alt5, azm5, timeUntilMeridian5) = Utils.calculateAltAzm(VEGA_RA, VEGA_DEC, KONA_LATITUDE, KONA_LONGITUDE, julianDate)
-        assertEquals(-26.972065357589596, alt5, 0.01)
-        assertEquals(21.89390027930739, azm5, 0.01)
-        assertEquals(10.318066923481487, timeUntilMeridian5, 0.01)
-
-        val (ra5, dec5) = Utils.calculateRAandDEC(alt5, azm5, KONA_LATITUDE, KONA_LONGITUDE, julianDate)
-        assertEquals(VEGA_RA, ra5, 0.01)
-        assertEquals(VEGA_DEC, dec5, 0.01)
-
-        val (alt6, azm6, timeUntilMeridian6) =  Utils.calculateAltAzm(VEGA_RA, VEGA_DEC, TOKYO_LATITUDE, TOKYO_LONGITUDE, julianDate)
-        assertEquals(-7.241411123082607, alt6, 0.01)
-        assertEquals(330.30939585559577, azm6, 0.01)
-        assertEquals(14.60549433088889, timeUntilMeridian6, 0.01)
-
-        val (ra6, dec6) = Utils.calculateRAandDEC(alt6, azm6, TOKYO_LATITUDE, TOKYO_LONGITUDE, julianDate)
-        assertEquals(VEGA_RA, ra6, 0.01)
-        assertEquals(VEGA_DEC, dec6, 0.01)
-
-        val (alt7, azm7, timeUntilMeridian7) =  Utils.calculateAltAzm(VEGA_RA, VEGA_DEC, CAPE_TOWN_LATITUDE, CAPE_TOWN_LONGITUDE, julianDate)
-        assertEquals(15.56400321720133, alt7, 0.01)
-        assertEquals(13.837953743577943, azm7, 0.01)
-        assertEquals(1.1465476642222219, timeUntilMeridian7, 0.01)
-
-        val (ra7, dec7) = Utils.calculateRAandDEC(alt7, azm7, CAPE_TOWN_LATITUDE, CAPE_TOWN_LONGITUDE, julianDate)
-        assertEquals(VEGA_RA, ra7, 0.01)
-        assertEquals(VEGA_DEC, dec7, 0.01)
-
-        val (alt8, azm8, timeUntilMeridian8) =  Utils.calculateAltAzm(VEGA_RA, VEGA_DEC, SYDNEY_LATITUDE, SYDNEY_LONGITUDE, julianDate)
-        assertEquals(-67.3514373136623, alt8, 0.01)
-        assertEquals(290.5200542205871, azm8, 0.01)
-        assertEquals(13.837654330888897, timeUntilMeridian8, 0.01)
-
-        val (ra8, dec8) = Utils.calculateRAandDEC(alt8, azm8, SYDNEY_LATITUDE, SYDNEY_LONGITUDE, julianDate)
-        assertEquals(VEGA_RA, ra8, 0.01)
-        assertEquals(VEGA_DEC, dec8, 0.01)
+    fun calculateEquationOfTime() {
+        // REVIEW - Need more tests and check on the large delta needed for this to pass.
+        val date = 2460526.5
+        val eot = Utils.calculateEquationOfTime(date)
+        Assert.assertEquals(eot, -6.120717181609098, 0.6)
     }
 
     @Test
-    fun PolarisTests() {
-        val dateTime = LocalDateTime.of(2023, 12, 16, 12, 0, 0)
-        val julianDate = Utils.calculateJulianDateUtc(dateTime)
+    fun calculateTwilightHourAngle() {
+        // REVIEW - Need more test cases
+        val latitude= 19.639994
+        val dec = 17.25457627315962
+        val hourAngleSunrise = Utils.calculateTwilightHourAngle(latitude, dec, SUNRISE_SUNSET_ANGLE)
+        Assert.assertEquals(hourAngleSunrise, 1.6981463545913114, 0.01)
 
-        val (alt, azm, timeUntilMeridian) =  Utils.calculateAltAzm(POLARIS_RA, POLARIS_DEC, KONA_LATITUDE, KONA_LONGITUDE, julianDate)
-        assertEquals(19.908625619869397, alt, 0.01)
-        assertEquals(359.27202352564825, azm, 0.01)
-        assertEquals(19.43561954788745, timeUntilMeridian, 0.01)
+        val hourAngleAstronomical = Utils.calculateTwilightHourAngle(latitude, dec, ASTRONOMICAL_TWILIGHT_ANGLE)
+        Assert.assertEquals(hourAngleAstronomical, 2.0425055334420623, 0.01)
+    }
 
-        val (ra, dec) = Utils.calculateRAandDEC(alt, azm, KONA_LATITUDE, KONA_LONGITUDE, julianDate)
-        assertEquals(POLARIS_RA, ra, 0.01)
-        assertEquals(POLARIS_DEC, dec, 0.01)
+    @Test
+    fun calculateRiseSet() {
+        // REVIEW - need more test cases (different locations, more angles, more times)
+        // REVIEW - validation approach exposes internals of the function under test so not that elegant.
+        val year = 2024
+        val month = 8
+        val day = 4
+        val date = Utils.calculateJulianDateUtc(LocalDateTime.of(year, month, day, 0, 0, 0))
+        val latitude = 19.639994
+        val longitude = -155.996926
+        val minInDay = 60.0*24.0
+        val delta = 1.0/minInDay // one minute accuracy
+
+        val location = Mockito.mock(Location::class.java)
+
+        // Define the behavior of the mock
+        Mockito.`when`(location.latitude).thenReturn(latitude)
+        Mockito.`when`(location.longitude).thenReturn(longitude)
+        Mockito.`when`(location.altitude).thenReturn(0.0)
+        Mockito.`when`(location.provider).thenReturn(LocationManager.GPS_PROVIDER)
+
+        val timeUtcRise = Utils.calculateRiseSetUtc(year, month, day, location, true, ASTRONOMICAL_TWILIGHT_ANGLE)
+        val expectedRise = date + 882.0006343882211/minInDay
+        Assert.assertEquals(timeUtcRise, expectedRise, delta)
+
+        val timeUtcSet = Utils.calculateRiseSetUtc(2024, 8, 4, location, false, ASTRONOMICAL_TWILIGHT_ANGLE)
+        val expectedSet = date + 1818.216207974997/minInDay
+        Assert.assertEquals(timeUtcSet, expectedSet, delta)
     }
 }

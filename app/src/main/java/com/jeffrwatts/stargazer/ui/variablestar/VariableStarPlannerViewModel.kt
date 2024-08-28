@@ -3,12 +3,11 @@ package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar
 import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.ASTRONOMICAL_TWILIGHT_ANGLE
-import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.EphemerisUtils
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjPos
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
+import com.jeffrwatts.stargazer.utils.ASTRONOMICAL_TWILIGHT_ANGLE
 import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -102,17 +101,17 @@ class VariableStarPlannerViewModel @Inject constructor(
         val tomorrow: LocalDateTime = now.plusDays(1).with(LocalTime.MIDNIGHT)
         val yesterday: LocalDateTime = now.plusDays(-1).with(LocalTime.MIDNIGHT)
 
-        val todayNightEnd = EphemerisUtils.calculateRiseSetUtc(now.year, now.monthValue, now.dayOfMonth,
-            location.latitude, location.longitude, true, ASTRONOMICAL_TWILIGHT_ANGLE)
+        val todayNightEnd = Utils.calculateRiseSetUtc(now.year, now.monthValue, now.dayOfMonth,
+            location, true, ASTRONOMICAL_TWILIGHT_ANGLE)
 
-        val tomorrowNightEnd = EphemerisUtils.calculateRiseSetUtc(tomorrow.year, tomorrow.monthValue, tomorrow.dayOfMonth,
-            location.latitude, location.longitude, true, ASTRONOMICAL_TWILIGHT_ANGLE)
+        val tomorrowNightEnd = Utils.calculateRiseSetUtc(tomorrow.year, tomorrow.monthValue, tomorrow.dayOfMonth,
+            location, true, ASTRONOMICAL_TWILIGHT_ANGLE)
 
-        val yesterdayNightStart = EphemerisUtils.calculateRiseSetUtc(yesterday.year, yesterday.monthValue, yesterday.dayOfMonth,
-            location.latitude, location.longitude, false, ASTRONOMICAL_TWILIGHT_ANGLE)
+        val yesterdayNightStart = Utils.calculateRiseSetUtc(yesterday.year, yesterday.monthValue, yesterday.dayOfMonth,
+            location, false, ASTRONOMICAL_TWILIGHT_ANGLE)
 
-        val todayNightStart = EphemerisUtils.calculateRiseSetUtc(now.year, now.monthValue, now.dayOfMonth,
-            location.latitude, location.longitude, false, ASTRONOMICAL_TWILIGHT_ANGLE)
+        val todayNightStart = Utils.calculateRiseSetUtc(now.year, now.monthValue, now.dayOfMonth,
+            location, false, ASTRONOMICAL_TWILIGHT_ANGLE)
 
         val nightStart: Double
         val nightEnd: Double

@@ -1,15 +1,34 @@
 package com.jeffrwatts.stargazer.utils
 
 
+import android.location.Location
+import io.github.cosinekitty.astronomy.Aberration
+import io.github.cosinekitty.astronomy.Body
+import io.github.cosinekitty.astronomy.EquatorEpoch
+import io.github.cosinekitty.astronomy.Equatorial
+import io.github.cosinekitty.astronomy.Observer
 import io.github.cosinekitty.astronomy.Time
+import io.github.cosinekitty.astronomy.equator
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.acos
-import kotlin.math.asin
 import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sin
+import kotlin.math.tan
+
+const val EPS = 1e-6
+
+fun Double.mod2pi() = (this % (2 * PI)).let { if (it < 0) it + 2 * PI else it }
+fun Double.mod360() = (this % 360).let { if (it < 0) it + 360 else it }
+
+const val SUNRISE_SUNSET_ANGLE = 0.833
+const val CIVIL_TWILIGHT_ANGLE = 6.0
+const val NAUTICAL_TWILIGHT_ANGLE = 12.0
+const val ASTRONOMICAL_TWILIGHT_ANGLE = 18.0
 
 fun julianDateToAstronomyTime(julianDate: Double): Time {
     // Step 1: Define the Julian Date for the reference epoch (January 1, 2000, at 12:00 UTC)
@@ -62,14 +81,6 @@ object Utils {
         return calculateJulianDateUtc(utcNow)
     }
 
-    fun calculateJulianDateNow():Double {
-        val currentTime = LocalDateTime.now()
-        val zonedDateTime = currentTime.atZone(ZoneId.systemDefault())
-        val utcZonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"))
-        val utcNow = utcZonedDateTime.toLocalDateTime()
-        return calculateJulianDateUtc(utcNow)
-    }
-
     fun calculateJulianDateUtc(date: LocalDateTime): Double {
         val year = date.year
         val month = date.monthValue
@@ -105,77 +116,6 @@ object Utils {
         return ha
     }
 
-    fun calculateAltAzm(ra: Double, dec: Double, latitude: Double, longitude: Double, julianDate: Double) : Triple<Double, Double, Double> {
-        val latRad = Math.toRadians(latitude)
-        val decRad = Math.toRadians(dec)
-        val lst = calculateLocalSiderealTime(longitude, julianDate)
-        val lha = calculateLocalHourAngle(lst, ra)
-        val haRad = Math.toRadians(lha)
-
-        val sinAlt = sin(decRad) * sin(latRad) + cos(decRad) * cos(latRad) * cos(haRad)
-        val altRad = asin(sinAlt)
-        val alt = Math.toDegrees(altRad)
-
-        val numerator = sin(decRad) - sin(altRad) * sin(latRad)
-        val denominator = cos(altRad) * cos(latRad)
-        val azmRad = acos(numerator/denominator)
-        var azm = Math.toDegrees(azmRad)
-
-        if (sin(haRad) >=0) {
-            azm = 360.0 - azm
-        }
-
-        // Time until meridian crossing
-        var hourAngle = ra - lst
-        // Normalize the hour angle to be within 0 to 360 degrees
-        hourAngle = (hourAngle + 360) % 360
-
-        // If the hour angle is greater than 180 degrees, it means the object will cross the meridian in the past, adjust it
-        if (hourAngle > 180) {
-            hourAngle -= 360.0
-        }
-
-        // Convert hour angle to time, considering the Earth rotates at 15 degrees per hour
-        val timeUntilMeridian = if (hourAngle < 0) (hourAngle + 360) / 15 else hourAngle / 15
-
-
-        return Triple(alt, azm, timeUntilMeridian)
-    }
-
-    fun calculateRAandDEC(alt: Double, azm: Double, latitude: Double, longitude: Double, julianDate: Double): Pair<Double, Double> {
-        val altRad = Math.toRadians(alt)
-        val azmRad = Math.toRadians(azm)
-        val latRad = Math.toRadians(latitude)
-
-        // Calculate the declination
-        val sinDec = sin(altRad) * sin(latRad) + cos(altRad) * cos(latRad) * cos(azmRad)
-        val decRad = asin(sinDec)
-        val dec = Math.toDegrees(decRad)
-
-        // Calculate the hour angle
-        val cosH = (sin(altRad) - sin(latRad) * sin(decRad)) / (cos(latRad) * cos(decRad))
-
-        // Threshold to handle precision issues near zenith or horizon
-        val adjustedCosH = when {
-            cosH > 1.0 -> 1.0
-            cosH < -1.0 -> -1.0
-            else -> cosH
-        }
-
-        var lhaRad = Math.acos(adjustedCosH)
-        lhaRad = if (sin(azmRad) > 0) 2 * Math.PI - lhaRad else lhaRad
-        val lha = Math.toDegrees(lhaRad)
-
-        // Calculate the Local Sidereal Time
-        val lst = calculateLocalSiderealTime(longitude, julianDate)
-
-        // Convert LST to RA
-        var ra = lst - lha
-        if (ra < 0) ra += 360
-
-        return Pair(ra, dec)
-    }
-
     fun calculateTimeToMeridian(ra: Double, lst: Double): Double {
         var hourAngle = ra - lst
 
@@ -191,5 +131,48 @@ object Utils {
         val timeUntilMeridian = if (hourAngle < 0) (hourAngle + 360) / 15 else hourAngle / 15
 
         return timeUntilMeridian
+    }
+
+    fun calculateEquationOfTime(date: Double): Double {
+        val cy = date / 36525  // Centuries since J2000.0
+        val epsilon = Math.toRadians(23.4392911 - 0.0130042 * cy)  // Obliquity of the ecliptic
+
+        val L0 = Math.toRadians(280.46646 + 36000.76983 * cy).mod2pi()  // Mean longitude of the Sun
+        val M = Math.toRadians(357.52911 + 35999.05029 * cy).mod2pi()  // Mean anomaly of the Sun
+        val e = 0.016708634 - 0.000042037 * cy  // Eccentricity of Earth's orbit
+
+        val y = tan(epsilon / 2).pow(2)
+
+        val EoTRad = (y * sin(2 * L0) - 2 * e * sin(M) + 4 * e * y * sin(M) * cos(2 * L0) -
+                0.5 * y.pow(2) * sin(4 * L0) - 1.25 * e.pow(2) * sin(2 * M))
+
+        return 4 * Math.toDegrees(EoTRad)  // Convert to minutes
+    }
+
+    fun calculateTwilightHourAngle(latitude: Double, dec: Double, angle: Double): Double {
+        val latitudeRad = Math.toRadians(latitude)
+        val decRad = Math.toRadians(dec)
+        val angleRad = Math.toRadians(90 + angle)
+
+        // Calculate the hour angle argument
+        var HAarg = (cos(angleRad) / (cos(latitudeRad) * cos(decRad)) - tan(latitudeRad) * tan(decRad))
+        // Clamp HAarg to the range [-1, 1] to avoid domain errors in acos
+        HAarg = HAarg.coerceIn(-1.0, 1.0)
+
+        // Calculate the hour angle
+        return acos(HAarg)
+    }
+
+    fun calculateRiseSetUtc(year: Int, month: Int, day: Int, location:Location, rise: Boolean, angle: Double):Double {
+        val julianDate = calculateJulianDateUtc(LocalDateTime.of(year, month, day, 0, 0, 0))
+        val date = julianDateToAstronomyTime(julianDate)
+        val observer = Observer(location.latitude, location.longitude, location.altitude)
+        val radec: Equatorial = equator(Body.Sun, date, observer, EquatorEpoch.J2000, Aberration.Corrected)
+        val eot = calculateEquationOfTime(julianDate)
+        var hourAngle = calculateTwilightHourAngle(location.latitude, radec.dec, angle)
+        if (!rise) hourAngle*=-1.0
+        val delta = location.longitude + Math.toDegrees(hourAngle)
+        val timeMinUtc = 720.0 - (4.0 * delta) - eot
+        return julianDate + timeMinUtc / 1440.0
     }
 }
