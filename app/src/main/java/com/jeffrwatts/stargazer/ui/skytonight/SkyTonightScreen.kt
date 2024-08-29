@@ -58,6 +58,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
+import com.jeffrwatts.stargazer.data.celestialobject.MOON
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
 import com.jeffrwatts.stargazer.utils.ErrorScreen
@@ -130,6 +131,7 @@ fun SkyTonightScreen(
                             )
                             SkyTonightBody(
                                 celestialObjPosList = successState.data,
+                                moonPhase = successState.moonPhase,
                                 locationAvailable = successState.locationAvailable,
                                 onSightClick = onSightClick,
                                 modifier = Modifier.weight(1f)
@@ -161,6 +163,7 @@ fun SkyTonightScreen(
 @Composable
 private fun SkyTonightBody(
     celestialObjPosList: List<CelestialObjPos>,
+    moonPhase: Double,
     locationAvailable: Boolean,
     onSightClick: (Int) -> Unit,
     modifier: Modifier = Modifier
@@ -176,6 +179,7 @@ private fun SkyTonightBody(
             items(items = celestialObjPosList, key = { it.celestialObjWithImage.celestialObj.id }) { celestialObjPos ->
                 CelestialObjItem(
                     celestialObjPos = celestialObjPos,
+                    moonPhase = moonPhase,
                     onItemClick = {onSightClick(celestialObjPos.celestialObjWithImage.celestialObj.id)},
                     modifier = Modifier
                         .padding(8.dp)
@@ -192,6 +196,7 @@ private fun SkyTonightBody(
 @Composable
 fun CelestialObjItem(
     celestialObjPos: CelestialObjPos,
+    moonPhase: Double,
     onItemClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -236,7 +241,16 @@ fun CelestialObjItem(
                 maxLines = 1,
                 color = textColor
             )
-            if (!isPlanet) {
+            if (isPlanet && celestialObjPos.celestialObjWithImage.celestialObj.objectId == MOON) {
+                Text(
+                    text = "Moon Phase: $moonPhase",
+                    style = MaterialTheme.typography.titleMedium,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    color = textColor
+                )
+            }
+            else if (!isPlanet) {
                 Text(
                     text = listOfNotNull(
                         celestialObjPos.celestialObjWithImage.celestialObj.ngcId,
