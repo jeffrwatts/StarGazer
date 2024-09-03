@@ -32,9 +32,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Checkbox
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import com.jeffrwatts.stargazer.utils.AppConstants
+import com.jeffrwatts.stargazer.utils.TimeControl
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -52,7 +58,7 @@ fun InfoScreen(
     Scaffold(
         topBar = {
             StarGazerTopAppBar(
-                title = stringResource(R.string.variable_star_title),
+                title = stringResource(R.string.info_title),
                 openDrawer = openDrawer,
                 topAppBarState = topAppBarState
             )
@@ -78,12 +84,12 @@ fun InfoScreen(
                 is InfoUiState.Success -> {
                     val successState = infoUiState as InfoUiState.Success
                     Column(modifier = contentModifier) {
-                        //TimeControl(
-                        //    currentTime = successState.localDateTime.format(AppConstants.DATE_TIME_FORMATTER),
-                        //    onIncrementTime = { viewModel.incrementOffset() },
-                        //    onDecrementTime = { viewModel.decrementOffset() },
-                        //    onResetTime = { viewModel.resetOffset() }
-                        //)
+                        TimeControl(
+                            currentTime = successState.localDateTime.format(AppConstants.DATE_TIME_FORMATTER),
+                            onIncrementTime = { viewModel.incrementOffset() },
+                            onDecrementTime = { viewModel.decrementOffset() },
+                            onResetTime = { viewModel.resetOffset() }
+                        )
                         InfoContent(
                             successState.localDateTime,
                             successState.location,
@@ -105,114 +111,212 @@ fun InfoScreen(
 }
 
 @Composable
-fun InfoSectionHeader(title: String) {
+fun InfoContent(
+    localDateTime: LocalDateTime,
+    location: Location?,
+    lhaPolaris: Double,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.Start // Align content to the start (left)
+    ) {
+        // Date and Time
+        item {
+            InfoSectionHeader(
+                title = "Time and Location",
+                modifier = Modifier.padding(start = 16.dp) // Slightly less padding for the header
+            )
+        }
+
+        val time = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+        item {
+            Text(
+                text = "Time: $time",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(start = 32.dp) // Increase padding for fields
+            )
+        }
+        val date = localDateTime.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"))
+        item { Spacer(modifier = Modifier.height(4.dp)) }
+        item {
+            Text(
+                text = "Date: $date",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(start = 32.dp) // Increase padding for fields
+            )
+        }
+        item { Spacer(modifier = Modifier.height(16.dp)) }
+
+        // Location
+        location?.let { loc ->
+            item {
+                Text(
+                    text = "Latitude: ${decimalToDMS(loc.latitude, "N", "S")}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 32.dp) // Increase padding for fields
+                )
+            }
+            item {
+                Text(
+                    text = "Longitude: ${decimalToDMS(loc.longitude, "E", "W")}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 32.dp) // Increase padding for fields
+                )
+            }
+            item {
+                Text(
+                    text = "Altitude: ${"%.2f".format(loc.altitude)} meters", // Format altitude to 2 decimal places
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 32.dp) // Increase padding for fields
+                )
+            }
+            item {
+                Text(
+                    text = "Accuracy: ${loc.accuracy} meters",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 32.dp) // Increase padding for fields
+                )
+            }
+
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            item {
+                InfoSectionHeader(
+                    title = "Position of Polaris",
+                    modifier = Modifier.padding(start = 16.dp) // Slightly less padding for the header
+                )
+            }
+
+            item {
+                // Center the PolarisPlot by wrapping it in a Box with centered alignment
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center // Center PolarisPlot within the Box
+                ) {
+                    PolarisPlot(lhaPolaris, 6.0)
+                }
+            }
+        } ?: run {
+            item {
+                Text(
+                    text = "Getting Position...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 32.dp) // Increase padding for fields
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun InfoSectionHeader(title: String, modifier: Modifier = Modifier) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleLarge.copy(textDecoration = TextDecoration.Underline)
+        style = MaterialTheme.typography.titleLarge.copy(textDecoration = TextDecoration.Underline),
+        modifier = modifier // Use the modifier provided
     )
     Spacer(modifier = Modifier.height(8.dp))
 }
 
 @Composable
-fun InfoContent(
-    localDateTime: LocalDateTime,
-    location: Location?,
-    lhaPolaris: Double,
-    modifier: Modifier = Modifier)
-{
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Date and Time
-        item { InfoSectionHeader(title = "Current Date & Time") }
-        val time = localDateTime.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-        item { Text(text = "Time: $time", style = MaterialTheme.typography.bodyLarge) }
-        val date = localDateTime.format(DateTimeFormatter.ofPattern("MM/dd/yyyy"))
-        item { Spacer(modifier = Modifier.height(4.dp)) }
-        item { Text(text = "Date: $date", style = MaterialTheme.typography.bodyLarge) }
-        item { Spacer(modifier = Modifier.height(16.dp)) }
+fun PolarisPlot(lhaPolaris: Double, finderScopeFovDegrees: Double) {
+    // State to control the checkbox
+    var isFinderScopeView by remember { mutableStateOf(false) }
 
-        item { InfoSectionHeader(title = "Current Location") }
-        // Location
-        location?.let { loc->
-            item { Text(text ="Latitude: ${decimalToDMS(loc.latitude, "N", "S")}", style = MaterialTheme.typography.bodyLarge ) }
-            item { Text(text ="Longitude: ${decimalToDMS(loc.longitude, "E", "W")}", style = MaterialTheme.typography.bodyLarge ) }
-            item { Text(text = "Altitude: ${loc.altitude} meters", style = MaterialTheme.typography.bodyLarge) }
-            item { Text(text = "Accuracy: ${loc.accuracy} meters", style = MaterialTheme.typography.bodyLarge) }
-
-            item {Spacer(modifier = Modifier.height(16.dp))}
-            item { InfoSectionHeader(title = "Position of Polaris") }
-            item {
-                PolarisPlot(lhaPolaris)
-            }
-        } ?: run {
-            item { Text(text ="Getting Position...", style = MaterialTheme.typography.bodyLarge ) }
-        }
-    }
-}
-
-@Composable
-fun PolarisPlot(lhaPolaris: Double) {
     // Constants for plotting
     val scaleFactor = 1f  // Use full scale to ensure the dot is on the circle
-    val angularSeparation = 1.0  // Distance on the celestial sphere, use radius directly
+    val angularSeparation = 0.7  // Polaris is approximately 0.7 degrees from the celestial north pole
 
     // Convert LHA from degrees to radians
-    val lhaRadians = Math.toRadians(lhaPolaris*15.0)
+    val lhaRadians = Math.toRadians(lhaPolaris * 15.0)
 
     // Convert to Cartesian coordinates for a circular plot (polar coordinates to Cartesian)
-    val x = -scaleFactor * angularSeparation * sin(lhaRadians)  // Negate x to correct reflection
-    val y = scaleFactor * angularSeparation * cos(lhaRadians)
+    val x = -scaleFactor * sin(lhaRadians)  // Negate x to correct reflection
+    val y = scaleFactor * cos(lhaRadians)
 
-    Box(
+    // Determine the plotting coordinates based on the checkbox state
+    val adjustedX = if (isFinderScopeView) -x else x
+    val adjustedY = if (isFinderScopeView) -y else y
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f) // Keep the aspect ratio 1:1 to maintain a square shape
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(16.dp)
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            // Adjust the radius to make the circle slightly smaller
-            val radius = size.minDimension / 2.5f // Smaller radius for the circle
-
-            // Draw the celestial circle (celestial north pole)
-            drawCircle(
-                color = Color.Blue,
-                radius = radius,
-                style = Stroke(width = 3f)
+        // Checkbox to toggle view mode
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = isFinderScopeView,
+                onCheckedChange = { isChecked ->
+                    isFinderScopeView = isChecked
+                }
             )
+            Text(text = "View through Finder Scope")
+        }
 
-            // Draw a red plus sign at the center of the circle to represent the celestial north pole
-            drawLine(
-                color = Color.Red,
-                start = Offset(size.width / 2, size.height / 2 - 10),
-                end = Offset(size.width / 2, size.height / 2 + 10),
-                strokeWidth = 3f
-            )
-            drawLine(
-                color = Color.Red,
-                start = Offset(size.width / 2 - 10, size.height / 2),
-                end = Offset(size.width / 2 + 10, size.height / 2),
-                strokeWidth = 3f
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f) // Keep the aspect ratio 1:1 to maintain a square shape
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                // Adjust the radius to represent the field of view of the finder scope
+                val outerRadius = size.minDimension / 2.2f  // Larger radius for the outer circle (total field of view)
+                val innerRadius = outerRadius * (angularSeparation / (finderScopeFovDegrees / 2)) // Scaled radius for Polaris' 0.7 degree separation
 
-            // Plot the position of Polaris on the blue circle
-            val centerX = size.width / 2
-            val centerY = size.height / 2
+                // Draw the outer circle representing the total field of view of the finder scope
+                drawCircle(
+                    color = Color.Gray,
+                    radius = outerRadius,
+                    style = Stroke(width = 2f)
+                )
 
-            // Place the red dot exactly on the circle's circumference
-            val polarisX = centerX + x * radius
-            val polarisY = centerY - y * radius  // Invert y-axis for correct positioning
+                // Draw the celestial north pole circle (smaller inner circle)
+                drawCircle(
+                    color = Color.Blue,
+                    radius = innerRadius.toFloat(),
+                    style = Stroke(width = 2f)
+                )
 
-            drawCircle(
-                color = Color.Red,
-                radius = 12f, // Make the red dot larger
-                center = Offset(polarisX.toFloat(), polarisY.toFloat())
-            )
+                // Draw a red plus sign at the center of the inner circle to represent the celestial north pole
+                drawLine(
+                    color = Color.Red,
+                    start = Offset(size.width / 2, size.height / 2 - 10),
+                    end = Offset(size.width / 2, size.height / 2 + 10),
+                    strokeWidth = 3f
+                )
+                drawLine(
+                    color = Color.Red,
+                    start = Offset(size.width / 2 - 10, size.height / 2),
+                    end = Offset(size.width / 2 + 10, size.height / 2),
+                    strokeWidth = 3f
+                )
+
+                // Plot the position of Polaris on the inner circle
+                val centerX = size.width / 2
+                val centerY = size.height / 2
+
+                // Place the red dot on the inner circle's circumference
+                val polarisX = centerX + adjustedX * innerRadius
+                val polarisY = centerY - adjustedY * innerRadius  // Invert y-axis for correct positioning
+
+                drawCircle(
+                    color = Color.Red,
+                    radius = 12f, // Make the red dot larger
+                    center = Offset(polarisX.toFloat(), polarisY.toFloat())
+                )
+            }
         }
     }
 }
+
 
 fun decimalToDMS(decimal: Double, dirPos: String, dirNeg: String): String {
     val degrees = decimal.toInt()
