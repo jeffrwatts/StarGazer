@@ -9,7 +9,8 @@ import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.Utils
 import com.jeffrwatts.stargazer.utils.julianDateToAstronomyTime
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.cosinekitty.astronomy.moonPhase
+import io.github.cosinekitty.astronomy.Body
+import io.github.cosinekitty.astronomy.illumination
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -56,10 +57,11 @@ class SkyTonightViewModel @Inject constructor(
                             }
                             .sortedWith(compareByDescending { it.observable })
 
-                        val moonPhase = moonPhase( julianDateToAstronomyTime(julianDate))
-                        _uiState.value = SkyTonightUiState.Success(celestialObjPosList, moonPhase, true, date.format(DATE_TIME_FORMATTER))
+                        val illuminationInfo = illumination(Body.Moon, julianDateToAstronomyTime(julianDate))
+                        val moonIllumination = (illuminationInfo.phaseFraction * 100.0).toInt()
+                        _uiState.value = SkyTonightUiState.Success(celestialObjPosList, moonIllumination, true, date.format(DATE_TIME_FORMATTER))
                     }?: run {
-                        _uiState.value = SkyTonightUiState.Success(emptyList(), moonPhase = 0.0, false, date.format(DATE_TIME_FORMATTER))
+                        _uiState.value = SkyTonightUiState.Success(emptyList(), moonIllumination = 0, false, date.format(DATE_TIME_FORMATTER))
                     }
 
                 } catch (e: Exception) {
@@ -107,7 +109,7 @@ class SkyTonightViewModel @Inject constructor(
 sealed class SkyTonightUiState {
     object Loading : SkyTonightUiState()
     data class Success(val data: List<CelestialObjPos>,
-                       val moonPhase: Double,
+                       val moonIllumination: Int,
                        val locationAvailable: Boolean,
                        val currentTime: String) : SkyTonightUiState()
     data class Error(val message: String) : SkyTonightUiState()
