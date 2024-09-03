@@ -24,7 +24,7 @@ class InfoViewModel @Inject constructor (
 ) : ViewModel() {
 
     companion object {
-        val POLARIS_RA = Utils.hmsToDegrees(2, 41, 39.0)
+        val POLARIS_RA = hmsToDecimalHours(2, 41, 39.0)
     }
 
     private val _uiState = MutableStateFlow<InfoUiState>(InfoUiState.Loading)
@@ -79,6 +79,10 @@ class InfoViewModel @Inject constructor (
             _timeOffset.emit(0L)
         }
     }
+}
+
+fun hmsToDecimalHours(hours: Int, minutes: Int, seconds: Double): Double {
+    return hours + (minutes / 60.0) + (seconds / 3600.0)
 }
 
 sealed class InfoUiState {

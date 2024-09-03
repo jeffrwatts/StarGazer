@@ -13,7 +13,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlin.math.PI
-import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.pow
@@ -43,24 +42,6 @@ fun julianDateToAstronomyTime(julianDate: Double): Time {
 
 object Utils {
     data class AltitudeEntry(val time: LocalDateTime, val alt: Double)
-
-    fun dmsToDegrees(degrees: Int, minutes: Int, seconds: Double): Double {
-        val sign = if (degrees >= 0) 1 else -1
-        return sign * (abs(degrees) + (minutes / 60.0) + (seconds / 3600.0))
-    }
-
-    fun hmsToDegrees(hours: Int, minutes: Int, seconds: Double): Double {
-        val totalHours = hours + (minutes / 60.0) + (seconds / 3600.0)
-        return totalHours * 15.0
-    }
-
-    fun decimalToDMS(decimal: Double, dirPos: String, dirNeg: String): String {
-        val degrees = decimal.toInt()
-        val minutes = ((decimal - degrees) * 60).toInt()
-        val seconds = (((decimal - degrees) * 60 - minutes) * 60)
-        val direction = if (decimal >= 0) dirPos else dirNeg
-        return "%02d°%02d'%05.2f\"%s".format(abs(degrees), abs(minutes), abs(seconds), direction)
-    }
 
     fun julianDateToUTC(julianDate: Double): LocalDateTime {
         // Julian date to seconds since epoch
@@ -103,34 +84,32 @@ object Utils {
     fun calculateLocalSiderealTime(longitude: Double, julianDate: Double): Double {
         val t = (julianDate - 2451545.0) / 36525.0
 
-        // Calculate Greenwich Mean Sidereal Time (GMST)
+        // Calculate Greenwich Mean Sidereal Time (GMST) in degrees
         var gst = 280.46061837 + 360.98564736629 * (julianDate - 2451545.0) + 0.000387933 * t * t - t * t * t / 38710000.0
         gst = (gst + 360) % 360
-        val lst = (gst + longitude + 360) % 360
-        return lst
+        val lstDegrees = (gst + longitude + 360) % 360
+
+        // Convert LST from degrees to hours
+        val lstHours = lstDegrees / 15.0
+        return lstHours
     }
 
     fun calculateLocalHourAngle(lst: Double, ra: Double): Double {
+        // Both lst and ra should be in hours
         var ha = lst - ra
-        if (ha < 0) ha += 360.0
+        if (ha < 0) ha += 24.0  // Adjust within the 0-24 hour range
         return ha
     }
 
     fun calculateTimeToMeridian(ra: Double, lst: Double): Double {
+        // Both ra and lst are in hours
         var hourAngle = ra - lst
 
-        // Normalize the hour angle to be within 0 to 360 degrees
-        hourAngle = (hourAngle + 360) % 360
+        // Normalize the hour angle to be within 0 to 24 hours
+        hourAngle = (hourAngle + 24) % 24
 
-        // If the hour angle is greater than 180 degrees, it means the object will cross the meridian in the past, adjust it
-        if (hourAngle > 180) {
-            hourAngle -= 360.0
-        }
-
-        // Convert hour angle to time, considering the Earth rotates at 15 degrees per hour
-        val timeUntilMeridian = if (hourAngle < 0) (hourAngle + 360) / 15 else hourAngle / 15
-
-        return timeUntilMeridian
+        // The time until meridian crossing is the hour angle itself now
+        return hourAngle
     }
 
     fun calculateEquationOfTime(date: Double): Double {

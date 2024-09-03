@@ -28,7 +28,6 @@ import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.PermissionWrapper
-import com.jeffrwatts.stargazer.utils.Utils
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.Canvas
@@ -36,8 +35,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import com.jeffrwatts.stargazer.utils.AppConstants
-import com.jeffrwatts.stargazer.utils.TimeControl
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -89,8 +87,7 @@ fun InfoScreen(
                         InfoContent(
                             successState.localDateTime,
                             successState.location,
-                            successState.lhaPolaris,
-                            contentModifier
+                            successState.lhaPolaris
                         )
                     }
                 }
@@ -121,7 +118,7 @@ fun InfoContent(
     localDateTime: LocalDateTime,
     location: Location?,
     lhaPolaris: Double,
-    modifier: Modifier)
+    modifier: Modifier = Modifier)
 {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -139,8 +136,8 @@ fun InfoContent(
         item { InfoSectionHeader(title = "Current Location") }
         // Location
         location?.let { loc->
-            item { Text(text ="Latitude: ${Utils.decimalToDMS(loc.latitude, "N", "S")}", style = MaterialTheme.typography.bodyLarge ) }
-            item { Text(text ="Longitude: ${Utils.decimalToDMS(loc.longitude, "E", "W")}", style = MaterialTheme.typography.bodyLarge ) }
+            item { Text(text ="Latitude: ${decimalToDMS(loc.latitude, "N", "S")}", style = MaterialTheme.typography.bodyLarge ) }
+            item { Text(text ="Longitude: ${decimalToDMS(loc.longitude, "E", "W")}", style = MaterialTheme.typography.bodyLarge ) }
             item { Text(text = "Altitude: ${loc.altitude} meters", style = MaterialTheme.typography.bodyLarge) }
             item { Text(text = "Accuracy: ${loc.accuracy} meters", style = MaterialTheme.typography.bodyLarge) }
 
@@ -162,7 +159,7 @@ fun PolarisPlot(lhaPolaris: Double) {
     val angularSeparation = 1.0  // Distance on the celestial sphere, use radius directly
 
     // Convert LHA from degrees to radians
-    val lhaRadians = Math.toRadians(lhaPolaris)
+    val lhaRadians = Math.toRadians(lhaPolaris*15.0)
 
     // Convert to Cartesian coordinates for a circular plot (polar coordinates to Cartesian)
     val x = -scaleFactor * angularSeparation * sin(lhaRadians)  // Negate x to correct reflection
@@ -215,4 +212,12 @@ fun PolarisPlot(lhaPolaris: Double) {
             )
         }
     }
+}
+
+fun decimalToDMS(decimal: Double, dirPos: String, dirNeg: String): String {
+    val degrees = decimal.toInt()
+    val minutes = ((decimal - degrees) * 60).toInt()
+    val seconds = (((decimal - degrees) * 60 - minutes) * 60)
+    val direction = if (decimal >= 0) dirPos else dirNeg
+    return "%02d°%02d'%05.2f\"%s".format(abs(degrees), abs(minutes), abs(seconds), direction)
 }
