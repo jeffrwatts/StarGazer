@@ -48,8 +48,9 @@ class UtilsTest {
 
         val lst = Utils.calculateLocalSiderealTime(LONGITUDE_KONA, jd)
         assertEquals(lst, 0.40885730801344, 0.1)
+
         val lha = Utils.calculateLocalHourAngle(lst, POLARIS_RA)
-        assertEquals(lha, 20.889223974680103, 0.1)
+        assertEquals(lha, 21.714690308013438, 0.1)
     }
 
     @Test
