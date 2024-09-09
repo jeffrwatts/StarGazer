@@ -2,13 +2,11 @@ package com.jeffrwatts.stargazer.utils
 
 
 import android.location.Location
-import io.github.cosinekitty.astronomy.Aberration
 import io.github.cosinekitty.astronomy.Body
-import io.github.cosinekitty.astronomy.EquatorEpoch
-import io.github.cosinekitty.astronomy.Equatorial
+import io.github.cosinekitty.astronomy.Direction
 import io.github.cosinekitty.astronomy.Observer
 import io.github.cosinekitty.astronomy.Time
-import io.github.cosinekitty.astronomy.equator
+import io.github.cosinekitty.astronomy.searchAltitude
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -30,14 +28,14 @@ const val NAUTICAL_TWILIGHT_ANGLE = 12.0
 const val ASTRONOMICAL_TWILIGHT_ANGLE = 18.0
 
 fun julianDateToAstronomyTime(julianDate: Double): Time {
-    // Step 1: Define the Julian Date for the reference epoch (January 1, 2000, at 12:00 UTC)
     val referenceJulianDate = 2451545.0
-
-    // Step 2: Calculate UT1/UTC days since the reference epoch
     val ut = julianDate - referenceJulianDate
-
-    // Step 3: Create and return the Time object using the calculated `ut` value
     return Time(ut)
+}
+
+fun astronomyTimeToJulianDate(time: Time): Double {
+    val referenceJulianDate = 2451545.0
+    return time.ut + referenceJulianDate
 }
 
 object Utils {
@@ -142,16 +140,30 @@ object Utils {
         return acos(HAarg)
     }
 
-    fun calculateRiseSetUtc(year: Int, month: Int, day: Int, location:Location, rise: Boolean, angle: Double):Double {
-        val julianDate = calculateJulianDateUtc(LocalDateTime.of(year, month, day, 0, 0, 0))
-        val date = julianDateToAstronomyTime(julianDate)
+    fun getNight(julianDate: Double, location: Location): Triple<Double, Double, Boolean> {
+        val astronomicalTwilightAngle = -18.0
+        val time = julianDateToAstronomyTime(julianDate)
+
         val observer = Observer(location.latitude, location.longitude, location.altitude)
-        val radec: Equatorial = equator(Body.Sun, date, observer, EquatorEpoch.J2000, Aberration.Corrected)
-        val eot = calculateEquationOfTime(julianDate)
-        var hourAngle = calculateTwilightHourAngle(location.latitude, radec.dec, angle)
-        if (!rise) hourAngle*=-1.0
-        val delta = location.longitude + Math.toDegrees(hourAngle)
-        val timeMinUtc = 720.0 - (4.0 * delta) - eot
-        return julianDate + timeMinUtc / 1440.0
+        val nextRise = searchAltitude(Body.Sun, observer, Direction.Rise, time, 1.0, astronomicalTwilightAngle)
+        val nextSet = searchAltitude(Body.Sun, observer, Direction.Set, time, 1.0, astronomicalTwilightAngle)
+
+        var nightStart = 0.0
+        var nightEnd = 0.0
+        var isNight = false
+
+        if (nextRise != null && nextSet != null) {
+            val (timeToRise, timeToSet) = Pair(nextRise.tt - time.tt, nextSet.tt - time.tt)
+            isNight = timeToRise < timeToSet
+            nightEnd = astronomyTimeToJulianDate(nextRise)
+
+            nightStart = if (isNight) {
+                searchAltitude(Body.Sun, observer, Direction.Set, time, -1.0, -18.0)?.let { astronomyTimeToJulianDate(it) } ?: 0.0
+            } else {
+                astronomyTimeToJulianDate(nextSet)
+            }
+        }
+
+        return Triple(nightStart, nightEnd, isNight)
     }
 }

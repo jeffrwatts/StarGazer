@@ -73,30 +73,29 @@ class UtilsTest {
     }
 
     @Test
-    fun calculateRiseSet() {
-        // REVIEW - need more test cases (different locations, more angles, more times)
-        // REVIEW - validation approach exposes internals of the function under test so not that elegant.
-        val year = 2024
-        val month = 8
-        val day = 4
-        val date = Utils.calculateJulianDateUtc(LocalDateTime.of(2024, 8, 4, 0, 0, 0))
-        val minInDay = 60.0*24.0
-        val delta = 1.0/minInDay // one minute accuracy
-
+    fun getNight() {
         val location = Mockito.mock(Location::class.java)
 
-        // Define the behavior of the mock
         Mockito.`when`(location.latitude).thenReturn(LATITUDE_KONA)
         Mockito.`when`(location.longitude).thenReturn(LONGITUDE_KONA)
         Mockito.`when`(location.altitude).thenReturn(0.0)
         Mockito.`when`(location.provider).thenReturn(LocationManager.GPS_PROVIDER)
 
-        val timeUtcRise = Utils.calculateRiseSetUtc(year, month, day, location, true, ASTRONOMICAL_TWILIGHT_ANGLE)
-        val expectedRise = date + 882.0006343882211/minInDay
-        assertEquals(timeUtcRise, expectedRise, delta)
+        val time1 = LocalDateTime.of(2024, 9, 8, 16, 0, 0)
+        val julianDate1 = Utils.calculateJulianDateFromLocal(time1)
+        val (start1, end1, isNight1) = Utils.getNight(julianDate1, location)
 
-        val timeUtcSet = Utils.calculateRiseSetUtc(2024, 8, 4, location, false, ASTRONOMICAL_TWILIGHT_ANGLE)
-        val expectedSet = date + 1818.216207974997/minInDay
-        assertEquals(timeUtcSet, expectedSet, delta)
+        assertEquals(start1, 2460562.74, 0.1)
+        assertEquals(end1, 2460563.12, 0.1)
+        assertEquals(isNight1, false)
+
+        val time2 = LocalDateTime.of(2024, 9, 8, 22, 0, 0)
+        val julianDate2 = Utils.calculateJulianDateFromLocal(time2)
+        val (start2, end2, isNight2) = Utils.getNight(julianDate2, location)
+
+        assertEquals(start2, 2460562.74, 0.1)
+        assertEquals(end2, 2460563.12, 0.1)
+        assertEquals(isNight2, true)
+
     }
 }

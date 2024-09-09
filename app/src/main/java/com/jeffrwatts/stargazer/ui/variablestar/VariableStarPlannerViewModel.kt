@@ -1,13 +1,11 @@
 package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar
 
-import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjPos
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
-import com.jeffrwatts.stargazer.utils.ASTRONOMICAL_TWILIGHT_ANGLE
 import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +17,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
-import java.time.LocalTime
 import javax.inject.Inject
 import kotlin.math.floor
 
@@ -47,7 +44,9 @@ class VariableStarPlannerViewModel @Inject constructor(
                     val nowAdjusted = LocalDateTime.now().plusDays(timeOffset)
                     val currentTime = nowAdjusted.format(DATE_TIME_FORMATTER)
                     location?.let { loc->
-                        val (start, end, isNight) = getRange(nowAdjusted, loc)
+                        val julianDate = Utils.calculateJulianDateFromLocal(nowAdjusted)
+                        val (start, end, isNight) = Utils.getNight(julianDate, loc)
+
                         val nightStart = Utils.julianDateToLocalTime(start).format(DATE_TIME_FORMATTER)
                         val nightEnd = Utils.julianDateToLocalTime(end).format(DATE_TIME_FORMATTER)
 
@@ -94,39 +93,6 @@ class VariableStarPlannerViewModel @Inject constructor(
         viewModelScope.launch {
             _timeOffset.emit(0L)
         }
-    }
-
-    private fun getRange(now: LocalDateTime, location: Location): Triple<Double, Double, Boolean> {
-        val nowJulian = Utils.calculateJulianDateFromLocal(now)
-        val tomorrow: LocalDateTime = now.plusDays(1).with(LocalTime.MIDNIGHT)
-        val yesterday: LocalDateTime = now.plusDays(-1).with(LocalTime.MIDNIGHT)
-
-        val todayNightEnd = Utils.calculateRiseSetUtc(now.year, now.monthValue, now.dayOfMonth,
-            location, true, ASTRONOMICAL_TWILIGHT_ANGLE)
-
-        val tomorrowNightEnd = Utils.calculateRiseSetUtc(tomorrow.year, tomorrow.monthValue, tomorrow.dayOfMonth,
-            location, true, ASTRONOMICAL_TWILIGHT_ANGLE)
-
-        val yesterdayNightStart = Utils.calculateRiseSetUtc(yesterday.year, yesterday.monthValue, yesterday.dayOfMonth,
-            location, false, ASTRONOMICAL_TWILIGHT_ANGLE)
-
-        val todayNightStart = Utils.calculateRiseSetUtc(now.year, now.monthValue, now.dayOfMonth,
-            location, false, ASTRONOMICAL_TWILIGHT_ANGLE)
-
-        val nightStart: Double
-        val nightEnd: Double
-
-        if (nowJulian > todayNightEnd) {
-            nightStart = todayNightStart
-            nightEnd = tomorrowNightEnd
-        } else {
-            nightStart = yesterdayNightStart
-            nightEnd = todayNightEnd
-        }
-
-        val isNight = (nowJulian > nightStart) && (nowJulian < nightEnd)
-
-        return Triple(nightStart, nightEnd, isNight)
     }
 
     private fun getEventTime (variableStarObj: VariableStarObj, nightStart: Double, nightEnd: Double): Double {

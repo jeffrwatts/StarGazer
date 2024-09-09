@@ -1,5 +1,6 @@
 package com.jeffrwatts.stargazer.ui.skytonight
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
@@ -56,6 +57,9 @@ class SkyTonightViewModel @Inject constructor(
                                 CelestialObjPos.fromCelestialObjWithImage(celestialObj, julianDate, location)
                             }
                             .sortedWith(compareByDescending { it.observable })
+
+                        val (nightStart, nightEnd, isNight) = Utils.getNight(julianDate, loc)
+                        Log.d("TEST", "IsNight=$isNight - Night Start: ${Utils.julianDateToLocalTime(nightStart)}; Night End: ${Utils.julianDateToLocalTime(nightEnd)} ")
 
                         val illuminationInfo = illumination(Body.Moon, julianDateToAstronomyTime(julianDate))
                         val moonIllumination = (illuminationInfo.phaseFraction * 100.0).toInt()
