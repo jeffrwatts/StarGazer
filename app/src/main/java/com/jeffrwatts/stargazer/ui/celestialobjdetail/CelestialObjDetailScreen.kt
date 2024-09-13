@@ -93,7 +93,8 @@ fun CelestialObjDetailScreen(
                 CelestialObjDetailContent(
                     celestialObjWithImage = success.celestialObjWithImage,
                     currentTimeIndex = success.currentTimeIndex,
-                    altitudes = success.altitudes,
+                    altitudesData = success.altitudeData,
+                    moonAltitudeData = success.moonAltitudeData,
                     xAxisLabels= success.xAxisLabels,
                     onMoreInfo= { onMoreInfo(buildMoreInfoUri(success.celestialObjWithImage.celestialObj.objectId, success.celestialObjWithImage.celestialObj.displayName))},
                     modifier = contentModifier)
@@ -113,7 +114,8 @@ fun CelestialObjDetailScreen(
 fun CelestialObjDetailContent(
     celestialObjWithImage: CelestialObjWithImage,
     currentTimeIndex: Int,
-    altitudes: List<Pair<Double, Double>>,
+    altitudesData: List<Pair<Double, Double>>,
+    moonAltitudeData: List<Pair<Double, Double>>,
     xAxisLabels: List<String>,
     onMoreInfo:() -> Unit,
     modifier: Modifier = Modifier)
@@ -158,9 +160,10 @@ fun CelestialObjDetailContent(
         }
         Spacer(modifier = Modifier.height(16.dp))
         AltitudePlot(
-            altitudeData = altitudes,
-            startJulianDate = altitudes[0].first,
-            endJulianDate = altitudes[altitudes.size-1].first,
+            altitudeData = altitudesData,
+            moonAltitudeData = moonAltitudeData,
+            startJulianDate = altitudesData[0].first,
+            endJulianDate = altitudesData[altitudesData.size-1].first,
             currentAltitudeIndex = currentTimeIndex,
             xAxisLabels = xAxisLabels
         )

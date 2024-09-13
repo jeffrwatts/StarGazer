@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
+import com.jeffrwatts.stargazer.data.celestialobject.MOON
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.mapBody
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.cosinekitty.astronomy.Body
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,12 +39,19 @@ class CelestialObjDetailViewModel @Inject constructor(
                     location?.let { loc->
                         val jdNow = Utils.calculateJulianDateFromLocal(LocalDateTime.now())
                         val (start, stop, _) = Utils.getNight(jdNow, loc)
-                        val altitudes = calculateAltitudes(celestialObjWithImage, loc, start, stop)
-                        val currentTimeIndex = Utils.findClosestIndex(jdNow, altitudes)
+                        val altitudeData = calculateAltitudes(celestialObjWithImage, loc, start, stop)
+                        val currentTimeIndex = Utils.findClosestIndex(jdNow, altitudeData)
                         val xAxisLabels= Utils.getXAxisLabels(start, stop)
-                        _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, currentTimeIndex, altitudes, xAxisLabels)
+
+                        var moonAltitudeData = emptyList<Pair<Double, Double>>()
+
+                        if (celestialObjWithImage.celestialObj.objectId != MOON) {
+                            moonAltitudeData = Utils.calculatePlanetAltitudes(Body.Moon, loc, start, stop)
+                        }
+
+                        _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, currentTimeIndex, altitudeData, moonAltitudeData, xAxisLabels)
                     }?:run{
-                        _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, -1, emptyList(), emptyList())
+                        _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, -1, emptyList(), emptyList(), emptyList())
                     }
                 }.collect()
             } catch (e: Exception) {
@@ -70,7 +79,8 @@ sealed class CelestialObjDetailUiState {
     object Loading : CelestialObjDetailUiState()
     data class Success(val celestialObjWithImage: CelestialObjWithImage,
                        val currentTimeIndex: Int,
-                       val altitudes: List<Pair<Double, Double>>,
+                       val altitudeData: List<Pair<Double, Double>>,
+                       val moonAltitudeData: List<Pair<Double, Double>>,
                        val xAxisLabels: List<String>) : CelestialObjDetailUiState()
     data class Error(val message: String) : CelestialObjDetailUiState()
 }

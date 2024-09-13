@@ -7,6 +7,7 @@ import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.cosinekitty.astronomy.Body
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,12 +35,14 @@ class VariableStarDetailViewModel @Inject constructor(
                     location?.let { loc->
                         val jdNow = Utils.calculateJulianDateFromLocal(LocalDateTime.now())
                         val (start, stop, _) = Utils.getNight(jdNow, loc)
-                        val altitudes = Utils.calculateDSOAltitudes(variableStarObj.ra, variableStarObj.dec, location, start, stop)
-                        val currentTimeIndex = Utils.findClosestIndex(jdNow, altitudes)
+                        val altitudeData = Utils.calculateDSOAltitudes(variableStarObj.ra, variableStarObj.dec, location, start, stop)
+                        val currentTimeIndex = Utils.findClosestIndex(jdNow, altitudeData)
                         val xAxisLabels= Utils.getXAxisLabels(start, stop)
-                        _uiState.value = VariableStarDetailUiState.Success(variableStarObj, currentTimeIndex, altitudes, xAxisLabels)
+                        val moonAltitudeData = Utils.calculatePlanetAltitudes(Body.Moon, loc, start, stop)
+
+                        _uiState.value = VariableStarDetailUiState.Success(variableStarObj, currentTimeIndex, altitudeData, moonAltitudeData, xAxisLabels)
                     }?:run{
-                        _uiState.value = VariableStarDetailUiState.Success(variableStarObj, -1, emptyList(), emptyList())
+                        _uiState.value = VariableStarDetailUiState.Success(variableStarObj, -1, emptyList(), emptyList(),  emptyList())
                     }
                 }.collect()
             } catch (e: Exception) {
@@ -55,7 +58,8 @@ sealed class VariableStarDetailUiState {
     object Loading : VariableStarDetailUiState()
     data class Success(val variableStarObj: VariableStarObj,
                        val currentTimeIndex: Int,
-                       val altitudes: List<Pair<Double, Double>>,
+                       val altitudeData: List<Pair<Double, Double>>,
+                       val moonAltitudeData: List<Pair<Double, Double>>,
                        val xAxisLabels: List<String>) : VariableStarDetailUiState()
     data class Error(val message: String) : VariableStarDetailUiState()
 }

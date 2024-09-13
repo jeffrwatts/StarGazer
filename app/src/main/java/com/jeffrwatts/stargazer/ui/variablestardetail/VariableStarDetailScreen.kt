@@ -90,7 +90,8 @@ fun VariableStarDetailScreen(
                 VariableStarDetailContent(
                     variableStarObj = success.variableStarObj,
                     currentTimeIndex = success.currentTimeIndex,
-                    altitudes = success.altitudes,
+                    altitudeData = success.altitudeData,
+                    moonAltitudeData = success.moonAltitudeData,
                     xAxisLabels = success.xAxisLabels,
                     onDisplayEphemeris = { oid-> onDisplayEphemeris(buildEphemerisUri(oid)) },
                     modifier = contentModifier)
@@ -110,7 +111,8 @@ fun VariableStarDetailScreen(
 fun VariableStarDetailContent(
     variableStarObj: VariableStarObj,
     currentTimeIndex: Int,
-    altitudes: List<Pair<Double, Double>>,
+    altitudeData: List<Pair<Double, Double>>,
+    moonAltitudeData: List<Pair<Double, Double>>,
     xAxisLabels: List<String>,
     onDisplayEphemeris: (Long) -> Unit,
     modifier: Modifier = Modifier)
@@ -147,9 +149,10 @@ fun VariableStarDetailContent(
 
         Spacer(modifier = Modifier.height(16.dp))
         AltitudePlot(
-            altitudeData = altitudes,
-            startJulianDate = altitudes[0].first,
-            endJulianDate = altitudes[altitudes.size-1].first,
+            altitudeData = altitudeData,
+            moonAltitudeData = moonAltitudeData,
+            startJulianDate = altitudeData[0].first,
+            endJulianDate = altitudeData[altitudeData.size-1].first,
             currentAltitudeIndex = currentTimeIndex,
             xAxisLabels = xAxisLabels
         )

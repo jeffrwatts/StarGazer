@@ -165,6 +165,7 @@ fun LabeledField(label: String, value: String, modifier: Modifier = Modifier) {
 @Composable
 fun AltitudePlot(
     altitudeData: List<Pair<Double, Double>>, // Julian date and altitude in degrees
+    moonAltitudeData: List<Pair<Double, Double>>, // Julian date and altitude in degrees
     startJulianDate: Double, // Julian date for the start of night
     endJulianDate: Double,   // Julian date for the end of night
     currentAltitudeIndex: Int, // Index into the altitude data for the current time (-1 if not during the night)
@@ -234,8 +235,32 @@ fun AltitudePlot(
             drawPath(
                 path = path,
                 color = Color(0xFF70D2FF),
-                style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
             )
+
+            // Create the moon path for the altitude curve
+            if (moonAltitudeData.isNotEmpty()) {
+                val moonPath = Path()
+
+                // Draw altitude curve
+                moonAltitudeData.forEachIndexed { index, (julianDate, altitude) ->
+                    val x = leftPadding + ((julianDate - startJulianDate) / totalNightDuration).toFloat() * (width - leftPadding - rightPadding)
+                    val y = rightPadding + (1 - (altitude.toFloat() - minHeight) / (maxHeight - minHeight)) * (height - 2 * rightPadding)
+
+                    if (index == 0) {
+                        moonPath.moveTo(x, y)
+                    } else {
+                        moonPath.lineTo(x, y)
+                    }
+                }
+
+                // Draw the path
+                drawPath(
+                    path = moonPath,
+                    color = Color(0xFFFFFFFF),
+                    style = Stroke(width = 1.dp.toPx(), cap = StrokeCap.Round)
+                )
+            }
 
             // Draw the current altitude position, if the index is valid
             if (currentAltitudeIndex >= 0 && currentAltitudeIndex < altitudeData.size) {
