@@ -36,13 +36,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jeffrwatts.stargazer.utils.AltitudeChart
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LabeledField
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
-import com.jeffrwatts.stargazer.utils.Utils
+import com.jeffrwatts.stargazer.utils.AltitudePlot
 import com.jeffrwatts.stargazer.utils.formatPeriodToDHH
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,7 +65,7 @@ fun VariableStarDetailScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is VariableStarDetailUiState.Success) {
-            title = (uiState as VariableStarDetailUiState.Success).data.displayName
+            title = (uiState as VariableStarDetailUiState.Success).variableStarObj.displayName
         }
     }
 
@@ -87,12 +86,13 @@ fun VariableStarDetailScreen(
                 LoadingScreen(modifier = contentModifier)
             }
             is VariableStarDetailUiState.Success -> {
-                val variableStarObj = (uiState as VariableStarDetailUiState.Success).data
-                val altitudes = (uiState as VariableStarDetailUiState.Success).altitudes
+                val success = (uiState as VariableStarDetailUiState.Success)
                 VariableStarDetailContent(
-                    variableStarObj = variableStarObj,
+                    variableStarObj = success.variableStarObj,
+                    currentTimeIndex = success.currentTimeIndex,
+                    altitudes = success.altitudes,
+                    xAxisLabels = success.xAxisLabels,
                     onDisplayEphemeris = { oid-> onDisplayEphemeris(buildEphemerisUri(oid)) },
-                    entries = altitudes,
                     modifier = contentModifier)
             }
             else -> { //is VariableStarDetailUiState.Error -> {
@@ -109,7 +109,9 @@ fun VariableStarDetailScreen(
 @Composable
 fun VariableStarDetailContent(
     variableStarObj: VariableStarObj,
-    entries: List<Utils.AltitudeEntry>,
+    currentTimeIndex: Int,
+    altitudes: List<Pair<Double, Double>>,
+    xAxisLabels: List<String>,
     onDisplayEphemeris: (Long) -> Unit,
     modifier: Modifier = Modifier)
 {
@@ -144,7 +146,13 @@ fun VariableStarDetailContent(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        AltitudeChart(entries)
+        AltitudePlot(
+            altitudeData = altitudes,
+            startJulianDate = altitudes[0].first,
+            endJulianDate = altitudes[altitudes.size-1].first,
+            currentAltitudeIndex = currentTimeIndex,
+            xAxisLabels = xAxisLabels
+        )
         Spacer(modifier = Modifier.height(16.dp))
     }
 }

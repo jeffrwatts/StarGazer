@@ -2,22 +2,28 @@ package com.jeffrwatts.stargazer.utils
 
 
 import android.location.Location
+import io.github.cosinekitty.astronomy.Aberration
 import io.github.cosinekitty.astronomy.Body
 import io.github.cosinekitty.astronomy.Direction
+import io.github.cosinekitty.astronomy.EquatorEpoch
+import io.github.cosinekitty.astronomy.Equatorial
 import io.github.cosinekitty.astronomy.Observer
+import io.github.cosinekitty.astronomy.Refraction
 import io.github.cosinekitty.astronomy.Time
+import io.github.cosinekitty.astronomy.Topocentric
+import io.github.cosinekitty.astronomy.equator
+import io.github.cosinekitty.astronomy.horizon
 import io.github.cosinekitty.astronomy.searchAltitude
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import kotlin.math.PI
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.tan
-
-const val EPS = 1e-6
 
 fun Double.mod2pi() = (this % (2 * PI)).let { if (it < 0) it + 2 * PI else it }
 fun Double.mod360() = (this % 360).let { if (it < 0) it + 360 else it }
@@ -39,7 +45,7 @@ fun astronomyTimeToJulianDate(time: Time): Double {
 }
 
 object Utils {
-    data class AltitudeEntry(val time: LocalDateTime, val alt: Double)
+    private const val JULIAN_MINUTE = 1.0/24.0/60.0
 
     fun julianDateToUTC(julianDate: Double): LocalDateTime {
         // Julian date to seconds since epoch
@@ -166,4 +172,61 @@ object Utils {
 
         return Triple(nightStart, nightEnd, isNight)
     }
+
+    fun calculatePlanetAltitudes(body: Body, location: Location, startTime: Double, stopTime:Double): List<Pair<Double, Double>> {
+        val altitudeData = mutableListOf<Pair<Double, Double>>()
+        val incrementMinutes = 10 * JULIAN_MINUTE // 10 minutes
+        val observer = Observer(location.latitude, location.longitude, location.altitude)
+
+        var timeIx = startTime
+
+        while (timeIx < stopTime) {
+            val time = julianDateToAstronomyTime(timeIx)
+            val radec: Equatorial = equator(body, time, observer, EquatorEpoch.J2000, Aberration.Corrected)
+            val altazm: Topocentric = horizon(time, observer, radec.ra, radec.dec, Refraction.Normal)
+            altitudeData.add(Pair(timeIx, altazm.altitude))
+            timeIx += incrementMinutes
+        }
+        return altitudeData
+    }
+
+    fun calculateDSOAltitudes(ra:Double, dec:Double, location: Location, startTime: Double, stopTime:Double): List<Pair<Double, Double>> {
+        val altitudeData = mutableListOf<Pair<Double, Double>>()
+        val incrementMinutes = 10 * JULIAN_MINUTE // 10 minutes
+        val observer = Observer(location.latitude, location.longitude, location.altitude)
+
+        var timeIx = startTime
+
+        while (timeIx < stopTime) {
+            val time = julianDateToAstronomyTime(timeIx)
+            val altazm: Topocentric = horizon(time, observer, ra, dec, Refraction.Normal)
+            altitudeData.add(Pair(timeIx, altazm.altitude))
+            timeIx += incrementMinutes
+        }
+        return altitudeData
+    }
+
+    fun findClosestIndex(currentJulianTime: Double, altitudeData: List<Pair<Double, Double>>): Int {
+        if (altitudeData.isEmpty() || currentJulianTime < altitudeData.first().first || currentJulianTime>altitudeData.last().first) {
+            return -1 // Return -1 if the list is empty or current time is before the first entry
+        }
+
+        return altitudeData.indices.minByOrNull { index ->
+            kotlin.math.abs(altitudeData[index].first - currentJulianTime)
+        } ?: -1 // Find the index with the closest Julian time
+    }
+
+    fun getXAxisLabels(startTime: Double, stopTime: Double): List<String> {
+        val numLabels = 5
+        val totalDuration = stopTime - startTime
+        val step = totalDuration / (numLabels - 1) // Divide into equal parts
+
+        return List(numLabels) { index ->
+            val julianDate = startTime + index * step
+            val localDateTime = julianDateToLocalTime(julianDate)
+
+            localDateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
+        }
+    }
+
 }

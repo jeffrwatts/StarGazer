@@ -1,12 +1,13 @@
 package com.jeffrwatts.stargazer.utils
 
-import android.graphics.Paint
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,17 +29,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.jeffrwatts.stargazer.R
-import java.time.Duration
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -164,123 +163,122 @@ fun LabeledField(label: String, value: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun AltitudeChart(entries: List<Utils.AltitudeEntry>, modifier: Modifier = Modifier) {
-    Canvas(
-        modifier = modifier
+fun AltitudePlot(
+    altitudeData: List<Pair<Double, Double>>, // Julian date and altitude in degrees
+    startJulianDate: Double, // Julian date for the start of night
+    endJulianDate: Double,   // Julian date for the end of night
+    currentAltitudeIndex: Int, // Index into the altitude data for the current time (-1 if not during the night)
+    xAxisLabels: List<String> // Pre-calculated x-axis labels
+) {
+    val maxHeight = 90f // Fixed y-axis range from -90 to 90 degrees
+    val minHeight = -90f
+
+    Box(
+        modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
-            .padding(start = 30.dp), // Leave space for y-axis labels
-        onDraw = {
-            drawAltitudeChart(entries, size.width, size.height)
-        }
-    )
-}
+            .height(300.dp)
+            .background(Color(0xFF0E1A28)) // Background color
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val width = size.width
+            val height = size.height
+            val leftPadding = 30.dp.toPx() // Adjusted padding only on the left side
+            val rightPadding = 20.dp.toPx() // Keep default padding on the right
 
-fun DrawScope.drawAltitudeChart(entries: List<Utils.AltitudeEntry>, chartWidth: Float, chartHeight: Float) {
-    val yScale = chartHeight / 180f // Altitude range is 180 degrees (-90 to 90)
-    val startTime = entries.firstOrNull()?.time ?: LocalDateTime.now()
-    val endTime = entries.lastOrNull()?.time ?: startTime.plusHours(24)
-    val duration = Duration.between(startTime, endTime).toMillis().toFloat()
-    val xScale = chartWidth / duration // Time scale based on duration
+            // Draw grid lines (vertical and horizontal)
+            val numVerticalLines = 4
+            val numHorizontalLines = 6
 
-    // Draw light gray shading for daylight hours (6 AM to 6 PM) for each day
-    var dayTime = startTime.withHour(6).withMinute(0).withSecond(0)
-    while (dayTime.isBefore(endTime)) {
-        val daylightStart = Duration.between(startTime, dayTime).toMillis() * xScale
-        val daylightEnd = Duration.between(startTime, dayTime.plusHours(12)).toMillis() * xScale
-        val adjustedDaylightStart = maxOf(daylightStart, 0f) // Adjust to start at the chart edge if needed
-        drawRect(
-            color = Color.LightGray.copy(alpha = 0.3f),
-            topLeft = Offset(adjustedDaylightStart, 0f),
-            size = androidx.compose.ui.geometry.Size(daylightEnd - adjustedDaylightStart, chartHeight)
-        )
-        dayTime = dayTime.plusDays(1)
-    }
+            val xStep = (width - leftPadding - rightPadding) / numVerticalLines
+            val yStep = (height - 2 * rightPadding) / numHorizontalLines
 
-    // Draw grid lines for hours and labels
-    val hours = Duration.between(startTime, endTime).toHours().toInt()
-    for (hour in 0..hours) {
-        val x = hour * xScale * 3600000 // Convert hours to milliseconds and scale
-        val time = startTime.plusHours(hour.toLong())
-        val label = when (time.hour) {
-            0 -> time.format(DateTimeFormatter.ofPattern("MMM d"))
-            6 -> "6AM"
-            12 -> "12PM"
-            18 -> "6PM"
-            else -> ""
-        }
-        drawLine(
-            color = if (label.isEmpty()) Color.LightGray.copy(alpha = 0.3f) else Color.White, // Lighter color for non-labeled lines
-            start = Offset(x, 0f),
-            end = Offset(x, chartHeight),
-            strokeWidth = if (hour % 6 == 0) 2f else 1f // Thicker lines for labeled hours
-        )
-        if (label.isNotEmpty()) {
-            drawContext.canvas.nativeCanvas.drawText(
-                label,
-                x,
-                chartHeight + 30f, // Position slightly below the chart
-                Paint().apply {
-                    color = android.graphics.Color.WHITE
-                    textSize = 35f // Larger text size
+            // Horizontal grid lines
+            for (i in 0..numHorizontalLines) {
+                val y = rightPadding + i * yStep
+                drawLine(
+                    color = if (i == numHorizontalLines / 2) Color.White else Color.Gray, // Emphasize the 0-degree line
+                    start = Offset(leftPadding, y),
+                    end = Offset(width - rightPadding, y),
+                    strokeWidth = if (i == numHorizontalLines / 2) 2.dp.toPx() else 1.dp.toPx() // Thicker line for 0°
+                )
+            }
+
+            // Vertical grid lines
+            for (i in 0..numVerticalLines) {
+                val x = leftPadding + i * xStep
+                drawLine(
+                    color = Color.Gray,
+                    start = Offset(x, rightPadding),
+                    end = Offset(x, height - rightPadding),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+
+            // Create a path for the altitude curve
+            val path = Path()
+            val totalNightDuration = endJulianDate - startJulianDate
+
+            // Draw altitude curve
+            altitudeData.forEachIndexed { index, (julianDate, altitude) ->
+                val x = leftPadding + ((julianDate - startJulianDate) / totalNightDuration).toFloat() * (width - leftPadding - rightPadding)
+                val y = rightPadding + (1 - (altitude.toFloat() - minHeight) / (maxHeight - minHeight)) * (height - 2 * rightPadding)
+
+                if (index == 0) {
+                    path.moveTo(x, y)
+                } else {
+                    path.lineTo(x, y)
                 }
-            )
-        }
-    }
+            }
 
-    // Draw grid lines for altitude and labels
-    for (altitude in -90..90 step 30) {
-        val y = chartHeight - (altitude + 90) * yScale
-        val label = if (altitude == 90 || altitude == -90) "${altitude}°" else ""
-        drawLine(
-            color = Color.White,
-            start = Offset(0f, y),
-            end = Offset(chartWidth, y),
-            strokeWidth = if (altitude == 0) 2f else 1f // Thicker line for 0 degrees
-        )
-        if (label.isNotEmpty()) {
-            drawContext.canvas.nativeCanvas.drawText(
-                label,
-                -45f, // Position to the left of the chart
-                y + 15f, // Center vertically with the line
-                Paint().apply {
-                    color = android.graphics.Color.WHITE
-                    textSize = 35f // Larger text size
-                }
+            // Draw the path
+            drawPath(
+                path = path,
+                color = Color(0xFF70D2FF),
+                style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
             )
-        }
-    }
 
-    // Draw the altitude path
-    val path = Path().apply {
-        entries.forEachIndexed { index, entry ->
-            val x = Duration.between(startTime, entry.time).toMillis() * xScale
-            val y = chartHeight - (entry.alt + 90) * yScale
-            if (index == 0) {
-                moveTo(x, y.toFloat())
-            } else {
-                lineTo(x, y.toFloat())
+            // Draw the current altitude position, if the index is valid
+            if (currentAltitudeIndex >= 0 && currentAltitudeIndex < altitudeData.size) {
+                val (currentJulianDate, currentAltitude) = altitudeData[currentAltitudeIndex]
+                val currentX = leftPadding + ((currentJulianDate - startJulianDate) / totalNightDuration).toFloat() * (width - leftPadding - rightPadding)
+                val currentY = rightPadding + (1 - (currentAltitude.toFloat() - minHeight) / (maxHeight - minHeight)) * (height - 2 * rightPadding)
+                drawCircle(
+                    color = Color(0xFF70D2FF),
+                    radius = 5.dp.toPx(),
+                    center = Offset(currentX, currentY)
+                )
             }
         }
+
+        // X-axis labels positioned below the grid line
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(top = 16.dp), // Positioning below the lower grid line
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            xAxisLabels.forEach { label ->
+                Text(label, color = Color.White, fontSize = 12.sp)
+            }
+        }
+
+        // Y-axis labels: 90° at the top, 0° in the middle
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .fillMaxHeight() // Fill height to vertically center the label
+                .padding(start = 8.dp)
+        ) {
+            Text(
+                "0°",
+                color = Color.White,
+                fontSize = 14.sp,
+                modifier = Modifier.align(Alignment.Center) // Center the text within the Box
+            )
+        }
     }
-
-    drawPath(
-        path = path,
-        color = Color.Blue,
-        style = Stroke(width = 2.dp.toPx())
-    )
-
-    // Draw a white border along the right side of the grid
-    drawLine(
-        color = Color.White,
-        start = Offset(chartWidth, 0f),
-        end = Offset(chartWidth, chartHeight),
-        strokeWidth = 2f
-    )
 }
-
-
-
 
 fun formatToDegreeAndMinutes(angle: Double): String {
     val degrees = angle.toInt()
