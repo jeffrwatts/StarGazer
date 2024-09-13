@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,11 +34,16 @@ class CelestialObjDetailViewModel @Inject constructor(
                     celestialObjRepository.getCelestialObj(sightId),
                     locationRepository.locationFlow
                 ) { celestialObjWithImage, location ->
-                    var altitudes = emptyList<Utils.AltitudeEntry>()
                     location?.let { loc->
-                        altitudes = generateAltitudes(celestialObjWithImage, loc)
+                        val jdNow = Utils.calculateJulianDateFromLocal(LocalDateTime.now())
+                        val (start, stop, _) = Utils.getNight(jdNow, loc)
+                        val altitudes = calculateAltitudes(celestialObjWithImage, loc, start, stop)
+                        val currentTimeIndex = findClosestIndex(jdNow, altitudes)
+                        val xAxisLabels= getXAxisLabels(start, stop)
+                        _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, currentTimeIndex, altitudes, xAxisLabels)
+                    }?:run{
+                        _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, -1, emptyList(), emptyList())
                     }
-                    _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, altitudes)
                 }.collect()
             } catch (e: Exception) {
                 _uiState.value = CelestialObjDetailUiState.Error("Error loading data")
@@ -45,29 +51,53 @@ class CelestialObjDetailViewModel @Inject constructor(
         }
     }
 
-    private fun generateAltitudes(obj: CelestialObjWithImage, location: Location): List<Utils.AltitudeEntry> {
-        val timeStart = LocalDateTime.now().minusHours(2).withMinute(0).withSecond(0)
-        val durationHours = 24L
-        val incrementMinutes = 10L
-        val altitudeData = mutableListOf<Utils.AltitudeEntry>()
+    private fun calculateAltitudes(obj: CelestialObjWithImage, location: Location, startTime: Double, stopTime:Double): List<Pair<Double, Double>> {
+        val altitudeData = mutableListOf<Pair<Double, Double>>()
+        val incrementMinutes = 10/24.0/60.0 // 10 minutes
 
-        // Set up the start time to be 2 hours before at 0 min and 0 sec.
-        var timeIx = timeStart
-        val endTime = timeIx.plusHours(durationHours)
+        var timeIx = startTime
 
-        while (timeIx.isBefore(endTime)) {
-            val julianDate = Utils.calculateJulianDateFromLocal(timeIx)
-            val celestialObjPos = CelestialObjPos.fromCelestialObjWithImage(obj, julianDate, location)
-            altitudeData.add(Utils.AltitudeEntry(timeIx, celestialObjPos.alt))
-            timeIx = timeIx.plusMinutes(incrementMinutes)
+        while (timeIx < stopTime) {
+            val celestialObjPos = CelestialObjPos.fromCelestialObjWithImage(obj, timeIx, location)
+            altitudeData.add(Pair(timeIx, celestialObjPos.alt))
+            timeIx += incrementMinutes
+        }
+        return altitudeData
+    }
+
+    fun findClosestIndex(currentJulianTime: Double, altitudeData: List<Pair<Double, Double>>): Int {
+        if (altitudeData.isEmpty() || currentJulianTime < altitudeData.first().first || currentJulianTime>altitudeData.last().first) {
+            return -1 // Return -1 if the list is empty or current time is before the first entry
         }
 
-        return altitudeData
+        return altitudeData.indices.minByOrNull { index ->
+            kotlin.math.abs(altitudeData[index].first - currentJulianTime)
+        } ?: -1 // Find the index with the closest Julian time
+    }
+
+
+    private fun getXAxisLabels(
+        startJulianDate: Double,
+        endJulianDate: Double
+    ): List<String> {
+        val numLabels = 5
+        val totalDuration = endJulianDate - startJulianDate
+        val step = totalDuration / (numLabels - 1) // Divide into equal parts
+
+        return List(numLabels) { index ->
+            val julianDate = startJulianDate + index * step
+            val localDateTime = Utils.julianDateToLocalTime(julianDate)
+
+            localDateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
+        }
     }
 }
 
 sealed class CelestialObjDetailUiState {
     object Loading : CelestialObjDetailUiState()
-    data class Success(val data: CelestialObjWithImage, val altitudes: List<Utils.AltitudeEntry>) : CelestialObjDetailUiState()
+    data class Success(val celestialObjWithImage: CelestialObjWithImage,
+                       val currentTimeIndex: Int,
+                       val altitudes: List<Pair<Double, Double>>,
+                       val xAxisLabels: List<String>) : CelestialObjDetailUiState()
     data class Error(val message: String) : CelestialObjDetailUiState()
 }

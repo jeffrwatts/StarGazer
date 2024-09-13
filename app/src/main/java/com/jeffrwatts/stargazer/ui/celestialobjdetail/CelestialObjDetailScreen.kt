@@ -1,8 +1,14 @@
 package com.jeffrwatts.stargazer.ui.celestialobjdetail
 
 import android.net.Uri
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,24 +34,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
 import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
-import com.jeffrwatts.stargazer.utils.AltitudeChart
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LabeledField
 import com.jeffrwatts.stargazer.utils.LoadingScreen
-import com.jeffrwatts.stargazer.utils.Utils
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,7 +79,7 @@ fun CelestialObjDetailScreen(
 
     LaunchedEffect(uiState) {
         if (uiState is CelestialObjDetailUiState.Success) {
-            title = (uiState as CelestialObjDetailUiState.Success).data.celestialObj.displayName
+            title = (uiState as CelestialObjDetailUiState.Success).celestialObjWithImage.celestialObj.displayName
         }
     }
 
@@ -90,12 +100,13 @@ fun CelestialObjDetailScreen(
                 LoadingScreen(modifier = contentModifier)
             }
             is CelestialObjDetailUiState.Success -> {
-                val celestialObjWithImage = (uiState as CelestialObjDetailUiState.Success).data
-                val altitudes = (uiState as CelestialObjDetailUiState.Success).altitudes
+                val success = (uiState as CelestialObjDetailUiState.Success)
                 CelestialObjDetailContent(
-                    celestialObjWithImage = celestialObjWithImage,
-                    entries = altitudes,
-                    onMoreInfo= { onMoreInfo(buildMoreInfoUri(celestialObjWithImage.celestialObj.objectId, celestialObjWithImage.celestialObj.displayName))},
+                    celestialObjWithImage = success.celestialObjWithImage,
+                    currentTimeIndex = success.currentTimeIndex,
+                    altitudes = success.altitudes,
+                    xAxisLabels= success.xAxisLabels,
+                    onMoreInfo= { onMoreInfo(buildMoreInfoUri(success.celestialObjWithImage.celestialObj.objectId, success.celestialObjWithImage.celestialObj.displayName))},
                     modifier = contentModifier)
             }
             else -> {//is SightDetailUiState.Error -> {
@@ -112,7 +123,9 @@ fun CelestialObjDetailScreen(
 @Composable
 fun CelestialObjDetailContent(
     celestialObjWithImage: CelestialObjWithImage,
-    entries: List<Utils.AltitudeEntry>,
+    currentTimeIndex: Int,
+    altitudes: List<Pair<Double, Double>>,
+    xAxisLabels: List<String>,
     onMoreInfo:() -> Unit,
     modifier: Modifier = Modifier)
 {
@@ -155,7 +168,13 @@ fun CelestialObjDetailContent(
             Text(text = "Display More Info")
         }
         Spacer(modifier = Modifier.height(16.dp))
-        AltitudeChart(entries)
+        AltitudePlot(
+            altitudeData = altitudes,
+            startJulianDate = altitudes[0].first,
+            endJulianDate = altitudes[altitudes.size-1].first,
+            currentAltitudeIndex = currentTimeIndex,
+            xAxisLabels = xAxisLabels
+        )
     }
 }
 
@@ -179,6 +198,125 @@ fun buildMoreInfoUri(objectId: String, displayName: String): String {
 
     return Uri.encode(url)
 }
+
+@Composable
+fun AltitudePlot(
+    altitudeData: List<Pair<Double, Double>>, // Julian date and altitude in degrees
+    startJulianDate: Double, // Julian date for the start of night
+    endJulianDate: Double,   // Julian date for the end of night
+    currentAltitudeIndex: Int, // Index into the altitude data for the current time (-1 if not during the night)
+    xAxisLabels: List<String> // Pre-calculated x-axis labels
+) {
+    val maxHeight = 90f // Fixed y-axis range from -90 to 90 degrees
+    val minHeight = -90f
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(300.dp)
+            .background(Color(0xFF0E1A28)) // Background color
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val width = size.width
+            val height = size.height
+            val leftPadding = 30.dp.toPx() // Adjusted padding only on the left side
+            val rightPadding = 20.dp.toPx() // Keep default padding on the right
+
+            // Draw grid lines (vertical and horizontal)
+            val numVerticalLines = 4
+            val numHorizontalLines = 6
+
+            val xStep = (width - leftPadding - rightPadding) / numVerticalLines
+            val yStep = (height - 2 * rightPadding) / numHorizontalLines
+
+            // Horizontal grid lines
+            for (i in 0..numHorizontalLines) {
+                val y = rightPadding + i * yStep
+                drawLine(
+                    color = if (i == numHorizontalLines / 2) Color.White else Color.Gray, // Emphasize the 0-degree line
+                    start = Offset(leftPadding, y),
+                    end = Offset(width - rightPadding, y),
+                    strokeWidth = if (i == numHorizontalLines / 2) 2.dp.toPx() else 1.dp.toPx() // Thicker line for 0°
+                )
+            }
+
+            // Vertical grid lines
+            for (i in 0..numVerticalLines) {
+                val x = leftPadding + i * xStep
+                drawLine(
+                    color = Color.Gray,
+                    start = Offset(x, rightPadding),
+                    end = Offset(x, height - rightPadding),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+
+            // Create a path for the altitude curve
+            val path = Path()
+            val totalNightDuration = endJulianDate - startJulianDate
+
+            // Draw altitude curve
+            altitudeData.forEachIndexed { index, (julianDate, altitude) ->
+                val x = leftPadding + ((julianDate - startJulianDate) / totalNightDuration).toFloat() * (width - leftPadding - rightPadding)
+                val y = rightPadding + (1 - (altitude.toFloat() - minHeight) / (maxHeight - minHeight)) * (height - 2 * rightPadding)
+
+                if (index == 0) {
+                    path.moveTo(x, y)
+                } else {
+                    path.lineTo(x, y)
+                }
+            }
+
+            // Draw the path
+            drawPath(
+                path = path,
+                color = Color(0xFF70D2FF),
+                style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+            )
+
+            // Draw the current altitude position, if the index is valid
+            if (currentAltitudeIndex >= 0 && currentAltitudeIndex < altitudeData.size) {
+                val (currentJulianDate, currentAltitude) = altitudeData[currentAltitudeIndex]
+                val currentX = leftPadding + ((currentJulianDate - startJulianDate) / totalNightDuration).toFloat() * (width - leftPadding - rightPadding)
+                val currentY = rightPadding + (1 - (currentAltitude.toFloat() - minHeight) / (maxHeight - minHeight)) * (height - 2 * rightPadding)
+                drawCircle(
+                    color = Color(0xFF70D2FF),
+                    radius = 5.dp.toPx(),
+                    center = Offset(currentX, currentY)
+                )
+            }
+        }
+
+        // X-axis labels positioned below the grid line
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(top = 16.dp), // Positioning below the lower grid line
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            xAxisLabels.forEach { label ->
+                Text(label, color = Color.White, fontSize = 12.sp)
+            }
+        }
+
+        // Y-axis labels: 90° at the top, 0° in the middle
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .fillMaxHeight() // Fill height to vertically center the label
+                .padding(start = 8.dp)
+        ) {
+            Text(
+                "0°",
+                color = Color.White,
+                fontSize = 14.sp,
+                modifier = Modifier.align(Alignment.Center) // Center the text within the Box
+            )
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
