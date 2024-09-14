@@ -12,6 +12,7 @@ object StarGazerDestinations {
     const val CELESTIAL_OBJ_DETAIL_ROUTE = "celestialObjDetail"
     const val VARIABLE_STAR_DETAIL_ROUTE = "variableStarDetail"
     const val WEBVIEW_ADDITIONAL_INFO_ROUTE = "webViewAdditionalInfo"
+    const val FIELD_OF_VIEW_ROUTE = "fieldOfView"
 }
 
 /**
@@ -84,5 +85,9 @@ class StarGazerNavigationActions(navController: NavHostController) {
 
     val navigateToWebViewAdditionalInfo:(String) -> Unit = { url ->
         navController.navigate("${StarGazerDestinations.WEBVIEW_ADDITIONAL_INFO_ROUTE}/$url")
+    }
+
+    val navigateToFieldOfView: (Int) -> Unit = { objectId ->
+        navController.navigate("${StarGazerDestinations.FIELD_OF_VIEW_ROUTE}/$objectId")
     }
 }

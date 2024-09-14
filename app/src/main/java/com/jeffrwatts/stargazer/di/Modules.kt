@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.WorkManager
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.StarGazerApplication
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.SkyViewApi
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.StarGazerApi
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
@@ -75,6 +76,27 @@ object NetworkModule {
             .build()
 
         return retrofit.create(StarGazerApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSkyViewApi(): SkyViewApi {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.HEADERS
+        }
+
+        val okHttpClient = OkHttpClient.Builder()
+            .readTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(logging)
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://skyview.gsfc.nasa.gov/current/cgi/")
+            .client(okHttpClient)
+            .build()
+
+        return retrofit.create(SkyViewApi::class.java)
     }
 }
 

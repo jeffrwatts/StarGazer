@@ -3,6 +3,7 @@ package com.jeffrwatts.stargazer.ui.celestialobjdetail
 import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
 import com.jeffrwatts.stargazer.data.celestialobject.MOON
@@ -12,6 +13,7 @@ import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.cosinekitty.astronomy.Body
+import io.github.cosinekitty.astronomy.Equatorial
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +40,7 @@ class CelestialObjDetailViewModel @Inject constructor(
                 ) { celestialObjWithImage, location ->
                     location?.let { loc->
                         val jdNow = Utils.calculateJulianDateFromLocal(LocalDateTime.now())
+                        val celestialObjPos = CelestialObjPos.fromCelestialObjWithImage(celestialObjWithImage, jdNow, loc)
                         val (start, stop, _) = Utils.getNight(jdNow, loc)
                         val altitudeData = calculateAltitudes(celestialObjWithImage, loc, start, stop)
                         val currentTimeIndex = Utils.findClosestIndex(jdNow, altitudeData)
@@ -49,7 +52,7 @@ class CelestialObjDetailViewModel @Inject constructor(
                             moonAltitudeData = Utils.calculatePlanetAltitudes(Body.Moon, loc, start, stop)
                         }
 
-                        _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, currentTimeIndex, altitudeData, moonAltitudeData, xAxisLabels)
+                        _uiState.value = CelestialObjDetailUiState.Success(celestialObjPos.celestialObjWithImage, currentTimeIndex, altitudeData, moonAltitudeData, xAxisLabels)
                     }?:run{
                         _uiState.value = CelestialObjDetailUiState.Success(celestialObjWithImage, -1, emptyList(), emptyList(), emptyList())
                     }

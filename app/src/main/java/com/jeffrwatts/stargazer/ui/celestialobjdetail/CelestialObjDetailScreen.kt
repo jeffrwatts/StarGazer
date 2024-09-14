@@ -40,11 +40,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
+import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
 import com.jeffrwatts.stargazer.utils.AltitudePlot
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LabeledField
 import com.jeffrwatts.stargazer.utils.LoadingScreen
+import com.jeffrwatts.stargazer.utils.decimalDecToDmsString
+import com.jeffrwatts.stargazer.utils.decimalRaToHmsString
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,6 +55,7 @@ import java.io.File
 fun CelestialObjDetailScreen(
     sightId: Int,
     onNavigateBack: () -> Unit,
+    onFieldOfView:(Int) -> Unit,
     onMoreInfo:(String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CelestialObjDetailViewModel = hiltViewModel(),
@@ -97,6 +101,7 @@ fun CelestialObjDetailScreen(
                     moonAltitudeData = success.moonAltitudeData,
                     xAxisLabels= success.xAxisLabels,
                     onMoreInfo= { onMoreInfo(buildMoreInfoUri(success.celestialObjWithImage.celestialObj.objectId, success.celestialObjWithImage.celestialObj.displayName))},
+                    onFieldOfView = { onFieldOfView(success.celestialObjWithImage.celestialObj.id)},
                     modifier = contentModifier)
             }
             else -> {//is SightDetailUiState.Error -> {
@@ -118,6 +123,7 @@ fun CelestialObjDetailContent(
     moonAltitudeData: List<Pair<Double, Double>>,
     xAxisLabels: List<String>,
     onMoreInfo:() -> Unit,
+    onFieldOfView: () -> Unit,
     modifier: Modifier = Modifier)
 {
     Column(modifier = modifier) {
@@ -144,20 +150,9 @@ fun CelestialObjDetailContent(
                 // Handle errors if necessary, for instance logging
             }
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Data Fields
-        LabeledField(label = "NGC ID", value = celestialObjWithImage.celestialObj.ngcId ?: "N/A")
-        LabeledField(label = "Subtype", value = celestialObjWithImage.celestialObj.subType ?: "N/A")
-        LabeledField(label = "Constellation", value = celestialObjWithImage.celestialObj.constellation ?: "N/A")
-        LabeledField(label = "Magnitude", value = celestialObjWithImage.celestialObj.magnitude?.toString() ?: "N/A")
-        Button(
-            onClick = onMoreInfo,
-            colors = ButtonDefaults.buttonColors(contentColor = Color.White))
-        {
-            Text(text = "Display More Info")
-        }
+        LabeledField(label = "RA", value = decimalRaToHmsString(celestialObjWithImage.celestialObj.ra))
+        LabeledField(label = "DEC", value = decimalDecToDmsString(celestialObjWithImage.celestialObj.dec))
         Spacer(modifier = Modifier.height(16.dp))
         AltitudePlot(
             altitudeData = altitudesData,
@@ -167,6 +162,22 @@ fun CelestialObjDetailContent(
             currentAltitudeIndex = currentTimeIndex,
             xAxisLabels = xAxisLabels
         )
+
+        Button(
+            onClick = onMoreInfo,
+            colors = ButtonDefaults.buttonColors(contentColor = Color.White))
+        {
+            Text(text = "Display More Info")
+        }
+        if (celestialObjWithImage.celestialObj.type != ObjectType.PLANET) {
+            Button(
+                onClick = onFieldOfView,
+                colors = ButtonDefaults.buttonColors(contentColor = Color.White))
+            {
+                Text(text = "Field Of View")
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

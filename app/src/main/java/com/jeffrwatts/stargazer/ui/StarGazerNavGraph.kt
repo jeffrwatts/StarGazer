@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.fieldofview.FieldOfViewScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarPlannerScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.webviewscreen.WebViewScreen
 import com.jeffrwatts.stargazer.ui.altazmtool.AltAzmToolScreen
@@ -59,7 +60,8 @@ fun StarGazerNavGraph(
                 CelestialObjDetailScreen(
                     sightId = it,
                     onNavigateBack = { navController.popBackStack() },
-                    onMoreInfo = { url -> actions.navigateToWebViewAdditionalInfo(url) })
+                    onMoreInfo = { url -> actions.navigateToWebViewAdditionalInfo(url) },
+                    onFieldOfView = { id -> actions.navigateToFieldOfView(id)})
             }
         }
         composable("${StarGazerDestinations.VARIABLE_STAR_DETAIL_ROUTE}/{variableStarId}") { backStackEntry ->
@@ -79,6 +81,13 @@ fun StarGazerNavGraph(
 
             url?.let {
                 WebViewScreen(title = "", url = it , onNavigateBack = { navController.popBackStack() })
+            }
+        }
+        composable("${StarGazerDestinations.FIELD_OF_VIEW_ROUTE}/{objectId}") { backStackEntry->
+            val objectId = backStackEntry.arguments?.getString("objectId")?.toIntOrNull()
+
+            objectId?.let {
+                FieldOfViewScreen(sightId = it, onNavigateBack = { navController.popBackStack() })
             }
         }
     }

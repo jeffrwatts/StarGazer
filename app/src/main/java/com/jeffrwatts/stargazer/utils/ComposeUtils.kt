@@ -39,11 +39,32 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.jeffrwatts.stargazer.R
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
 object AppConstants {
     val DATE_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd, hh:mm a")
+}
+
+fun decimalRaToHmsString(raDecimalHours: Double): String {
+    // Ensure RA wraps around the 24-hour clock
+    val totalSeconds = ((raDecimalHours * 3600) % 86400 + 86400) % 86400
+
+    val hours = (totalSeconds / 3600).toInt()
+    val minutes = ((totalSeconds % 3600) / 60).toInt()
+    val seconds = totalSeconds % 60
+
+    return String.format(Locale.US, "%02dh %02dm %05.2fs", hours, minutes, seconds)
+}
+
+fun decimalDecToDmsString(decDecimalDegrees: Double): String {
+    val sign = if (decDecimalDegrees < 0) "-" else "+"
+    val totalSeconds = Math.abs(decDecimalDegrees) * 3600
+    val degrees = (totalSeconds / 3600).toInt()
+    val minutes = ((totalSeconds % 3600) / 60).toInt()
+    val seconds = totalSeconds % 60
+    return String.format(Locale.US, "%s%02d° %02d' %05.2f\"", sign, degrees, minutes, seconds)
 }
 
 @OptIn(ExperimentalPermissionsApi::class)

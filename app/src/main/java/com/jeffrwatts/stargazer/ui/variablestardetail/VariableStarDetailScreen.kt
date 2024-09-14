@@ -42,6 +42,8 @@ import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
 import com.jeffrwatts.stargazer.utils.AltitudePlot
+import com.jeffrwatts.stargazer.utils.decimalDecToDmsString
+import com.jeffrwatts.stargazer.utils.decimalRaToHmsString
 import com.jeffrwatts.stargazer.utils.formatPeriodToDHH
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,12 +136,10 @@ fun VariableStarDetailContent(
         // Data Fields
         LabeledField(label = "RA", value = decimalRaToHmsString(variableStarObj.ra))
         LabeledField(label = "DEC", value = decimalDecToDmsString(variableStarObj.dec))
-        //LabeledField(label = "Spectral Type", value = variableStarObj.spectralType)
-        //LabeledField(label = "Type", value = variableStarObj.type)
         LabeledField(label = "Magnitude High", value = variableStarObj.magnitudeHigh)
         LabeledField(label = "Magnitude Low", value = variableStarObj.magnitudeLow)
         LabeledField(label = "Period", value = formatPeriodToDHH(variableStarObj.period))
-        //LabeledField(label = "Constellation", value = variableStarObj.constellation)
+
         Button(
             onClick = { onDisplayEphemeris(variableStarObj.OID) },
             colors = ButtonDefaults.buttonColors(contentColor = Color.White))
@@ -163,24 +163,6 @@ fun VariableStarDetailContent(
 fun buildEphemerisUri(oid: Long): String {
     val url = "https://www.aavso.org/vsx/index.php?view=detail.ephemeris&nolayout=1&oid=${oid}"
     return Uri.encode(url)
-}
-
-fun decimalRaToHmsString(raDecimalHours: Double): String {
-    val totalSeconds = raDecimalHours * 3600  // Convert hours to total seconds
-    val hours = (totalSeconds / 3600).toInt()
-    val minutes = ((totalSeconds % 3600) / 60).toInt()
-    val seconds = totalSeconds % 60
-    return String.format("%02dh %02dm %05.2fs", hours, minutes, seconds)
-}
-
-
-fun decimalDecToDmsString(decDecimalDegrees: Double): String {
-    val sign = if (decDecimalDegrees < 0) "-" else "+"
-    val totalSeconds = Math.abs(decDecimalDegrees) * 3600
-    val degrees = (totalSeconds / 3600).toInt()
-    val minutes = ((totalSeconds % 3600) / 60).toInt()
-    val seconds = totalSeconds % 60
-    return String.format("%s%02d° %02d' %05.2f\"", sign, degrees, minutes, seconds)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
