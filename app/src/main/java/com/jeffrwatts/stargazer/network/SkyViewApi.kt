@@ -10,8 +10,9 @@ interface SkyViewApi {
         @Query("Position") position: String,
         @Query("Size") size: Double,
         @Query("Pixels") pixels: Int,
+        @Query("Rotation") rotation: Int,
+        @Query("Scaling") scaling: String,
         @Query("Return") returnType: String = "PNG",
-        @Query("Scaling") scaling: String = "linear",
         @Query("coordinates") coordinates: String = "J2000",
         @Query("Survey") survey: String = "DSS"
     ): ResponseBody
