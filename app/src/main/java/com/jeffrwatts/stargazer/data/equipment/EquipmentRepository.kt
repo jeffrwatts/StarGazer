@@ -14,7 +14,7 @@ class EquipmentRepository @Inject constructor(
 
     private val predefinedCameras = listOf(
         Camera(displayName = "ZWO ASI294MC Pro", sensorWidth = 19.1, sensorHeight = 13.0, pixelSize = 4.63, resolutionWidth = 4144, resolutionHeight = 2822),
-        Camera(displayName = "ZWO ASI678MC", sensorWidth = 7.0, sensorHeight = 5.0, pixelSize = 2.0, resolutionWidth = 1920, resolutionHeight = 1080)
+        Camera(displayName = "ZWO ASI678MC", sensorWidth = 7.7, sensorHeight = 4.3, pixelSize = 2.0, resolutionWidth = 3840, resolutionHeight = 2160)
     )
 
     private val predefinedOpticalElements = listOf(

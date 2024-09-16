@@ -167,7 +167,7 @@ fun FieldOfViewScreen(
                 // FOV Display
                 fieldOfView?.let { (widthFov, heightFov) ->
                     Text(
-                        text = String.format(Locale.US, "%.2f° x %.2f°", widthFov, heightFov),
+                        text = String.format(Locale.US, "%.3f° x %.3f°", widthFov, heightFov),
                         color = Color.White,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
