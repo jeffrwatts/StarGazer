@@ -69,7 +69,9 @@ import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 import java.io.File
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class
+
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class
 )
 @Composable
 fun SkyTonightScreen(
@@ -353,6 +355,6 @@ fun FilledCheckIcon() {
     Icon(
         imageVector = Icons.Filled.Check,
         contentDescription = "Selected",
-        tint = Color.Green // Choose an appropriate color for the check icon
+        tint = Color.Green
     )
 }
