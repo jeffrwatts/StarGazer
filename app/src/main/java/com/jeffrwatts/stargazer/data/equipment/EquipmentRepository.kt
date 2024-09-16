@@ -19,8 +19,8 @@ class EquipmentRepository @Inject constructor(
 
     private val predefinedOpticalElements = listOf(
         OpticalElement(displayName = "None", factor = 1.0),
-        OpticalElement(displayName = "0.63x", factor = 0.63),
-        OpticalElement(displayName = "1.5x", factor = 1.5)
+        OpticalElement(displayName = "0.63x Reducer", factor = 0.63),
+        OpticalElement(displayName = "2.0x Barlow", factor = 2.0)
     )
 
     // Modified get methods
