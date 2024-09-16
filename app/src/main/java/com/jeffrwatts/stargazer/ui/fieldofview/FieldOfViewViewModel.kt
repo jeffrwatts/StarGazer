@@ -25,7 +25,9 @@ class FieldOfViewViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
     private val equipmentRepository: EquipmentRepository
 ) : ViewModel() {
-    // MutableStateFlow to hold the image data
+    private val _title = MutableStateFlow<String>("")
+    val title: StateFlow<String> = _title.asStateFlow()
+
     private val _imageData = MutableStateFlow<ByteArray?>(null)
     val imageData: StateFlow<ByteArray?> = _imageData.asStateFlow()
 
@@ -53,7 +55,7 @@ class FieldOfViewViewModel @Inject constructor(
     val fieldOfView: StateFlow<Pair<Double, Double>?> = _fieldOfView.asStateFlow()
 
     // MutableState for size, scaling, and rotation
-    var size = MutableStateFlow(2.0)
+    var size = MutableStateFlow(1.0)
     var scaling = MutableStateFlow(ScalingOption.LINEAR)
     var rotation = MutableStateFlow(0)
 
@@ -77,6 +79,11 @@ class FieldOfViewViewModel @Inject constructor(
 
                 // Set celestial object and fetch image here
                 celestialObjWithImage = celestialObjRepository.getCelestialObj(sightId).first()
+
+                celestialObjWithImage?.let {
+                    _title.value = it.celestialObj.displayName
+                }
+
                 refreshImage(imageSize) // Fetch image immediately
             } catch (e: Exception) {
                 _imageData.value = null // Reset image data in case of error

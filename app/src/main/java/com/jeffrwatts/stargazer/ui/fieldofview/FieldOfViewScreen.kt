@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -37,9 +36,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -49,6 +48,7 @@ import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.OpticalE
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.Telescope
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.skyview.ScalingOption
 import java.util.Locale
+import kotlin.math.roundToInt
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,14 +71,16 @@ fun FieldOfViewScreen(
     val selectedOpticalElement by viewModel.selectedOpticalElement.collectAsState()
     val fieldOfView by viewModel.fieldOfView.collectAsState()
     val size by viewModel.size.collectAsState()
+    val rotation by viewModel.rotation.collectAsState()
     val telescopes by viewModel.telescopes.collectAsState()
     val cameras by viewModel.cameras.collectAsState()
     val opticalElements by viewModel.opticalElements.collectAsState()
     val scaling by viewModel.scaling.collectAsState()
 
     var sliderSize by remember { mutableStateOf(size) }
+    var sliderRotation by remember { mutableStateOf(rotation) } // Use an intermediate variable for rotation
     var imageSizeInLayout by remember { mutableStateOf(IntSize(imageSize, imageSize)) } // Maintain the aspect ratio
-    var title by remember { mutableStateOf("Loading...") }
+    val title by viewModel.title.collectAsState()
 
     // Initialize detail and fetch image immediately
     LaunchedEffect(sightId) {
@@ -120,7 +122,8 @@ fun FieldOfViewScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .onSizeChanged { size ->
-                                        imageSizeInLayout = size // Capture the size of the image layout
+                                        imageSizeInLayout =
+                                            size // Capture the size of the image layout
                                     }
                             )
 
@@ -135,8 +138,16 @@ fun FieldOfViewScreen(
 
                                     Box(
                                         modifier = Modifier
-                                            .width(boxWidth.dp)
-                                            .height(boxHeight.dp)
+                                            .width(
+                                                boxWidth
+                                                    .roundToInt()
+                                                    .toDp()
+                                            )
+                                            .height(
+                                                boxHeight
+                                                    .roundToInt()
+                                                    .toDp()
+                                            )
                                             .align(Alignment.Center)
                                             .border(2.dp, Color.Red)
                                     )
@@ -174,8 +185,8 @@ fun FieldOfViewScreen(
                         options = telescopes.map { it.displayName }, // Use displayName for the dropdown
                         selectedOption = selectedTelescope?.displayName ?: "",
                         onOptionSelected = { selectedName ->
-                            val selectedTelescope = telescopes.find { it.displayName == selectedName }
-                            selectedTelescope?.let {
+                            val selected = telescopes.find { it.displayName == selectedName }
+                            selected?.let {
                                 viewModel.updateSelectedTelescope(it)
                                 viewModel.refreshImage(imageSize)
                             }
@@ -195,8 +206,8 @@ fun FieldOfViewScreen(
                         options = cameras.map { it.displayName }, // Use displayName for the dropdown
                         selectedOption = selectedCamera?.displayName ?: "",
                         onOptionSelected = { selectedName ->
-                            val selectedCamera = cameras.find { it.displayName == selectedName }
-                            selectedCamera?.let {
+                            val selected = cameras.find { it.displayName == selectedName }
+                            selected?.let {
                                 viewModel.updateSelectedCamera(it)
                                 viewModel.refreshImage(imageSize)
                             }
@@ -216,8 +227,8 @@ fun FieldOfViewScreen(
                         options = opticalElements.map { it.displayName }, // Use displayName for the dropdown
                         selectedOption = selectedOpticalElement?.displayName ?: "",
                         onOptionSelected = { selectedName ->
-                            val selectedOpticalElement = opticalElements.find { it.displayName == selectedName }
-                            selectedOpticalElement?.let {
+                            val selected = opticalElements.find { it.displayName == selectedName }
+                            selected?.let {
                                 viewModel.updateSelectedOpticalElement(it)
                                 viewModel.refreshImage(imageSize)
                             }
@@ -234,7 +245,7 @@ fun FieldOfViewScreen(
                 ) {
                     Text(text = "Scaling:", color = Color.White, modifier = Modifier.width(120.dp))
                     DropdownMenu(
-                        options = ScalingOption.values().map { it.name }, // Use name for the dropdown
+                        options = ScalingOption.entries.map { it.name }, // Use name for the dropdown
                         selectedOption = scaling.name,
                         onOptionSelected = { selectedName ->
                             val selectedScaling = ScalingOption.valueOf(selectedName)
@@ -245,17 +256,52 @@ fun FieldOfViewScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Size Slider
-                Text(text = "Size: ${String.format(Locale.US, "%.1f", sliderSize)} degrees", color = Color.White)
-                Slider(
-                    value = sliderSize.toFloat(),
-                    onValueChange = { sliderSize = it.toDouble() },
-                    onValueChangeFinished = {
-                        viewModel.updateSize(sliderSize, imageSize)
-                    },
-                    valueRange = 0.1f..5.0f,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                // Size Slider Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Size: ${String.format(Locale.US, "%.1f", sliderSize)}°",
+                        color = Color.White,
+                        modifier = Modifier.width(120.dp) // Align with dropdowns
+                    )
+                    Slider(
+                        value = sliderSize.toFloat(),
+                        onValueChange = { sliderSize = it.toDouble() },
+                        onValueChangeFinished = {
+                            viewModel.updateSize(sliderSize, imageSize)
+                        },
+                        valueRange = 0.1f..5.0f,
+                        modifier = Modifier.weight(1f) // Let the slider take the remaining space
+                    )
+                }
+
+                // Rotation Slider Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Rotation: ${sliderRotation}°",
+                        color = Color.White,
+                        modifier = Modifier.width(120.dp) // Align with dropdowns
+                    )
+                    Slider(
+                        value = sliderRotation.toFloat(),
+                        onValueChange = { value ->
+                            // Update intermediate value
+                            sliderRotation = ((value / 45).roundToInt() * 45).toFloat().toInt()
+                        },
+                        onValueChangeFinished = {
+                            // Apply the final value
+                            viewModel.updateRotation(sliderRotation, imageSize)
+                        },
+                        valueRange = 0f..135f,
+                        steps = 2, // 3 discrete steps between 0, 45, 90, 135
+                        modifier = Modifier.weight(1f) // Let the slider take the remaining space
+                    )
+                }
             }
         } else {
             // Show a loading indicator while data is being fetched
@@ -269,6 +315,11 @@ fun FieldOfViewScreen(
     }
 }
 
+@Composable
+fun Int.toDp(): Dp {
+    val density = LocalDensity.current
+    return with(density) { this@toDp.toDp() }
+}
 
 @Composable
 fun <T> DropdownMenu(
