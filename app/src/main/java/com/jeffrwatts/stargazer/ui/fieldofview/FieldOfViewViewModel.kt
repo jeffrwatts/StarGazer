@@ -2,6 +2,10 @@ package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.fieldofview
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.Camera
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.EquipmentRepository
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.OpticalElement
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.Telescope
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.skyview.ScalingOption
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.skyview.SkyViewRepository
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.skyview.SkyViewRequestParams
@@ -18,11 +22,30 @@ import javax.inject.Inject
 @HiltViewModel
 class FieldOfViewViewModel @Inject constructor(
     private val skyViewRepository: SkyViewRepository,
-    private val celestialObjRepository: CelestialObjRepository
+    private val celestialObjRepository: CelestialObjRepository,
+    private val equipmentRepository: EquipmentRepository
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow<FieldOfViewUiState>(FieldOfViewUiState.Loading)
     val uiState: StateFlow<FieldOfViewUiState> = _uiState.asStateFlow()
+
+    private val _telescopes = MutableStateFlow<List<Telescope>>(emptyList())
+    val telescopes: StateFlow<List<Telescope>> = _telescopes.asStateFlow()
+
+    private val _cameras = MutableStateFlow<List<Camera>>(emptyList())
+    val cameras: StateFlow<List<Camera>> = _cameras.asStateFlow()
+
+    private val _opticalElements = MutableStateFlow<List<OpticalElement>>(emptyList())
+    val opticalElements: StateFlow<List<OpticalElement>> = _opticalElements.asStateFlow()
+
+    // Selected equipment
+    var selectedTelescope: Telescope? = null
+    var selectedCamera: Camera? = null
+    var selectedOpticalElement: OpticalElement? = null
+
+    // FOV State
+    private val _fieldOfView = MutableStateFlow<Pair<Double, Double>?>(null)
+    val fieldOfView: StateFlow<Pair<Double, Double>?> = _fieldOfView.asStateFlow()
+
 
     // MutableState for size, scaling, and rotation
     var size = MutableStateFlow(2.0)
@@ -35,6 +58,10 @@ class FieldOfViewViewModel @Inject constructor(
     fun initDetail(sightId: Int) {
         viewModelScope.launch {
             try {
+                _telescopes.value = equipmentRepository.getAllTelescopes()
+                _cameras.value = equipmentRepository.getAllCameras()
+                _opticalElements.value = equipmentRepository.getAllOpticalElements()
+
                 celestialObjWithImage = celestialObjRepository.getCelestialObj(sightId).first()
                 refreshImage()
             } catch (e: Exception) {

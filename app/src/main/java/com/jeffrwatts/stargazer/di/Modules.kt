@@ -4,6 +4,10 @@ import android.content.Context
 import androidx.work.WorkManager
 import com.jeffrwatts.stargazer.BuildConfig
 import com.jeffrwatts.stargazer.StarGazerApplication
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.CameraDao
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.EquipmentRepository
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.OpticalElementDao
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.TelescopeDao
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.SkyViewApi
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.StarGazerApi
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
@@ -120,6 +124,24 @@ object DatabaseModule {
     fun provideCelestiaLObjImageDao(@ApplicationContext context: Context): CelestialObjImageDao {
         return StarGazerDatabase.getDatabase(context).celestialObjImageDao()
     }
+
+    @Singleton
+    @Provides
+    fun provideTelescopeDao(@ApplicationContext context: Context): TelescopeDao {
+        return StarGazerDatabase.getDatabase(context).telescopeDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideCameraDao(@ApplicationContext context: Context): CameraDao {
+        return StarGazerDatabase.getDatabase(context).cameraDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideOpticalElementDao(@ApplicationContext context: Context): OpticalElementDao {
+        return StarGazerDatabase.getDatabase(context).opticalElementDao()
+    }
 }
 
 @Module
@@ -141,14 +163,14 @@ object RepositoryModule {
         return VariableStarObjRepository(variableStarObjDao)
     }
 
-    // Provide CoroutineScope separately
     @Singleton
     @Provides
-    fun provideApplicationScope(
-        @ApplicationContext context: Context
-    ): CoroutineScope {
-        val app = context.applicationContext as StarGazerApplication
-        return app.applicationScope
+    fun provideEquipmentRepository(
+        telescopeDao: TelescopeDao,
+        cameraDao: CameraDao,
+        opticalElementDao: OpticalElementDao
+    ): EquipmentRepository {
+        return EquipmentRepository(telescopeDao, cameraDao, opticalElementDao)
     }
 
     @Singleton
@@ -172,6 +194,15 @@ object RepositoryModule {
     @Provides
     fun provideTimeOffsetRepository(): TimeOffsetRepository {
         return TimeOffsetRepository()
+    }
+
+    @Singleton
+    @Provides
+    fun provideApplicationScope(
+        @ApplicationContext context: Context
+    ): CoroutineScope {
+        val app = context.applicationContext as StarGazerApplication
+        return app.applicationScope
     }
 }
 
