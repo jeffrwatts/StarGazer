@@ -188,7 +188,6 @@ fun FieldOfViewScreen(
                             val selected = telescopes.find { it.displayName == selectedName }
                             selected?.let {
                                 viewModel.updateSelectedTelescope(it)
-                                viewModel.refreshImage(imageSize)
                             }
                         }
                     )
@@ -209,7 +208,6 @@ fun FieldOfViewScreen(
                             val selected = cameras.find { it.displayName == selectedName }
                             selected?.let {
                                 viewModel.updateSelectedCamera(it)
-                                viewModel.refreshImage(imageSize)
                             }
                         }
                     )
@@ -230,7 +228,6 @@ fun FieldOfViewScreen(
                             val selected = opticalElements.find { it.displayName == selectedName }
                             selected?.let {
                                 viewModel.updateSelectedOpticalElement(it)
-                                viewModel.refreshImage(imageSize)
                             }
                         }
                     )
