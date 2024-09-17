@@ -39,7 +39,8 @@ fun StarGazerApp() {
                     closeDrawer = { coroutineScope.launch { drawerState.close() } }
                 )
             },
-            drawerState = drawerState
+            drawerState = drawerState,
+            gesturesEnabled = false
         ) {
             StarGazerNavGraph(
                 navController = navController,
