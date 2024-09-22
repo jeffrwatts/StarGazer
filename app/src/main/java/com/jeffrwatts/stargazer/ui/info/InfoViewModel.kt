@@ -47,7 +47,11 @@ class InfoViewModel @Inject constructor (
                 timerFlow
             ) { location, timeOffset, _ ->
                 try {
-                    val date = LocalDateTime.now().plusHours(timeOffset)
+                    val date = if (timeOffset != 0L) {
+                        LocalDateTime.now().plusHours(timeOffset).withMinute(0)
+                    } else {
+                        LocalDateTime.now()
+                    }
                     val julianDate = Utils.calculateJulianDateFromLocal(date)
                     var lhaPolaris = 0.0
                     location?.let {loc->
@@ -62,15 +66,15 @@ class InfoViewModel @Inject constructor (
         }
     }
 
-    fun incrementOffset() {
+    fun incrementOffset(incrementBy: Int) {
         viewModelScope.launch {
-            _timeOffset.update { it + 1 }
+            _timeOffset.update { it + incrementBy }
         }
     }
 
-    fun decrementOffset() {
+    fun decrementOffset(decrementBy: Int) {
         viewModelScope.launch {
-            _timeOffset.update { it - 1 }
+            _timeOffset.update { it - decrementBy }
         }
     }
 

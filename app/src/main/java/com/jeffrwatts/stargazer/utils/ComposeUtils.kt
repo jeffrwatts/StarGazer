@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowLeft
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -44,7 +46,7 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 object AppConstants {
-    val DATE_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM dd, hh:mm a")
+    val DATE_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("E MMM dd, hh:mm a")
 }
 
 fun decimalRaToHmsString(raDecimalHours: Double): String {
@@ -55,7 +57,7 @@ fun decimalRaToHmsString(raDecimalHours: Double): String {
     val minutes = ((totalSeconds % 3600) / 60).toInt()
     val seconds = totalSeconds % 60
 
-    return String.format(Locale.US, "%02dh %02dm %05.2fs", hours, minutes, seconds)
+    return String.format(Locale.getDefault(), "%02dh %02dm %05.2fs", hours, minutes, seconds)
 }
 
 fun decimalDecToDmsString(decDecimalDegrees: Double): String {
@@ -64,7 +66,7 @@ fun decimalDecToDmsString(decDecimalDegrees: Double): String {
     val degrees = (totalSeconds / 3600).toInt()
     val minutes = ((totalSeconds % 3600) / 60).toInt()
     val seconds = totalSeconds % 60
-    return String.format(Locale.US, "%s%02d° %02d' %05.2f\"", sign, degrees, minutes, seconds)
+    return String.format(Locale.getDefault(), "%s%02d° %02d' %05.2f\"", sign, degrees, minutes, seconds)
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -104,30 +106,58 @@ fun PermissionWrapper(
 @Composable
 fun TimeControl(
     currentTime: String,
-    onIncrementTime: () -> Unit,
-    onDecrementTime: () -> Unit,
+    onIncrementHour: () -> Unit,
+    onDecrementHour: () -> Unit,
+    onIncrementDay: () -> Unit,
+    onDecrementDay: () -> Unit,
     onResetTime: () -> Unit,
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        IconButton(onClick = onDecrementTime) {
-            Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrement Time")
-        }
+        // Row for displaying the current time/date
         Text(
             text = currentTime,
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center,
+            modifier = Modifier.padding(8.dp)
         )
-        IconButton(onClick = onIncrementTime) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = "Increment Time")
-        }
-        IconButton(onClick = onResetTime) {
-            Icon(imageVector = Icons.Default.Refresh, contentDescription = "Reset Time")
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Row for all buttons in the specified order
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Reset Button
+            IconButton(onClick = onResetTime) {
+                Icon(imageVector = Icons.Default.Refresh, contentDescription = "Reset Time")
+            }
+
+            // Decrement by day (use Calendar icon for example)
+            IconButton(onClick = onDecrementDay) {
+                Icon(imageVector = Icons.Default.KeyboardDoubleArrowLeft, contentDescription = "Decrement Day")
+            }
+
+            // Decrement by hour (use Clock icon for example)
+            IconButton(onClick = onDecrementHour) {
+                Icon(imageVector = Icons.Default.KeyboardArrowLeft, contentDescription = "Decrement Hour")
+            }
+
+            // Increment by hour (use Clock icon for example)
+            IconButton(onClick = onIncrementHour) {
+                Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "Increment Hour")
+            }
+
+            // Increment by day (use Calendar icon for example)
+            IconButton(onClick = onIncrementDay) {
+                Icon(imageVector = Icons.Default.KeyboardDoubleArrowRight, contentDescription = "Increment Day")
+            }
         }
     }
 }
@@ -335,7 +365,7 @@ fun formatToDegreeAndMinutes(angle: Double): String {
 fun formatHoursToHoursMinutes(hoursDecimal: Double): String {
     val hours = hoursDecimal.toInt() // Extract whole hours
     val minutes = ((hoursDecimal - hours) * 60).toInt() // Convert the decimal part to minutes
-    return String.format("%dh %02dm", hours, minutes) // Format and return the string
+    return String.format(Locale.getDefault(), "%dh %02dm", hours, minutes) // Format and return the string
 }
 
 fun formatPeriodToDHH(periodInDays: Double): String {
@@ -345,9 +375,9 @@ fun formatPeriodToDHH(periodInDays: Double): String {
 
     // Check if days are 0 and format the output accordingly
     return if (days > 0) {
-        "${days}d ${String.format("%.2f", hoursAsDecimal)}h"
+        "${days}d ${String.format(Locale.getDefault(), "%.2f", hoursAsDecimal)}h"
     } else {
-        "${String.format("%.2f", hoursAsDecimal)}h"
+        "${String.format(Locale.getDefault(), "%.2f", hoursAsDecimal)}h"
     }
 }
 

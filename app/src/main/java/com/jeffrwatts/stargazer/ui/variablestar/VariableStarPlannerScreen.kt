@@ -83,10 +83,11 @@ fun VariableStarPlannerScreen(
                         .fillMaxWidth()) {
                         TimeControl(
                             currentTime = uiState.currentTime,
-                            onIncrementTime = { viewModel.incrementOffset() },
-                            onDecrementTime = { viewModel.decrementOffset() },
-                            onResetTime = { viewModel.resetOffset() }
-                        )
+                            onIncrementHour = { viewModel.incrementOffset(1) },
+                            onDecrementHour = { viewModel.decrementOffset(1) },
+                            onIncrementDay = { viewModel.incrementOffset(24) },
+                            onDecrementDay = { viewModel.decrementOffset(24) },
+                            onResetTime = { viewModel.resetOffset() })
                         Text(
                             "Night Start: ${uiState.nightStart}",
                             style = MaterialTheme.typography.bodyLarge,

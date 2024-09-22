@@ -39,7 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import com.jeffrwatts.stargazer.utils.AppConstants
+import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.TimeControl
 import kotlin.math.abs
 import kotlin.math.cos
@@ -84,12 +84,14 @@ fun InfoScreen(
                 is InfoUiState.Success -> {
                     val successState = infoUiState as InfoUiState.Success
                     Column(modifier = contentModifier) {
+                        val currentTime = successState.localDateTime.format(DATE_TIME_FORMATTER)
                         TimeControl(
-                            currentTime = successState.localDateTime.format(AppConstants.DATE_TIME_FORMATTER),
-                            onIncrementTime = { viewModel.incrementOffset() },
-                            onDecrementTime = { viewModel.decrementOffset() },
-                            onResetTime = { viewModel.resetOffset() }
-                        )
+                            currentTime = currentTime,
+                            onIncrementHour = { viewModel.incrementOffset(1) },
+                            onDecrementHour = { viewModel.decrementOffset(1) },
+                            onIncrementDay = { viewModel.incrementOffset(24) },
+                            onDecrementDay = { viewModel.decrementOffset(24) },
+                            onResetTime = { viewModel.resetOffset() })
                         InfoContent(
                             successState.localDateTime,
                             successState.location,

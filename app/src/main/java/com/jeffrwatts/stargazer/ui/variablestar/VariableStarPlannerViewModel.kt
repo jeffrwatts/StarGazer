@@ -41,7 +41,11 @@ class VariableStarPlannerViewModel @Inject constructor(
                 _pullToRefresh
             ) { variableStarObjs, location, timeOffset, _ ->
                 try {
-                    val nowAdjusted = LocalDateTime.now().plusDays(timeOffset)
+                    val nowAdjusted = if (timeOffset != 0L) {
+                        LocalDateTime.now().plusHours(timeOffset).withMinute(0)
+                    } else {
+                        LocalDateTime.now()
+                    }
                     val currentTime = nowAdjusted.format(DATE_TIME_FORMATTER)
                     location?.let { loc->
                         val julianDate = Utils.calculateJulianDateFromLocal(nowAdjusted)
@@ -77,15 +81,15 @@ class VariableStarPlannerViewModel @Inject constructor(
         }
     }
 
-    fun incrementOffset() {
+    fun incrementOffset(incrementBy: Int) {
         viewModelScope.launch {
-            _timeOffset.update { it + 1 }
+            _timeOffset.update { it + incrementBy }
         }
     }
 
-    fun decrementOffset() {
+    fun decrementOffset(decrementBy: Int) {
         viewModelScope.launch {
-            _timeOffset.update { it - 1 }
+            _timeOffset.update { it - decrementBy }
         }
     }
 

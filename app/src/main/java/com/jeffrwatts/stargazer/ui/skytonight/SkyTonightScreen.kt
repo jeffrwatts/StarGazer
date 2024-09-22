@@ -126,10 +126,11 @@ fun SkyTonightScreen(
                         Column(modifier = contentModifier) {
                             TimeControl(
                                 currentTime = successState.currentTime,
-                                onIncrementTime = { viewModel.incrementOffset() },
-                                onDecrementTime = { viewModel.decrementOffset() },
-                                onResetTime = { viewModel.resetOffset() }
-                            )
+                                onIncrementHour = { viewModel.incrementOffset(1) },
+                                onDecrementHour = { viewModel.decrementOffset(1) },
+                                onIncrementDay = { viewModel.incrementOffset(24) },
+                                onDecrementDay = { viewModel.decrementOffset(24) },
+                                onResetTime = { viewModel.resetOffset() })
                             SkyTonightBody(
                                 celestialObjPosList = successState.data,
                                 moonIllumination = successState.moonIllumination,

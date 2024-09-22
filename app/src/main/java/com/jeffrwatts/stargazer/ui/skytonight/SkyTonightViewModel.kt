@@ -48,7 +48,11 @@ class SkyTonightViewModel @Inject constructor(
                 _pullToRefresh
             ) { celestialObjs, location, recommended, timeOffset, _ ->
                 try {
-                    val date = LocalDateTime.now().plusHours(timeOffset)
+                    val date = if (timeOffset != 0L) {
+                        LocalDateTime.now().plusHours(timeOffset).withMinute(0)
+                    } else {
+                        LocalDateTime.now()
+                    }
                     val julianDate = Utils.calculateJulianDateFromLocal(date)
                     location?.let {loc->
                         val celestialObjPosList = celestialObjs
@@ -91,15 +95,15 @@ class SkyTonightViewModel @Inject constructor(
         }
     }
 
-    fun incrementOffset() {
+    fun incrementOffset(incrementBy: Int) {
         viewModelScope.launch {
-            _timeOffset.update { it + 1 }
+            _timeOffset.update { it + incrementBy }
         }
     }
 
-    fun decrementOffset() {
+    fun decrementOffset(decrementBy: Int) {
         viewModelScope.launch {
-            _timeOffset.update { it - 1 }
+            _timeOffset.update { it - decrementBy }
         }
     }
 
