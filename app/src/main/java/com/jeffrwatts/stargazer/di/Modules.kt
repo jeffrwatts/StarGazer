@@ -16,7 +16,6 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImageDao
 import com.jeffrwatts.stargazer.data.orientation.OrientationRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
-import com.jeffrwatts.stargazer.data.timeoffset.TimeOffsetRepository
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjRepository
 import dagger.Module
@@ -188,12 +187,6 @@ object RepositoryModule {
         @ApplicationContext context: Context
     ): OrientationRepository {
         return OrientationRepository(context)
-    }
-
-    @Singleton
-    @Provides
-    fun provideTimeOffsetRepository(): TimeOffsetRepository {
-        return TimeOffsetRepository()
     }
 
     @Singleton
