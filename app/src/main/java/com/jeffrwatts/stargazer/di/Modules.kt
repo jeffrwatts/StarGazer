@@ -8,6 +8,8 @@ import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.CameraDa
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.EquipmentRepository
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.OpticalElementDao
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.TelescopeDao
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.starobj.StarObjDao
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.starobj.StarObjRepository
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.SkyViewApi
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.StarGazerApi
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
@@ -120,6 +122,12 @@ object DatabaseModule {
 
     @Singleton
     @Provides
+    fun provideStarObjDao(@ApplicationContext context: Context): StarObjDao {
+        return StarGazerDatabase.getDatabase(context).starObjDao()
+    }
+
+    @Singleton
+    @Provides
     fun provideCelestiaLObjImageDao(@ApplicationContext context: Context): CelestialObjImageDao {
         return StarGazerDatabase.getDatabase(context).celestialObjImageDao()
     }
@@ -160,6 +168,14 @@ object RepositoryModule {
         variableStarObjDao: VariableStarObjDao
     ): VariableStarObjRepository {
         return VariableStarObjRepository(variableStarObjDao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideStarObjRepository(
+        starObjDao: StarObjDao
+    ): StarObjRepository {
+        return StarObjRepository(starObjDao)
     }
 
     @Singleton

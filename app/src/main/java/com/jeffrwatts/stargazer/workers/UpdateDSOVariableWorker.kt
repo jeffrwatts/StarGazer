@@ -6,6 +6,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import com.jeffrwatts.stargazer.BuildConfig
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.starobj.StarObjDao
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.starobj.toStarEntity
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.network.StarGazerApi
 import com.jeffrwatts.stargazer.data.StarGazerDatabase
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
@@ -42,6 +44,7 @@ class UpdateDSOVariableWorker @AssistedInject constructor(
 {
     private val starGazerApi = provideStarGazerApi()
     private val celestialObjDao = provideCelestialObjDao(context)
+    private val starObjDao = provideStarObjDao(context)
     private val variableStarObjDao = provideVariableStarObjDao(context)
 
     private fun provideCelestialObjDao(@ApplicationContext context: Context): CelestialObjDao {
@@ -50,6 +53,10 @@ class UpdateDSOVariableWorker @AssistedInject constructor(
 
     private fun provideVariableStarObjDao(@ApplicationContext context: Context): VariableStarObjDao {
         return StarGazerDatabase.getDatabase(context).variableStarObjDao()
+    }
+
+    private fun provideStarObjDao(@ApplicationContext context: Context): StarObjDao {
+        return StarGazerDatabase.getDatabase(context).starObjDao()
     }
 
     private fun provideStarGazerApi(): StarGazerApi {
@@ -74,6 +81,7 @@ class UpdateDSOVariableWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         updateDSOObjects()
+        updateStarObjects()
         updateVariableStarObjects()
         Result.success(buildStatusUpdate("Updates Complete"))
     }
@@ -103,6 +111,21 @@ class UpdateDSOVariableWorker @AssistedInject constructor(
         } catch (e: Exception) {
             Log.e("WorkManager", "Failed to get DSO Objects", e)
             setProgressAsync(buildStatusUpdate("Failed to get DSO Objects ${e.message}"))
+        }
+    }
+
+    private suspend fun updateStarObjects() {
+        try {
+            setProgressAsync(buildStatusUpdate("Getting Star Objects"))
+            val starObjJson = starGazerApi.getStars()
+            setProgressAsync(buildStatusUpdate("Updating Star DB"))
+            val starObjs = starObjJson.map { it.toStarEntity() }
+            starObjDao.deleteAll()
+            starObjDao.insertStars(starObjs)
+            setProgressAsync(buildStatusUpdate("Updated Star DB"))
+        } catch (e: Exception) {
+            Log.e("WorkManager", "Failed to get Star Objects", e)
+            setProgressAsync(buildStatusUpdate("Failed to get Star Objects ${e.message}"))
         }
     }
 

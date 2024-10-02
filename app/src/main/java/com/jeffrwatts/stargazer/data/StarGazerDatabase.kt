@@ -10,6 +10,8 @@ import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.OpticalE
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.OpticalElementDao
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.Telescope
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.equipment.TelescopeDao
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.starobj.StarObj
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.starobj.StarObjDao
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObj
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjDao
 import com.jeffrwatts.stargazer.data.celestialobjectimage.CelestialObjImage
@@ -20,6 +22,7 @@ import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 @Database(entities = [
     CelestialObj::class,
     VariableStarObj::class,
+    StarObj::class,
     CelestialObjImage::class,
     Telescope::class,
     Camera::class,
@@ -27,6 +30,7 @@ import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObjDao
 abstract class StarGazerDatabase : RoomDatabase() {
     abstract fun celestialObjDao(): CelestialObjDao
     abstract fun variableStarObjDao(): VariableStarObjDao
+    abstract fun starObjDao(): StarObjDao
     abstract fun celestialObjImageDao(): CelestialObjImageDao
     abstract fun telescopeDao(): TelescopeDao
     abstract fun cameraDao(): CameraDao
