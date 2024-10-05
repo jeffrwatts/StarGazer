@@ -33,6 +33,7 @@ fun StarGazerApp() {
                     currentRoute = currentRoute,
                     navigateToSkyTonight = navigationActions.navigateToSkyTonight,
                     navigateToVariableStar = navigationActions.navigateToVariableStar,
+                    navigateToStars = navigationActions.navigateToStars,
                     navigateToInfo = navigationActions.navigateToInfo,
                     navigateToAltAzmTool = navigationActions.navigateToAltAzmTool,
                     navigateToUpdate = navigationActions.navigateToUpdate,

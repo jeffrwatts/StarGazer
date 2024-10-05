@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,6 +31,7 @@ fun AppDrawer(
     currentRoute: String,
     navigateToSkyTonight: () -> Unit,
     navigateToVariableStar: () -> Unit,
+    navigateToStars: () -> Unit,
     navigateToInfo: () -> Unit,
     navigateToAltAzmTool: () -> Unit,
     navigateToUpdate:()->Unit,
@@ -49,9 +51,16 @@ fun AppDrawer(
         )
         NavigationDrawerItem(
             label = { Text(stringResource(id = R.string.variable_star_title)) },
-            icon = { Icon(Icons.Filled.Star, null) },
+            icon = { Icon(Icons.Filled.Stars, null) },
             selected = currentRoute == StarGazerDestinations.VARIABLE_STAR_ROUTE,
             onClick = { navigateToVariableStar(); closeDrawer() },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+        NavigationDrawerItem(
+            label = { Text(stringResource(id = R.string.stars)) },
+            icon = { Icon(Icons.Filled.Star, null) },
+            selected = currentRoute == StarGazerDestinations.STARS_ROUTE,
+            onClick = { navigateToStars(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
         NavigationDrawerItem(

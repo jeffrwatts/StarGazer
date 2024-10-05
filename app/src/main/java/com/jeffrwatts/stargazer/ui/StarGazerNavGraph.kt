@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.fieldofview.FieldOfViewScreen
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.stars.StarsScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarPlannerScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.webviewscreen.WebViewScreen
 import com.jeffrwatts.stargazer.ui.altazmtool.AltAzmToolScreen
@@ -89,6 +90,12 @@ fun StarGazerNavGraph(
             objectId?.let {
                 FieldOfViewScreen(sightId = it, onNavigateBack = { navController.popBackStack() })
             }
+        }
+        composable(StarGazerDestinations.STARS_ROUTE) {
+            val actions = remember(navController) { StarGazerNavigationActions(navController) }
+            StarsScreen(openDrawer = openDrawer,
+                onSightClick = {},
+                modifier = modifier)
         }
     }
 }

@@ -13,6 +13,7 @@ object StarGazerDestinations {
     const val VARIABLE_STAR_DETAIL_ROUTE = "variableStarDetail"
     const val WEBVIEW_ADDITIONAL_INFO_ROUTE = "webViewAdditionalInfo"
     const val FIELD_OF_VIEW_ROUTE = "fieldOfView"
+    const val STARS_ROUTE = "stars"
 }
 
 /**
@@ -89,5 +90,15 @@ class StarGazerNavigationActions(navController: NavHostController) {
 
     val navigateToFieldOfView: (Int) -> Unit = { objectId ->
         navController.navigate("${StarGazerDestinations.FIELD_OF_VIEW_ROUTE}/$objectId")
+    }
+
+    val navigateToStars: () -> Unit = {
+        navController.navigate(StarGazerDestinations.STARS_ROUTE) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
     }
 }
