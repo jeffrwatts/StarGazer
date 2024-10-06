@@ -217,7 +217,7 @@ fun CelestialObjItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         val imageFile = celestialObjPos.celestialObjWithImage.image?.let { image ->
-            File(image.filename)
+            File(image.thumbFilename)
         }
 
         val defaultImagePainter: Painter = painterResource(id = celestialObjPos.celestialObjWithImage.celestialObj.getDefaultImageResource())

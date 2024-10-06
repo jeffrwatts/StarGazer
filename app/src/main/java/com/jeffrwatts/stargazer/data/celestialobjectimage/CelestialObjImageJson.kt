@@ -2,6 +2,8 @@ package com.jeffrwatts.stargazer.data.celestialobjectimage
 
 data class CelestialObjImageJson (
     val objectId: String,
-    val crop: Int,
+    val thumbX: Int?,
+    val thumbY: Int?,
+    val thumbDim: Int?,
     val url: String
 )

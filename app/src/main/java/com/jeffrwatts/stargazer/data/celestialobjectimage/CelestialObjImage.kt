@@ -7,6 +7,6 @@ import androidx.room.PrimaryKey
 data class CelestialObjImage(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val objectId: String,
-    val crop: Int,
-    val filename: String
+    val filename: String,
+    val thumbFilename: String
 )

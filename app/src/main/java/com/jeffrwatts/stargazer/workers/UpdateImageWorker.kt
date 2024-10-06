@@ -71,32 +71,23 @@ class UpdateImageWorker @AssistedInject constructor(
                     val imageStream = URL(imageUrl).openStream()
                     val originalBitmap = BitmapFactory.decodeStream(imageStream)
 
-                    val croppedBitmap = if (image.crop > 0 && originalBitmap.height > image.crop) {
-                        val aspectRatio = originalBitmap.width.toFloat() / originalBitmap.height.toFloat()
-                        val targetWidth = (image.crop * aspectRatio).toInt()
-
-                        val xOffset = (originalBitmap.width - targetWidth) / 2
-                        val yOffset = (originalBitmap.height - image.crop) / 2
-                        Bitmap.createBitmap(originalBitmap, xOffset, yOffset, targetWidth, image.crop)
-                    } else {
-                        originalBitmap
-                    }
-
-                    val finalBitmap = if (croppedBitmap.height != 1080) {
-                        val aspectRatio = croppedBitmap.width.toFloat() / croppedBitmap.height.toFloat()
-                        val targetWidth = (1080 * aspectRatio).toInt()
-                        Bitmap.createScaledBitmap(croppedBitmap, targetWidth, 1080, true)
-                    } else {
-                        croppedBitmap
-                    }
+                    val thumbBitmap = createThumbnail(originalBitmap, image.thumbX, image.thumbY, image.thumbDim)
 
                     val outputFile = File(applicationContext.cacheDir, "${image.objectId}.webp")
                     outputFile.outputStream().use { fos ->
-                        finalBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 100, fos)
+                        originalBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 100, fos)
+                    }
+
+                    val thumbFile = File(applicationContext.cacheDir, "${image.objectId}_thumb.webp")
+                    thumbFile.outputStream().use { fos ->
+                        thumbBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 100, fos)
                     }
 
                     setProgressAsync(buildStatusUpdate("Downloaded ${index + 1} of ${imageUpdates.size}: ${image.objectId}"))
-                    celestialObjImageDao.insertImage(CelestialObjImage(objectId = image.objectId, crop = image.crop, filename = outputFile.toString()))
+                    celestialObjImageDao.insertImage(CelestialObjImage(
+                        objectId = image.objectId,
+                        filename = outputFile.toString(),
+                        thumbFilename = thumbFile.toString()))
                     succeeded += 1
                 } catch (e: IOException) {
                     Log.e("ImageDownload", "Failed to download image for catalogId: ${image.objectId}", e)
@@ -110,6 +101,22 @@ class UpdateImageWorker @AssistedInject constructor(
         }
 
         Result.success(buildStatusUpdate("Updates Complete"))
+    }
+
+    private fun createThumbnail(input: Bitmap, thumbX: Int?, thumbY: Int?, thumbDim: Int?): Bitmap {
+        val cropX = thumbX ?: (input.width / 2)
+        val cropY = thumbY ?: (input.height / 2)
+        val cropDimension = thumbDim ?: input.height
+
+        // Ensure cropping coordinates are within bounds
+        val left = (cropX - cropDimension / 2).coerceIn(0, input.width - cropDimension)
+        val top = (cropY - cropDimension / 2).coerceIn(0, input.height - cropDimension)
+        val right = (left + cropDimension).coerceAtMost(input.width)
+        val bottom = (top + cropDimension).coerceAtMost(input.height)
+
+        // Crop the bitmap
+        return Bitmap.createBitmap(input, left, top, right - left, bottom - top)
+
     }
 
     private fun buildStatusUpdate(statusUpdate: String): Data {
