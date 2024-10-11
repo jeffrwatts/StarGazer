@@ -75,7 +75,7 @@ fun StarsScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val starsUiState by viewModel.uiState.collectAsState()
-    val currentFilter by viewModel.recommendedFilter.collectAsState()
+    val currentFilter by viewModel.filter.collectAsState()
     val isRefreshing = starsUiState is StarsUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.refresh() })
 
@@ -85,7 +85,7 @@ fun StarsScreen(
                 title = stringResource(R.string.stars),
                 openDrawer = openDrawer,
                 onFilterSelected = { newFilter ->
-                    viewModel.setRecommendedFilter(newFilter)
+                    viewModel.setFilter(newFilter)
                 },
                 currentFilter = currentFilter,
                 topAppBarState = topAppBarState
@@ -246,8 +246,8 @@ fun StarObjItem(
 fun StarsTopAppBar(
     title: String,
     openDrawer: () -> Unit,
-    onFilterSelected: (Boolean) -> Unit,
-    currentFilter: Boolean,
+    onFilterSelected: (StarFilter) -> Unit,
+    currentFilter: StarFilter,
     modifier: Modifier = Modifier,
     topAppBarState: TopAppBarState = rememberTopAppBarState(),
     scrollBehavior: TopAppBarScrollBehavior? =
@@ -257,7 +257,8 @@ fun StarsTopAppBar(
 
     CenterAlignedTopAppBar(
         title = {
-            Text(title,
+            Text(
+                title,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -277,26 +278,49 @@ fun StarsTopAppBar(
                     contentDescription = "Filter"
                 )
             }
-            // Dropdown menu for filter options
             DropdownMenu(
                 expanded = showMenu,
                 onDismissRequest = { showMenu = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("Show Recommended") },
+                    text = { Text("Near Venus") },
                     onClick = {
-                        onFilterSelected(true)
+                        onFilterSelected(StarFilter.NEAR_VENUS)
                         showMenu = false
                     },
-                    leadingIcon = { if (currentFilter) FilledCheckIcon() }
+                    leadingIcon = { if (currentFilter == StarFilter.NEAR_VENUS) FilledCheckIcon() }
+                )
+                DropdownMenuItem(
+                    text = { Text("Near Mars") },
+                    onClick = {
+                        onFilterSelected(StarFilter.NEAR_MARS)
+                        showMenu = false
+                    },
+                    leadingIcon = { if (currentFilter == StarFilter.NEAR_MARS) FilledCheckIcon() }
+                )
+                DropdownMenuItem(
+                    text = { Text("Near Jupiter") },
+                    onClick = {
+                        onFilterSelected(StarFilter.NEAR_JUPITER)
+                        showMenu = false
+                    },
+                    leadingIcon = { if (currentFilter == StarFilter.NEAR_JUPITER) FilledCheckIcon() }
+                )
+                DropdownMenuItem(
+                    text = { Text("Near Saturn") },
+                    onClick = {
+                        onFilterSelected(StarFilter.NEAR_SATURN)
+                        showMenu = false
+                    },
+                    leadingIcon = { if (currentFilter == StarFilter.NEAR_SATURN) FilledCheckIcon() }
                 )
                 DropdownMenuItem(
                     text = { Text("Show All") },
                     onClick = {
-                        onFilterSelected(false)
+                        onFilterSelected(StarFilter.ALL)
                         showMenu = false
                     },
-                    leadingIcon = { if (!currentFilter) FilledCheckIcon() }
+                    leadingIcon = { if (currentFilter == StarFilter.ALL) FilledCheckIcon() }
                 )
             }
         },

@@ -20,6 +20,10 @@ interface CelestialObjDao {
     @Query("SELECT * FROM celestial_objects")
     fun getAll(): Flow<List<CelestialObjWithImage>>
 
+    @Transaction
+    @Query("SELECT * FROM celestial_objects WHERE objectId = :objectId")
+    fun getByObjectId(objectId: String): Flow<CelestialObjWithImage?>
+
     @Query("SELECT COUNT(*) FROM celestial_objects")
     fun getCount(): Int
 

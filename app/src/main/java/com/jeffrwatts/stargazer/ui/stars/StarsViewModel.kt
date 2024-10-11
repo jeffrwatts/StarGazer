@@ -5,16 +5,30 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.starobj.StarObjPos
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.starobj.StarObjRepository
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
+import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
+import com.jeffrwatts.stargazer.data.celestialobject.JUPITER
+import com.jeffrwatts.stargazer.data.celestialobject.MARS
+import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
+import com.jeffrwatts.stargazer.data.celestialobject.SATURN
+import com.jeffrwatts.stargazer.data.celestialobject.VENUS
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.AppConstants
 import com.jeffrwatts.stargazer.utils.Utils
+import com.jeffrwatts.stargazer.utils.isWithinRange
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -23,10 +37,11 @@ import javax.inject.Inject
 @HiltViewModel
 class StarsViewModel @Inject constructor(
     private val starsRepository: StarObjRepository,
+    private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
-    private val _recommendedFilter = MutableStateFlow(true)
-    val recommendedFilter: StateFlow<Boolean> = _recommendedFilter.asStateFlow()
+    private val _filter = MutableStateFlow(StarFilter.ALL)
+    val filter: StateFlow<StarFilter> = _filter
 
     private val _timeOffset = MutableStateFlow(0L)
     private val _pullToRefresh = MutableSharedFlow<Unit>(replay = 1)
@@ -34,34 +49,45 @@ class StarsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<StarsUiState>(StarsUiState.Loading)
     val uiState: StateFlow<StarsUiState> = _uiState.asStateFlow()
 
+    companion object {
+        const val AZM_RANGE = 20.0
+        const val ALT_LOW = 40.0
+        const val ALT_HIGH = 70.0
+        const val MAGNITUDE_LOW = 1.5
+        const val MAGNITUDE_HIGH = 3.0
+    }
+
     init {
         viewModelScope.launch {
             _pullToRefresh.emit(Unit) // Emit an initial value to start the process
             combine(
                 starsRepository.getStars(),
                 locationRepository.locationFlow,
-                _recommendedFilter,
+                planetPositionFlow(),
                 _timeOffset,
                 _pullToRefresh
-            ) { starObjs, location, recommended, timeOffset, _ ->
+            ) { starObjs, location, planetFilter, timeOffset, _ ->
                 try {
                     val date = if (timeOffset != 0L) {
                         LocalDateTime.now().plusHours(timeOffset).withMinute(0)
                     } else {
                         LocalDateTime.now()
                     }
+
                     val julianDate = Utils.calculateJulianDateFromLocal(date)
                     location?.let {loc->
+                        val planetAzm = planetFilter?.let { planet ->
+                            CelestialObjPos.fromCelestialObjWithImage(planet, julianDate, loc).azm
+                        }
+
                         val starObjPosList = starObjs
                             .map {starObj->
                                 StarObjPos.fromStarObj(starObj, julianDate, location)
                             }
-                            .filter { it.alt in 40.0..70.0 && it.starObj.magnitude in 1.5..3.0 }
+                            .filter {
+                                val isInAzm = planetAzm?.let { azm -> isWithinRange(azm, it.azm, AZM_RANGE) } ?: true
+                                isInAzm && it.alt in ALT_LOW..ALT_HIGH && it.starObj.magnitude in MAGNITUDE_LOW..MAGNITUDE_HIGH}
                             .sortedBy { it.starObj.magnitude }
-
-                        val (nightStart, nightEnd, isNight) = Utils.getNight(julianDate, loc)
-                        Log.d("TEST", "IsNight=$isNight - Night Start: ${Utils.julianDateToLocalTime(nightStart)}; Night End: ${Utils.julianDateToLocalTime(nightEnd)} ")
-
                         _uiState.value = StarsUiState.Success(starObjPosList, true, date.format(
                             AppConstants.DATE_TIME_FORMATTER
                         ))
@@ -78,13 +104,26 @@ class StarsViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun planetPositionFlow(): Flow<CelestialObjWithImage?> {
+        return _filter.flatMapLatest { filter ->
+            when (filter) {
+                StarFilter.NEAR_VENUS -> celestialObjRepository.getCelestialObjByObjectId(VENUS)
+                StarFilter.NEAR_MARS -> celestialObjRepository.getCelestialObjByObjectId(MARS)
+                StarFilter.NEAR_JUPITER -> celestialObjRepository.getCelestialObjByObjectId(JUPITER)
+                StarFilter.NEAR_SATURN -> celestialObjRepository.getCelestialObjByObjectId(SATURN)
+                StarFilter.ALL -> flowOf(null)
+            }
+        }
+    }
+
     fun startLocationUpdates() {
         locationRepository.startLocationUpdates()
     }
 
-    fun setRecommendedFilter(recommended: Boolean) {
+    fun setFilter(filter: StarFilter) {
         viewModelScope.launch {
-            _recommendedFilter.emit(recommended)
+            _filter.value = filter
         }
     }
 
@@ -111,6 +150,14 @@ class StarsViewModel @Inject constructor(
             _timeOffset.emit(0L)
         }
     }
+}
+
+enum class StarFilter {
+    NEAR_VENUS,
+    NEAR_MARS,
+    NEAR_JUPITER,
+    NEAR_SATURN,
+    ALL
 }
 
 sealed class StarsUiState {

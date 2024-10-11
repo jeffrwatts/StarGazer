@@ -11,6 +11,10 @@ class CelestialObjRepository @Inject constructor (
         return celestialObjDao.getAll()
     }
 
+    fun getCelestialObjByObjectId(objectId: String): Flow<CelestialObjWithImage?> {
+        return celestialObjDao.getByObjectId(objectId)
+    }
+
     fun getCelestialObj(id: Int): Flow<CelestialObjWithImage> {
         return celestialObjDao.get(id)
     }

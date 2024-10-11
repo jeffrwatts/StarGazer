@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.PI
 import kotlin.math.acos
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.tan
@@ -42,6 +43,21 @@ fun julianDateToAstronomyTime(julianDate: Double): Time {
 fun astronomyTimeToJulianDate(time: Time): Double {
     val referenceJulianDate = 2451545.0
     return time.ut + referenceJulianDate
+}
+
+fun isWithinRange(angle: Double, target: Double, range: Double): Boolean {
+    // Normalize the angles to the range [0, 360)
+    val normalizedAngle = (angle % 360 + 360) % 360
+    val normalizedTarget = (target % 360 + 360) % 360
+
+    // Calculate the difference, taking wrapping into account
+    val difference = Math.abs(normalizedAngle - normalizedTarget)
+
+    // Find the shortest distance considering the wrap-around at 360 degrees
+    val shortestDistance = min(difference, 360 - difference)
+
+    // Return true if the shortest distance is within the range
+    return shortestDistance <= range
 }
 
 object Utils {
