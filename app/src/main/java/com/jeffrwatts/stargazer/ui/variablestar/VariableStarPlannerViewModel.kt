@@ -41,14 +41,13 @@ class VariableStarPlannerViewModel @Inject constructor(
                 _pullToRefresh
             ) { variableStarObjs, location, timeOffset, _ ->
                 try {
-                    val nowAdjusted = if (timeOffset != 0L) {
+                    val date = if (timeOffset != 0L) {
                         LocalDateTime.now().plusHours(timeOffset).withMinute(0)
                     } else {
                         LocalDateTime.now()
                     }
-                    val currentTime = nowAdjusted.format(DATE_TIME_FORMATTER)
+                    val julianDate = Utils.calculateJulianDateFromLocal(date)
                     location?.let { loc->
-                        val julianDate = Utils.calculateJulianDateFromLocal(nowAdjusted)
                         val (start, end, isNight) = Utils.getNight(julianDate, loc)
 
                         val nightStart = Utils.julianDateToLocalTime(start).format(DATE_TIME_FORMATTER)
@@ -64,9 +63,9 @@ class VariableStarPlannerViewModel @Inject constructor(
                             }
                         }
 
-                        _uiState.value = VariableStarPlannerUiState.Success(currentTime, nightStart, nightEnd, isNight, variableStarEventList)
+                        _uiState.value = VariableStarPlannerUiState.Success(date, nightStart, nightEnd, isNight, variableStarEventList)
                     } ?: run {
-                        _uiState.value = VariableStarPlannerUiState.Success(currentTime, "", "", false, emptyList())
+                        _uiState.value = VariableStarPlannerUiState.Success(date, "", "", false, emptyList())
                     }
                 } catch (e:Exception) {
                     _uiState.value = VariableStarPlannerUiState.Error(e.message ?: "Unknown error")
@@ -123,7 +122,7 @@ data class VariableStarEvent (
 sealed class VariableStarPlannerUiState {
     object Loading : VariableStarPlannerUiState()
     data class Success(
-        val currentTime: String,
+        val currentTime: LocalDateTime,
         val nightStart: String,
         val nightEnd: String,
         val isNight: Boolean,

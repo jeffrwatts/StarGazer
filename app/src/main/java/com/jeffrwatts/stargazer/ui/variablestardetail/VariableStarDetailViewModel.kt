@@ -25,7 +25,7 @@ class VariableStarDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<VariableStarDetailUiState>(VariableStarDetailUiState.Loading)
     val uiState: StateFlow<VariableStarDetailUiState> = _uiState.asStateFlow()
 
-    fun initDetail(sightId: Int) {
+    fun initDetail(sightId: Int, observationTime: LocalDateTime) {
         viewModelScope.launch {
             try {
                 combine(
@@ -33,7 +33,7 @@ class VariableStarDetailViewModel @Inject constructor(
                     locationRepository.locationFlow
                 ) { variableStarObj, location ->
                     location?.let { loc->
-                        val jdNow = Utils.calculateJulianDateFromLocal(LocalDateTime.now())
+                        val jdNow = Utils.calculateJulianDateFromLocal(observationTime)
                         val (start, stop, _) = Utils.getNight(jdNow, loc)
                         val altitudeData = Utils.calculateDSOAltitudes(variableStarObj.ra, variableStarObj.dec, location, start, stop)
                         val currentTimeIndex = Utils.findClosestIndex(jdNow, altitudeData)

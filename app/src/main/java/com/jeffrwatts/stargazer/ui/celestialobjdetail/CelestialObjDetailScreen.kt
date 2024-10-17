@@ -43,17 +43,20 @@ import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
 import com.jeffrwatts.stargazer.utils.AltitudePlot
+import com.jeffrwatts.stargazer.utils.AppConstants
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LabeledField
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.decimalDecToDmsString
 import com.jeffrwatts.stargazer.utils.decimalRaToHmsString
 import java.io.File
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CelestialObjDetailScreen(
     sightId: Int,
+    observationTime: LocalDateTime,
     onNavigateBack: () -> Unit,
     onFieldOfView:(Int) -> Unit,
     onMoreInfo:(String) -> Unit,
@@ -63,8 +66,8 @@ fun CelestialObjDetailScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(sightId) {
-        viewModel.initDetail(sightId)
+    LaunchedEffect(sightId, observationTime) {
+        viewModel.initDetail(sightId, observationTime)
     }
 
     // Update the title when uiState changes
@@ -96,6 +99,7 @@ fun CelestialObjDetailScreen(
                 val success = (uiState as CelestialObjDetailUiState.Success)
                 CelestialObjDetailContent(
                     celestialObjWithImage = success.celestialObjWithImage,
+                    observationTime = observationTime,
                     currentTimeIndex = success.currentTimeIndex,
                     altitudesData = success.altitudeData,
                     moonAltitudeData = success.moonAltitudeData,
@@ -108,7 +112,7 @@ fun CelestialObjDetailScreen(
                 ErrorScreen(
                     message = (uiState as CelestialObjDetailUiState.Error).message,
                     modifier = contentModifier,
-                    onRetryClick = { viewModel.initDetail(sightId) }
+                    onRetryClick = { viewModel.initDetail(sightId, observationTime) }
                 )
             }
         }
@@ -118,6 +122,7 @@ fun CelestialObjDetailScreen(
 @Composable
 fun CelestialObjDetailContent(
     celestialObjWithImage: CelestialObjWithImage,
+    observationTime: LocalDateTime,
     currentTimeIndex: Int,
     altitudesData: List<Pair<Double, Double>>,
     moonAltitudeData: List<Pair<Double, Double>>,
@@ -154,6 +159,7 @@ fun CelestialObjDetailContent(
         LabeledField(label = "RA", value = decimalRaToHmsString(celestialObjWithImage.celestialObj.ra))
         LabeledField(label = "DEC", value = decimalDecToDmsString(celestialObjWithImage.celestialObj.dec))
         Spacer(modifier = Modifier.height(16.dp))
+        LabeledField(label = "Obs Time: ", value = observationTime.format(AppConstants.DATE_TIME_FORMATTER))
         AltitudePlot(
             altitudeData = altitudesData,
             moonAltitudeData = moonAltitudeData,

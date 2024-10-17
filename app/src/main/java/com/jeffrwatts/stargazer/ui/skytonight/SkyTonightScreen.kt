@@ -60,6 +60,7 @@ import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
+import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.PermissionWrapper
@@ -67,6 +68,7 @@ import com.jeffrwatts.stargazer.utils.TimeControl
 import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 import java.io.File
+import java.time.LocalDateTime
 import java.util.Locale
 
 
@@ -76,7 +78,7 @@ import java.util.Locale
 @Composable
 fun SkyTonightScreen(
     openDrawer: () -> Unit,
-    onSightClick: (Int) -> Unit,
+    onSightClick: (Int, LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SkyTonightViewModel = hiltViewModel()
 ) {
@@ -125,7 +127,7 @@ fun SkyTonightScreen(
                         val successState = skyTonightUiState as SkyTonightUiState.Success
                         Column(modifier = contentModifier) {
                             TimeControl(
-                                currentTime = successState.currentTime,
+                                currentTime = successState.currentTime.format(DATE_TIME_FORMATTER),
                                 onIncrementHour = { viewModel.incrementOffset(1) },
                                 onDecrementHour = { viewModel.decrementOffset(1) },
                                 onIncrementDay = { viewModel.incrementOffset(24) },
@@ -135,7 +137,7 @@ fun SkyTonightScreen(
                                 celestialObjPosList = successState.data,
                                 moonIllumination = successState.moonIllumination,
                                 locationAvailable = successState.locationAvailable,
-                                onSightClick = onSightClick,
+                                onSightClick = {objectId-> onSightClick(objectId, successState.currentTime)},
                                 modifier = Modifier.weight(1f)
                             )
                         }

@@ -1,7 +1,9 @@
 package com.jeffrwatts.stargazer.ui
 
+import android.net.Uri
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import java.time.LocalDateTime
 
 object StarGazerDestinations {
     const val SKY_TONIGHT_ROUTE = "skyTonight"
@@ -76,12 +78,16 @@ class StarGazerNavigationActions(navController: NavHostController) {
         }
     }
 
-    val navigateToCelestialObjDetail: (Int) -> Unit = { objectId ->
-        navController.navigate("${StarGazerDestinations.CELESTIAL_OBJ_DETAIL_ROUTE}/$objectId")
+    val navigateToCelestialObjDetail: (Int, LocalDateTime) -> Unit = { objectId, observationTime ->
+        val dateTimeString = observationTime.toString()
+        val encodedDateTime = Uri.encode(dateTimeString)
+        navController.navigate("${StarGazerDestinations.CELESTIAL_OBJ_DETAIL_ROUTE}/$objectId/$encodedDateTime")
     }
 
-    val navigateToVariableStarDetail: (Int) -> Unit = { variableStarId ->
-        navController.navigate("${StarGazerDestinations.VARIABLE_STAR_DETAIL_ROUTE}/$variableStarId")
+    val navigateToVariableStarDetail: (Int, LocalDateTime) -> Unit = { variableStarId, observationTime ->
+        val dateTimeString = observationTime.toString()
+        val encodedDateTime = Uri.encode(dateTimeString)
+        navController.navigate("${StarGazerDestinations.VARIABLE_STAR_DETAIL_ROUTE}/$variableStarId/$encodedDateTime")
     }
 
     val navigateToWebViewAdditionalInfo:(String) -> Unit = { url ->

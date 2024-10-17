@@ -42,14 +42,17 @@ import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.data.variablestarobject.VariableStarObj
 import com.jeffrwatts.stargazer.utils.AltitudePlot
+import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.decimalDecToDmsString
 import com.jeffrwatts.stargazer.utils.decimalRaToHmsString
 import com.jeffrwatts.stargazer.utils.formatPeriodToDHH
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VariableStarDetailScreen(
     variableStarId: Int,
+    observationTime: LocalDateTime,
     onNavigateBack: () -> Unit,
     onDisplayEphemeris: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -58,8 +61,8 @@ fun VariableStarDetailScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(variableStarId) {
-        viewModel.initDetail(variableStarId)
+    LaunchedEffect(variableStarId, observationTime) {
+        viewModel.initDetail(variableStarId, observationTime)
     }
 
     // Update the title when uiState changes
@@ -91,6 +94,7 @@ fun VariableStarDetailScreen(
                 val success = (uiState as VariableStarDetailUiState.Success)
                 VariableStarDetailContent(
                     variableStarObj = success.variableStarObj,
+                    observationTime = observationTime,
                     currentTimeIndex = success.currentTimeIndex,
                     altitudeData = success.altitudeData,
                     moonAltitudeData = success.moonAltitudeData,
@@ -102,7 +106,7 @@ fun VariableStarDetailScreen(
                 ErrorScreen(
                     message = (uiState as VariableStarDetailUiState.Error).message,
                     modifier = contentModifier,
-                    onRetryClick = { viewModel.initDetail(variableStarId) }
+                    onRetryClick = { viewModel.initDetail(variableStarId, observationTime) }
                 )
             }
         }
@@ -112,6 +116,7 @@ fun VariableStarDetailScreen(
 @Composable
 fun VariableStarDetailContent(
     variableStarObj: VariableStarObj,
+    observationTime: LocalDateTime,
     currentTimeIndex: Int,
     altitudeData: List<Pair<Double, Double>>,
     moonAltitudeData: List<Pair<Double, Double>>,
@@ -148,6 +153,7 @@ fun VariableStarDetailContent(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+        LabeledField(label = "Obs Time", value = observationTime.format(DATE_TIME_FORMATTER))
         AltitudePlot(
             altitudeData = altitudeData,
             moonAltitudeData = moonAltitudeData,

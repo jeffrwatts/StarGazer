@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
 import com.jeffrwatts.stargazer.data.location.LocationRepository
-import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.Utils
 import com.jeffrwatts.stargazer.utils.julianDateToAstronomyTime
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -67,9 +66,9 @@ class SkyTonightViewModel @Inject constructor(
 
                         val illuminationInfo = illumination(Body.Moon, julianDateToAstronomyTime(julianDate))
                         val moonIllumination = (illuminationInfo.phaseFraction * 100.0).toInt()
-                        _uiState.value = SkyTonightUiState.Success(celestialObjPosList, moonIllumination, true, date.format(DATE_TIME_FORMATTER))
+                        _uiState.value = SkyTonightUiState.Success(celestialObjPosList, moonIllumination, true, date)
                     }?: run {
-                        _uiState.value = SkyTonightUiState.Success(emptyList(), moonIllumination = 0, false, date.format(DATE_TIME_FORMATTER))
+                        _uiState.value = SkyTonightUiState.Success(emptyList(), moonIllumination = 0, false, date)
                     }
 
                 } catch (e: Exception) {
@@ -119,6 +118,6 @@ sealed class SkyTonightUiState {
     data class Success(val data: List<CelestialObjPos>,
                        val moonIllumination: Int,
                        val locationAvailable: Boolean,
-                       val currentTime: String) : SkyTonightUiState()
+                       val currentTime: LocalDateTime) : SkyTonightUiState()
     data class Error(val message: String) : SkyTonightUiState()
 }

@@ -13,7 +13,6 @@ import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.cosinekitty.astronomy.Body
-import io.github.cosinekitty.astronomy.Equatorial
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,7 +30,7 @@ class CelestialObjDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<CelestialObjDetailUiState>(CelestialObjDetailUiState.Loading)
     val uiState: StateFlow<CelestialObjDetailUiState> = _uiState.asStateFlow()
 
-    fun initDetail(sightId: Int) {
+    fun initDetail(sightId: Int, observationTime: LocalDateTime) {
         viewModelScope.launch {
             try {
                 combine(
@@ -39,7 +38,7 @@ class CelestialObjDetailViewModel @Inject constructor(
                     locationRepository.locationFlow
                 ) { celestialObjWithImage, location ->
                     location?.let { loc->
-                        val jdNow = Utils.calculateJulianDateFromLocal(LocalDateTime.now())
+                        val jdNow = Utils.calculateJulianDateFromLocal(observationTime)
                         val celestialObjPos = CelestialObjPos.fromCelestialObjWithImage(celestialObjWithImage, jdNow, loc)
                         val (start, stop, _) = Utils.getNight(jdNow, loc)
                         val altitudeData = calculateAltitudes(celestialObjWithImage, loc, start, stop)

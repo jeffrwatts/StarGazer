@@ -5,9 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.fieldofview.FieldOfViewScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.stars.StarsScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarPlannerScreen
@@ -18,6 +20,7 @@ import com.jeffrwatts.stargazer.ui.info.InfoScreen
 import com.jeffrwatts.stargazer.ui.skytonight.SkyTonightScreen
 import com.jeffrwatts.stargazer.ui.updatescreen.UpdateScreen
 import com.jeffrwatts.stargazer.ui.variablestardetail.VariableStarDetailScreen
+import java.time.LocalDateTime
 
 @Composable
 fun StarGazerNavGraph(
@@ -52,27 +55,53 @@ fun StarGazerNavGraph(
         composable(route = StarGazerDestinations.UPDATE_ROUTE) {
             UpdateScreen(openDrawer = openDrawer, modifier = modifier)
         }
-        composable("${StarGazerDestinations.CELESTIAL_OBJ_DETAIL_ROUTE}/{objectId}") { backStackEntry ->
+        composable(
+            route = "${StarGazerDestinations.CELESTIAL_OBJ_DETAIL_ROUTE}/{objectId}/{observationTime}",
+            arguments = listOf(
+                navArgument("objectId") { type = NavType.IntType },
+                navArgument("observationTime") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
-            val objectId = backStackEntry.arguments?.getString("objectId")?.toIntOrNull()
+            val objectId = backStackEntry.arguments?.getInt("objectId")
+            val observationTimeString = backStackEntry.arguments?.getString("observationTime")
+            val observationTime = observationTimeString?.let {
+                Uri.decode(it)?.let { decodedTime ->
+                    LocalDateTime.parse(decodedTime)
+                }
+            } ?: LocalDateTime.now()
 
-            // Only navigate to the detail screen if both sightId is not null
             objectId?.let {
                 CelestialObjDetailScreen(
                     sightId = it,
+                    observationTime = observationTime,
                     onNavigateBack = { navController.popBackStack() },
                     onMoreInfo = { url -> actions.navigateToWebViewAdditionalInfo(url) },
-                    onFieldOfView = { id -> actions.navigateToFieldOfView(id)})
+                    onFieldOfView = { id -> actions.navigateToFieldOfView(id) }
+                )
             }
         }
-        composable("${StarGazerDestinations.VARIABLE_STAR_DETAIL_ROUTE}/{variableStarId}") { backStackEntry ->
+
+        composable(route = "${StarGazerDestinations.VARIABLE_STAR_DETAIL_ROUTE}/{variableStarId}/{observationTime}",
+            arguments = listOf(
+                navArgument("variableStarId") { type = NavType.IntType },
+                navArgument("observationTime") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
             val actions = remember(navController) { StarGazerNavigationActions(navController) }
-            val variableStarId = backStackEntry.arguments?.getString("variableStarId")?.toIntOrNull()
+            val variableStarId = backStackEntry.arguments?.getInt("variableStarId")
+            val observationTimeString = backStackEntry.arguments?.getString("observationTime")
+            val observationTime = observationTimeString?.let {
+                Uri.decode(it)?.let { decodedTime ->
+                    LocalDateTime.parse(decodedTime)
+                }
+            } ?: LocalDateTime.now()
 
             // Only navigate to the detail screen if both sightId is not null
             variableStarId?.let {
                 VariableStarDetailScreen(
                     variableStarId = it,
+                    observationTime = observationTime,
                     onNavigateBack = { navController.popBackStack() },
                     onDisplayEphemeris = {url-> actions.navigateToWebViewAdditionalInfo(url)})
             }
@@ -92,7 +121,6 @@ fun StarGazerNavGraph(
             }
         }
         composable(StarGazerDestinations.STARS_ROUTE) {
-            val actions = remember(navController) { StarGazerNavigationActions(navController) }
             StarsScreen(openDrawer = openDrawer,
                 onSightClick = {},
                 modifier = modifier)

@@ -37,17 +37,19 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.ui.StarGazerTopAppBar
+import com.jeffrwatts.stargazer.utils.AppConstants.DATE_TIME_FORMATTER
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.TimeControl
 import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun VariableStarPlannerScreen(
     openDrawer: () -> Unit,
-    onSightClick: (Int) -> Unit,
+    onSightClick: (Int, LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: VariableStarPlannerViewModel = hiltViewModel()
 ) {
@@ -82,7 +84,7 @@ fun VariableStarPlannerScreen(
                         .padding(innerPadding)
                         .fillMaxWidth()) {
                         TimeControl(
-                            currentTime = uiState.currentTime,
+                            currentTime = uiState.currentTime.format(DATE_TIME_FORMATTER),
                             onIncrementHour = { viewModel.incrementOffset(1) },
                             onDecrementHour = { viewModel.decrementOffset(1) },
                             onIncrementDay = { viewModel.incrementOffset(24) },
@@ -106,7 +108,7 @@ fun VariableStarPlannerScreen(
                         VariableStarBody(
                             variableStarEvents = uiState.variableStarEvents,
                             locationAvailable = true,
-                            onSightClick = onSightClick
+                            onSightClick = {varibleStarId-> onSightClick(varibleStarId, uiState.currentTime)}
                         )
                     }
                 }
