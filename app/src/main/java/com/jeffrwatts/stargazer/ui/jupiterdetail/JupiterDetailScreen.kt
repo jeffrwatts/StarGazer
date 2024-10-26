@@ -2,6 +2,7 @@ package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.jupiterdetail
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,8 +22,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.ui.celestialobjdetail.CelestialObjDetailTopAppBar
+import com.jeffrwatts.stargazer.utils.AppConstants
 import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
+import com.jeffrwatts.stargazer.utils.TimeControl
 import io.github.cosinekitty.astronomy.Equatorial
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,11 +51,25 @@ fun JupiterDetailScreen(
 
         when (uiState) {
             is JupiterDetailUIState.Loading -> { LoadingScreen(modifier = contentModifier) }
-            is JupiterDetailUIState.Success -> { JupiterCelestialGrid(uiState = uiState as JupiterDetailUIState.Success, modifier)}
+            is JupiterDetailUIState.Success -> {
+                val successState = uiState as JupiterDetailUIState.Success
+                Column(modifier = contentModifier) {
+                    TimeControl(
+                        currentTime = successState.time.format(AppConstants.DATE_TIME_FORMATTER),
+                        onIncrementHour = { viewModel.incrementOffset(1) },
+                        onDecrementHour = { viewModel.decrementOffset(1) },
+                        onIncrementDay = { viewModel.incrementOffset(24) },
+                        onDecrementDay = { viewModel.decrementOffset(24) },
+                        onResetTime = { viewModel.resetOffset() })
+                    JupiterCelestialGrid(uiState = successState, contentModifier)
+                }
+            }
             else /*JupiterDetailUIState.Error*/ -> { ErrorScreen((uiState as JupiterDetailUIState.Error).message, modifier = contentModifier, {}) }
             }
         }
 }
+
+
 @Composable
 fun JupiterCelestialGrid(
     uiState: JupiterDetailUIState.Success,
@@ -64,7 +81,7 @@ fun JupiterCelestialGrid(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
+        Canvas(modifier = Modifier.fillMaxWidth()) {
             val width = size.width
             val height = size.height
             val centerY = height / 2
@@ -94,7 +111,7 @@ fun JupiterCelestialGrid(
     }
 }
 
-// Helper to convert RA/Dec to screen positions with independent scales for RA and Dec
+// Helper to convert RA/Dec to screen positions with Jupiter's Dec as the center line
 private fun calculatePosition(
     pos: Equatorial,
     uiState: JupiterDetailUIState.Success,
@@ -107,12 +124,13 @@ private fun calculatePosition(
     val minRa = minOf(uiState.jupiterPos.ra, uiState.ioPos.ra, uiState.europaPos.ra, uiState.ganymedePos.ra, uiState.callistoPos.ra)
     val x = ((maxRa - pos.ra) / (maxRa - minRa) * width).toFloat()
 
-    // Calculate y position based on scaled Dec, with Jupiter at centerY
-    val maxDec = maxOf(uiState.jupiterPos.dec, uiState.ioPos.dec, uiState.europaPos.dec, uiState.ganymedePos.dec, uiState.callistoPos.dec)
-    val minDec = minOf(uiState.jupiterPos.dec, uiState.ioPos.dec, uiState.europaPos.dec, uiState.ganymedePos.dec, uiState.callistoPos.dec)
-    val y = centerY - ((pos.dec - minDec) / (maxDec - minDec) * maxDecHeight - maxDecHeight / 2)
+    // Calculate y position based on Dec relative to Jupiter’s Dec
+    val maxDec = maxOf(uiState.ioPos.dec, uiState.europaPos.dec, uiState.ganymedePos.dec, uiState.callistoPos.dec)
+    val minDec = minOf(uiState.ioPos.dec, uiState.europaPos.dec, uiState.ganymedePos.dec, uiState.callistoPos.dec)
+    val decOffset = pos.dec - uiState.jupiterPos.dec
+    val y = centerY - (decOffset / (maxDec - minDec) * maxDecHeight / 2).toFloat()
 
-    return Offset(x, y.toFloat())
+    return Offset(x, y)
 }
 
 // Helper to draw a celestial body label with color coding
