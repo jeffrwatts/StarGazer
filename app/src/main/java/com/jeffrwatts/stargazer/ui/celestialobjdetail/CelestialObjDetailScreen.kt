@@ -40,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjWithImage
+import com.jeffrwatts.stargazer.data.celestialobject.JUPITER
 import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.celestialobject.getDefaultImageResource
 import com.jeffrwatts.stargazer.utils.AltitudePlot
@@ -59,6 +60,7 @@ fun CelestialObjDetailScreen(
     observationTime: LocalDateTime,
     onNavigateBack: () -> Unit,
     onFieldOfView:(Int) -> Unit,
+    onJupiterDetail:()-> Unit,
     onMoreInfo:(String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CelestialObjDetailViewModel = hiltViewModel(),
@@ -106,6 +108,7 @@ fun CelestialObjDetailScreen(
                     xAxisLabels= success.xAxisLabels,
                     onMoreInfo= { onMoreInfo(buildMoreInfoUri(success.celestialObjWithImage.celestialObj.objectId, success.celestialObjWithImage.celestialObj.displayName))},
                     onFieldOfView = { onFieldOfView(success.celestialObjWithImage.celestialObj.id)},
+                    onJupiterDetail = onJupiterDetail,
                     modifier = contentModifier)
             }
             else -> {//is SightDetailUiState.Error -> {
@@ -129,6 +132,7 @@ fun CelestialObjDetailContent(
     xAxisLabels: List<String>,
     onMoreInfo:() -> Unit,
     onFieldOfView: () -> Unit,
+    onJupiterDetail:()-> Unit,
     modifier: Modifier = Modifier)
 {
     Column(modifier = modifier) {
@@ -183,6 +187,14 @@ fun CelestialObjDetailContent(
                 Text(text = "Field Of View")
             }
         }
+        //if (celestialObjWithImage.celestialObj.objectId == JUPITER) {
+            Button(
+                onClick = onJupiterDetail,
+                colors = ButtonDefaults.buttonColors(contentColor = Color.White))
+            {
+                Text(text = "Jupiter Detail")
+            }
+        //}
         Spacer(modifier = Modifier.height(16.dp))
     }
 }

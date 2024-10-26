@@ -19,4 +19,10 @@
     <string name="getting_location">Getting location</string>
     <string name="sky_tonight">Sky Tonight</string>
     <string name="stars">Stars</string>
+    <string name="jupiter_details">Jupiter Detail</string>
+    <string name="jupiter_time">Time</string>
+    <string name="light_travel_days">Light Travel Days</string>
+    <string name="celestial_position_format">%s Position</string>
+    <string name="celestial_ra_dec_dist">RA: %.3f, Dec: %.3f, Dist: %.3f</string>
+
 </resources>

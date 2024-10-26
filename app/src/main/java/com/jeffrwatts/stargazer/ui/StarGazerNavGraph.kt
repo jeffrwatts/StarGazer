@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.fieldofview.FieldOfViewScreen
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.jupiterdetail.JupiterDetailScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.stars.StarsScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.variablestar.VariableStarPlannerScreen
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.webviewscreen.WebViewScreen
@@ -77,7 +78,8 @@ fun StarGazerNavGraph(
                     observationTime = observationTime,
                     onNavigateBack = { navController.popBackStack() },
                     onMoreInfo = { url -> actions.navigateToWebViewAdditionalInfo(url) },
-                    onFieldOfView = { id -> actions.navigateToFieldOfView(id) }
+                    onFieldOfView = { id -> actions.navigateToFieldOfView(id) },
+                    onJupiterDetail = { actions.navigateToJupiterDetail() }
                 )
             }
         }
@@ -123,6 +125,10 @@ fun StarGazerNavGraph(
         composable(StarGazerDestinations.STARS_ROUTE) {
             StarsScreen(openDrawer = openDrawer,
                 onSightClick = {},
+                modifier = modifier)
+        }
+        composable(StarGazerDestinations.JUPITER_DETAIL) {
+            JupiterDetailScreen(onNavigateBack = { navController.popBackStack() },
                 modifier = modifier)
         }
     }

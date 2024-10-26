@@ -16,6 +16,7 @@ object StarGazerDestinations {
     const val WEBVIEW_ADDITIONAL_INFO_ROUTE = "webViewAdditionalInfo"
     const val FIELD_OF_VIEW_ROUTE = "fieldOfView"
     const val STARS_ROUTE = "stars"
+    const val JUPITER_DETAIL = "jupiterDetail"
 }
 
 /**
@@ -106,5 +107,9 @@ class StarGazerNavigationActions(navController: NavHostController) {
             launchSingleTop = true
             restoreState = true
         }
+    }
+
+    val navigateToJupiterDetail: () -> Unit = {
+        navController.navigate(StarGazerDestinations.JUPITER_DETAIL)
     }
 }
