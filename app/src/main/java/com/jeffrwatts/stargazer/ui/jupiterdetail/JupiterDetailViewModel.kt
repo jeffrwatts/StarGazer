@@ -12,11 +12,13 @@ import io.github.cosinekitty.astronomy.Equatorial
 import io.github.cosinekitty.astronomy.Vector
 import io.github.cosinekitty.astronomy.geoVector
 import io.github.cosinekitty.astronomy.jupiterMoons
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -29,6 +31,7 @@ class JupiterDetailViewModel @Inject constructor (
     val uiState: StateFlow<JupiterDetailUIState> = _uiState.asStateFlow()
 
     private val _timeOffset = MutableStateFlow(0L)
+    private var incrementJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -94,6 +97,23 @@ class JupiterDetailViewModel @Inject constructor (
         viewModelScope.launch {
             _timeOffset.emit(0L)
         }
+    }
+
+    // Function to start incrementing offset by 0.5 continuously
+    fun startIncrementingOffset() {
+        // Cancel any existing job to avoid overlapping increments
+        incrementJob?.cancel()
+        incrementJob = viewModelScope.launch {
+            while (isActive) {
+                _timeOffset.update { it + 1 }
+                delay(100) // Adjust delay for desired speed
+            }
+        }
+    }
+
+    // Function to stop incrementing offset
+    fun stopIncrementingOffset() {
+        incrementJob?.cancel()
     }
 }
 

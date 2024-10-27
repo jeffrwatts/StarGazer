@@ -5,12 +5,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -36,6 +43,17 @@ fun JupiterDetailScreen(
     viewModel: JupiterDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var isPlaying by remember { mutableStateOf(false) }
+
+    // Button action that starts/stops the time offset updates
+    fun togglePlayStop() {
+        isPlaying = !isPlaying
+        if (isPlaying) {
+            viewModel.startIncrementingOffset()
+        } else {
+            viewModel.stopIncrementingOffset()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -61,6 +79,15 @@ fun JupiterDetailScreen(
                         onIncrementDay = { viewModel.incrementOffset(24) },
                         onDecrementDay = { viewModel.decrementOffset(24) },
                         onResetTime = { viewModel.resetOffset() })
+
+                    // Play/Stop Button
+                    Button(
+                        onClick = { togglePlayStop() },
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        Text(text = if (isPlaying) "Stop" else "Play",
+                            color = Color.White)
+                    }
                     JupiterCelestialGrid(uiState = successState, contentModifier)
                 }
             }
@@ -69,31 +96,38 @@ fun JupiterDetailScreen(
         }
 }
 
-
 @Composable
 fun JupiterCelestialGrid(
     uiState: JupiterDetailUIState.Success,
     modifier: Modifier = Modifier,
-    maxDecHeight: Float = 200f // Define a maximum height for Dec scaling
 ) {
+    // Define the fixed ranges in degrees for RA and Dec around Jupiter
+    val raRange = 0.025 // ±6 arcminutes in degrees
+    val decRange = 0.02 // ±3 arcminutes in degrees
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     ) {
-        Canvas(modifier = Modifier.fillMaxWidth()) {
+        Canvas(modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)) {
             val width = size.width
             val height = size.height
+            val centerX = width / 2
             val centerY = height / 2
 
-            // Calculate screen positions for each celestial object based on RA and Dec
-            val jupiterPos = calculatePosition(uiState.jupiterPos, uiState, width, centerY, maxDecHeight)
-            val ioPos = calculatePosition(uiState.ioPos, uiState, width, centerY, maxDecHeight)
-            val europaPos = calculatePosition(uiState.europaPos, uiState, width, centerY, maxDecHeight)
-            val ganymedePos = calculatePosition(uiState.ganymedePos, uiState, width, centerY, maxDecHeight)
-            val callistoPos = calculatePosition(uiState.callistoPos, uiState, width, centerY, maxDecHeight)
+            // Centered position for Jupiter
+            val jupiterPos = Offset(centerX, centerY)
 
-            // Draw RA/Dec Axis (horizontal line for RA)
+            // Calculate screen positions for each celestial object based on the fixed RA/Dec range
+            val ioPos = calculateFixedPosition(uiState.ioPos, uiState.jupiterPos, width, height, raRange, decRange, centerX, centerY)
+            val europaPos = calculateFixedPosition(uiState.europaPos, uiState.jupiterPos, width, height, raRange, decRange, centerX, centerY)
+            val ganymedePos = calculateFixedPosition(uiState.ganymedePos, uiState.jupiterPos, width, height, raRange, decRange, centerX, centerY)
+            val callistoPos = calculateFixedPosition(uiState.callistoPos, uiState.jupiterPos, width, height, raRange, decRange, centerX, centerY)
+
+            // Draw RA/Dec Axis (horizontal line for RA at center Y)
             drawLine(
                 color = Color.Gray,
                 start = Offset(0f, centerY),
@@ -111,26 +145,26 @@ fun JupiterCelestialGrid(
     }
 }
 
-// Helper to convert RA/Dec to screen positions with Jupiter's Dec as the center line
-private fun calculatePosition(
-    pos: Equatorial,
-    uiState: JupiterDetailUIState.Success,
+// Helper to calculate screen positions using fixed RA/Dec ranges with Jupiter as the center
+private fun calculateFixedPosition(
+    moonPos: Equatorial,
+    jupiterPos: Equatorial,
     width: Float,
-    centerY: Float,
-    maxDecHeight: Float
+    height: Float,
+    raRange: Double,
+    decRange: Double,
+    centerX: Float,
+    centerY: Float
 ): Offset {
-    // Calculate x position based on RA spanning full width
-    val maxRa = maxOf(uiState.jupiterPos.ra, uiState.ioPos.ra, uiState.europaPos.ra, uiState.ganymedePos.ra, uiState.callistoPos.ra)
-    val minRa = minOf(uiState.jupiterPos.ra, uiState.ioPos.ra, uiState.europaPos.ra, uiState.ganymedePos.ra, uiState.callistoPos.ra)
-    val x = ((maxRa - pos.ra) / (maxRa - minRa) * width).toFloat()
+    // Calculate RA and Dec offsets relative to Jupiter's position, using fixed ranges
+    val raOffset = (jupiterPos.ra - moonPos.ra) / raRange * width // RA decreases left-to-right
+    val decOffset = (moonPos.dec - jupiterPos.dec) / decRange * height
 
-    // Calculate y position based on Dec relative to Jupiter’s Dec
-    val maxDec = maxOf(uiState.ioPos.dec, uiState.europaPos.dec, uiState.ganymedePos.dec, uiState.callistoPos.dec)
-    val minDec = minOf(uiState.ioPos.dec, uiState.europaPos.dec, uiState.ganymedePos.dec, uiState.callistoPos.dec)
-    val decOffset = pos.dec - uiState.jupiterPos.dec
-    val y = centerY - (decOffset / (maxDec - minDec) * maxDecHeight / 2).toFloat()
+    // Position relative to the center
+    val x = centerX + raOffset
+    val y = centerY - decOffset
 
-    return Offset(x, y)
+    return Offset(x.toFloat(), y.toFloat())
 }
 
 // Helper to draw a celestial body label with color coding
