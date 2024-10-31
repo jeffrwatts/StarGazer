@@ -31,8 +31,11 @@ import com.jeffrwatts.stargazer.R
 import com.jeffrwatts.stargazer.ui.celestialobjdetail.CelestialObjDetailTopAppBar
 import com.jeffrwatts.stargazer.utils.AppConstants
 import com.jeffrwatts.stargazer.utils.ErrorScreen
+import com.jeffrwatts.stargazer.utils.LabeledField
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.TimeControl
+import com.jeffrwatts.stargazer.utils.decimalDecToDmsString
+import com.jeffrwatts.stargazer.utils.decimalRaToHmsString
 import io.github.cosinekitty.astronomy.Equatorial
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,6 +82,9 @@ fun JupiterDetailScreen(
                         onIncrementDay = { viewModel.incrementOffset(24) },
                         onDecrementDay = { viewModel.decrementOffset(24) },
                         onResetTime = { viewModel.resetOffset() })
+
+                    LabeledField(label = "Dist:", value = "${successState.jupiterPos.dist} AU")
+                    LabeledField(label = "Angular Diameter:", value = decimalDecToDmsString(successState.jupiterAngularRadius*2))
 
                     // Play/Stop Button
                     Button(
