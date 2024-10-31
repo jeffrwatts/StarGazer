@@ -1,12 +1,15 @@
 package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.jupiterdetail
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -94,7 +97,17 @@ fun JupiterDetailScreen(
                         Text(text = if (isPlaying) "Stop" else "Play",
                             color = Color.White)
                     }
-                    JupiterCelestialGrid(uiState = successState, contentModifier)
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp) // Set height for the grid area
+                            .padding(vertical = 32.dp) // Added vertical padding
+                    ) {
+                        JupiterCelestialGrid(uiState = successState)
+                    }
+                    JovianMoonEventList(events = successState.jovianMoonEvents)
+
                 }
             }
             else /*JupiterDetailUIState.Error*/ -> { ErrorScreen((uiState as JupiterDetailUIState.Error).message, modifier = contentModifier, {}) }
@@ -181,4 +194,50 @@ private fun DrawScope.drawCelestialBody(position: Offset, label: String, color: 
         textSize = 40f // Increased text size for readability
         isFakeBoldText = true // Adds bold effect for better visibility
     })
+}
+@Composable
+fun JovianMoonEventList(events: List<JovianMoonEvent>, modifier: Modifier = Modifier) {
+    val sortedEvents = events.sortedBy { it.time }
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.LightGray) // Background for visibility
+            .padding(4.dp)
+    ) {
+        items(sortedEvents) { event ->
+            JovianMoonEventRow(event)
+        }
+    }
+}
+
+@Composable
+fun JovianMoonEventRow(event: JovianMoonEvent) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp) // Reduced padding for a thinner look
+            .background(Color.DarkGray) // Adjusted background transparency
+    ) {
+        Text(
+            text = "${event.moon} - ${eventTypeToFriendlyText(event.type)}",
+            color = Color.White
+        )
+        Text(
+            text = "Time: ${event.time.format(AppConstants.DATE_TIME_FORMATTER)}",
+            color = Color.White
+        )
+    }
+}
+
+// Helper function to convert EventType to friendly text
+private fun eventTypeToFriendlyText(type: EventType): String {
+    return when (type) {
+        EventType.MOON_SHADOW_ENTERS_JUPITER -> "shadow enters Jupiter"
+        EventType.MOON_SHADOW_EXITS_JUPITER -> "shadow exits Jupiter"
+        EventType.MOON_ENTERS_JUPITER_TRANSIT -> "enters transit"
+        EventType.MOON_EXITS_JUPITER_TRANSIT -> "exits transit"
+        EventType.MOON_ENTERS_ECLIPSE -> "enters eclipse"
+        EventType.MOON_EXITS_ECLIPSE -> "exits eclipse"
+    }
 }

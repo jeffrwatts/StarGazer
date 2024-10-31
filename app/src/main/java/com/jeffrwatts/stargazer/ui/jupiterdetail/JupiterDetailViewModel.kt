@@ -70,7 +70,7 @@ class JupiterDetailViewModel @Inject constructor (
 
                 val jm = jupiterMoons(backdate)
 
-                val jovianMoonEvents = calculateMoonEvents("Io", julianDate, 8.0, jupiterAngularRadius)
+                val jovianMoonEvents = calculateAllJovianMoonEvents( julianDate, 24.0, jupiterAngularRadius)
 
                 jovianMoonEvents.forEach { event ->
                     // Log the event details
@@ -90,7 +90,7 @@ class JupiterDetailViewModel @Inject constructor (
                     europaPos = (jv + jm.europa.position().withTime(jv.t)).toEquatorial(),
                     ganymedePos = (jv + jm.ganymede.position().withTime(jv.t)).toEquatorial(),
                     callistoPos = (jv + jm.callisto.position().withTime(jv.t)).toEquatorial(),
-                    emptyList()
+                    jovianMoonEvents
                 )
             }
         }
@@ -127,7 +127,21 @@ class JupiterDetailViewModel @Inject constructor (
         return Math.toDegrees(acos(clampedCosAngle))
     }
 
+    fun calculateAllJovianMoonEvents(
+        currentDate: Double,
+        durationHours: Double,
+        jupiterAngularRadius: Double
+    ): List<JovianMoonEvent> {
+        val moons = listOf("Io", "Europa", "Ganymede", "Callisto")
+        val allEvents = mutableListOf<JovianMoonEvent>()
 
+        moons.forEach { moon ->
+            val moonEvents = calculateMoonEvents(moon, currentDate, durationHours, jupiterAngularRadius)
+            allEvents.addAll(moonEvents)
+        }
+
+        return allEvents
+    }
 
     private fun calculateMoonEvents(
         moon: String,
@@ -139,7 +153,7 @@ class JupiterDetailViewModel @Inject constructor (
 
         // Convert duration from hours to days
         val durationDays = durationHours / 24.0
-        val stepDays = 1.0 / 1440.0 // 10 minutes in days
+        val stepDays = 1.0 / 1440.0
 
         var dateIndex = currentDate
         val endJulianDate = currentDate + durationDays
