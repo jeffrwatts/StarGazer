@@ -10,6 +10,8 @@ import io.github.cosinekitty.astronomy.Aberration
 import io.github.cosinekitty.astronomy.Body
 import io.github.cosinekitty.astronomy.C_AUDAY
 import io.github.cosinekitty.astronomy.Equatorial
+import io.github.cosinekitty.astronomy.JUPITER_EQUATORIAL_RADIUS_KM
+import io.github.cosinekitty.astronomy.Time
 import io.github.cosinekitty.astronomy.Vector
 import io.github.cosinekitty.astronomy.geoVector
 import io.github.cosinekitty.astronomy.jupiterMoons
@@ -21,12 +23,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.lang.Math.toDegrees
 import java.time.LocalDateTime
 import javax.inject.Inject
-import kotlin.math.abs
-import kotlin.math.acos
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.atan
 
 @HiltViewModel
 class JupiterDetailViewModel @Inject constructor (
@@ -57,7 +57,7 @@ class JupiterDetailViewModel @Inject constructor (
                 // Earth to arrive here at the specified time. This is different from
                 // where Jupiter is at that time.
                 val jv = geoVector(Body.Jupiter, time, Aberration.Corrected)
-                val jupiterAngularRadius = calculateJupiterAngularRadius(jv.toEquatorial().dist)
+                val jupiterAngularRadius = calculateAngularRadius(JUPITER_EQUATORIAL_RADIUS_KM, jv.toEquatorial().dist)
 
                 // Calculate the amount of time it took light to reach the Earth from Jupiter.
                 // The distance to Jupiter (AU) divided by the speed of light (AU/day) = time in days.
@@ -70,7 +70,7 @@ class JupiterDetailViewModel @Inject constructor (
 
                 val jm = jupiterMoons(backdate)
 
-                val jovianMoonEvents = calculateAllJovianMoonEvents( julianDate, 24.0, jupiterAngularRadius)
+                val jovianMoonEvents = predictAllJovianMoonEvents( dateUtc.withHour(0).withMinute(0).withSecond(0), 24.0)
 
                 jovianMoonEvents.forEach { event ->
                     // Log the event details
@@ -96,121 +96,99 @@ class JupiterDetailViewModel @Inject constructor (
         }
     }
 
-    private fun calculateJupiterAngularRadius(jupiterDist: Double): Double {
-        val jupiterRadiusKm = 71492.0 // Jupiter's radius in kilometers
-        val auToKm = 1.496e+8 // Conversion factor: 1 AU in kilometers
-        return Math.toDegrees(Math.atan(jupiterRadiusKm / (jupiterDist * auToKm))) // Convert AU to km and calculate angular radius in degrees
+    private fun calculateAngularRadius(radiusKm: Double, distanceAU: Double): Double {
+        val radiusAU = radiusKm / 1.496e8  // Convert radius from km to AU
+        return toDegrees(atan(radiusAU / distanceAU))
     }
 
-    private fun isMoonInEclipse(jupiterPos: Vector, moonPos: Vector, sunPos: Vector): Boolean {
-        val jupiterToSun = jupiterPos.length() - sunPos.length()
-        val jupiterToMoon = jupiterPos.length() - moonPos.length()
-        return jupiterToMoon > jupiterToSun // Moon is behind Jupiter in line with the Sun
-    }
-
-    private fun angularSeparation(pos1: Equatorial, pos2: Equatorial): Double {
-        // Convert RA from hours to degrees
-        val ra1 = Math.toRadians(pos1.ra * 15)
-        val ra2 = Math.toRadians(pos2.ra * 15)
-
-        // Convert Dec from degrees to radians
-        val dec1 = Math.toRadians(pos1.dec)
-        val dec2 = Math.toRadians(pos2.dec)
-
-        // Calculate the cosine of the angular separation using the spherical law of cosines
-        val cosAngle = sin(dec1) * sin(dec2) + cos(dec1) * cos(dec2) * cos(abs(ra1 - ra2))
-
-        // Clamp the result to [-1, 1] to ensure the acos calculation is safe
-        val clampedCosAngle = cosAngle.coerceIn(-1.0, 1.0)
-
-        // Return the angular separation in degrees
-        return Math.toDegrees(acos(clampedCosAngle))
-    }
-
-    fun calculateAllJovianMoonEvents(
-        currentDate: Double,
-        durationHours: Double,
-        jupiterAngularRadius: Double
-    ): List<JovianMoonEvent> {
+    fun predictAllJovianMoonEvents(startTime: LocalDateTime, durationHours: Double): List<JovianMoonEvent> {
         val moons = listOf("Io", "Europa", "Ganymede", "Callisto")
         val allEvents = mutableListOf<JovianMoonEvent>()
 
-        moons.forEach { moon ->
-            val moonEvents = calculateMoonEvents(moon, currentDate, durationHours, jupiterAngularRadius)
+        for (moon in moons) {
+            val moonEvents = predictJovianMoonEvents(moon, startTime, durationHours)
             allEvents.addAll(moonEvents)
         }
+
+        // Optional: Sort events by time, if needed
+        allEvents.sortBy { it.time }
 
         return allEvents
     }
 
-    private fun calculateMoonEvents(
-        moon: String,
-        currentDate: Double,
-        durationHours: Double,
-        jupiterAngularRadius: Double
-    ): List<JovianMoonEvent> {
+
+    private fun predictJovianMoonEvents(moon: String, startTime: LocalDateTime, durationHours: Double): List<JovianMoonEvent> {
         val events = mutableListOf<JovianMoonEvent>()
+        var inTransit: Boolean? = null  // Track initial state as unknown
 
-        // Convert duration from hours to days
-        val durationDays = durationHours / 24.0
-        val stepDays = 1.0 / 1440.0
+        var julianIndex = Utils.calculateJulianDateUtc(startTime)
+        val julianEnd = julianIndex + (durationHours / 24.0)
+        val julianStep = 1.0 / 1440.0
 
-        var dateIndex = currentDate
-        val endJulianDate = currentDate + durationDays
+        while (julianIndex <= julianEnd) {
+            val time = julianDateToAstronomyTime(julianIndex)
+            val jupiterVec = geoVector(Body.Jupiter, time, Aberration.Corrected)
+            val jupiterAngularRadius = calculateAngularRadius(JUPITER_EQUATORIAL_RADIUS_KM, jupiterVec.length())
 
-        // Track transit and eclipse states
-        var inTransit = false
-        var inEclipse = false
+            // Account for light travel time
+            val backdate = time.addDays(-jupiterVec.length() / C_AUDAY)
+            val moonPosition = calculateMoonPosition(moon, jupiterVec, backdate)
 
-        while (dateIndex <= endJulianDate) {
-            val time = julianDateToAstronomyTime(dateIndex)
+            // Calculate angular separation between Jupiter and the moon
+            val angularSeparation = jupiterVec.angleWith(moonPosition)
 
-            // Update positions of Jupiter, the Sun, and the moon at each time step
-            val jv = geoVector(Body.Jupiter, time, Aberration.Corrected)
-            val sv = geoVector(Body.Sun, time, Aberration.Corrected)
+            // Check and update transit state
+            inTransit = updateTransitState(
+                inTransit, angularSeparation, jupiterAngularRadius, julianIndex, events, moon
+            )
 
-            val lightTravelDays = jv.length() / C_AUDAY
-            val backdate = time.addDays(-lightTravelDays)
-
-            val jmPosition = jupiterMoons(backdate)
-
-            // Get the moon’s position relative to Jupiter for this time
-            val moonPosition = when (moon) {
-                "Io" -> jv + jmPosition.io.position().withTime(jv.t)
-                "Europa" -> jv + jmPosition.europa.position().withTime(jv.t)
-                "Ganymede" -> jv + jmPosition.ganymede.position().withTime(jv.t)
-                "Callisto" -> jv + jmPosition.callisto.position().withTime(jv.t)
-                else -> throw IllegalArgumentException("Unknown moon: $moon")
-            }
-
-            // Check for Transit Events
-            val separation = angularSeparation(jv.toEquatorial(), moonPosition.toEquatorial())
-            if (separation <= jupiterAngularRadius && !inTransit) {
-                events.add(JovianMoonEvent(EventType.MOON_ENTERS_JUPITER_TRANSIT, Utils.julianDateToUTC(dateIndex), moon))
-                inTransit = true
-            }
-            if (separation > jupiterAngularRadius && inTransit) {
-                events.add(JovianMoonEvent(EventType.MOON_EXITS_JUPITER_TRANSIT, Utils.julianDateToUTC(dateIndex), moon))
-                inTransit = false
-            }
-
-            // Check for Eclipse Events
-            if (isMoonInEclipse(jv, moonPosition, sv) && !inEclipse) {
-                events.add(JovianMoonEvent(EventType.MOON_ENTERS_ECLIPSE, Utils.julianDateToUTC(dateIndex), moon))
-                inEclipse = true
-            }
-            if (!isMoonInEclipse(jv, moonPosition, sv) && inEclipse) {
-                events.add(JovianMoonEvent(EventType.MOON_EXITS_ECLIPSE, Utils.julianDateToUTC(dateIndex), moon))
-                inEclipse = false
-            }
-
-            // Increment the Julian Date by the step interval
-            dateIndex += stepDays
+            julianIndex += julianStep
         }
 
         return events
     }
 
+    /**
+     * Calculates the position of the specified moon relative to Jupiter.
+     */
+    private fun calculateMoonPosition(moon: String, jupiterVec: Vector, time: Time): Vector {
+        val moonPositions = jupiterMoons(time)
+        return when (moon) {
+            "Io" -> jupiterVec + moonPositions.io.position().withTime(jupiterVec.t)
+            "Europa" -> jupiterVec + moonPositions.europa.position().withTime(jupiterVec.t)
+            "Ganymede" -> jupiterVec + moonPositions.ganymede.position().withTime(jupiterVec.t)
+            "Callisto" -> jupiterVec + moonPositions.callisto.position().withTime(jupiterVec.t)
+            else -> throw IllegalArgumentException("Unknown moon: $moon")
+        }
+    }
+
+    /**
+     * Updates the transit state and logs entry or exit events as needed.
+     */
+    private fun updateTransitState(
+        inTransit: Boolean?, angularSeparation: Double, jupiterAngularRadius: Double,
+        julianIndex: Double, events: MutableList<JovianMoonEvent>, moon: String
+    ): Boolean {
+        return when {
+            inTransit == null -> {
+                // Initialize transit state in the first iteration
+                val initialTransitState = angularSeparation < jupiterAngularRadius
+                //if (initialTransitState) {
+                //    events.add(JovianMoonEvent(EventType.MOON_ENTERS_JUPITER_TRANSIT, Utils.julianDateToUTC(julianIndex), moon))
+                //}
+                initialTransitState
+            }
+            !inTransit && angularSeparation < jupiterAngularRadius -> {
+                events.add(JovianMoonEvent(EventType.MOON_ENTERS_JUPITER_TRANSIT, Utils.julianDateToUTC(julianIndex), moon))
+                true
+            }
+            inTransit && angularSeparation >= jupiterAngularRadius -> {
+                events.add(JovianMoonEvent(EventType.MOON_EXITS_JUPITER_TRANSIT, Utils.julianDateToUTC(julianIndex), moon))
+                false
+            }
+            else -> inTransit
+        }
+    }
 
 
     fun incrementOffset(incrementBy: Int) {
