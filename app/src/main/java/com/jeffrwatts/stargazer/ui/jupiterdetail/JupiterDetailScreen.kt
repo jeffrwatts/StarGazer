@@ -224,7 +224,7 @@ fun JovianMoonEventRow(event: JovianMoonEvent) {
             color = Color.White
         )
         Text(
-            text = "Time: ${event.time.format(AppConstants.DATE_TIME_FORMATTER)}",
+            text = "Time: ${event.time.format(AppConstants.DATE_TIME_FORMATTER_24)}",
             color = Color.White
         )
     }
@@ -233,11 +233,11 @@ fun JovianMoonEventRow(event: JovianMoonEvent) {
 // Helper function to convert EventType to friendly text
 private fun eventTypeToFriendlyText(type: EventType): String {
     return when (type) {
-        EventType.MOON_SHADOW_ENTERS_JUPITER -> "shadow enters Jupiter"
-        EventType.MOON_SHADOW_EXITS_JUPITER -> "shadow exits Jupiter"
         EventType.MOON_ENTERS_JUPITER_TRANSIT -> "enters transit"
         EventType.MOON_EXITS_JUPITER_TRANSIT -> "exits transit"
-        EventType.MOON_ENTERS_ECLIPSE -> "enters eclipse"
-        EventType.MOON_EXITS_ECLIPSE -> "exits eclipse"
+        EventType.MOON_ENTERS_JUPITER_OCCLUSION -> "enters occlusion"
+        EventType.MOON_EXITS_JUPITER_OCCLUSION -> "exits occlusion"
+        EventType.MOON_SHADOW_BEGINS_JUPITER_DISK -> "shadow begins crossing"
+        EventType.MOON_SHADOW_LEAVES_JUPITER_DISK -> "shadow ends crossing"
     }
 }

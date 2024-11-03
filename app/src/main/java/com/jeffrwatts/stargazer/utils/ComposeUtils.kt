@@ -47,6 +47,8 @@ import kotlin.math.roundToInt
 
 object AppConstants {
     val DATE_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("E MMM dd, hh:mm a")
+    val DATE_TIME_FORMATTER_24: DateTimeFormatter = DateTimeFormatter.ofPattern("E MMM dd, HH:mm")
+
 }
 
 fun decimalRaToHmsString(raDecimalHours: Double): String {
