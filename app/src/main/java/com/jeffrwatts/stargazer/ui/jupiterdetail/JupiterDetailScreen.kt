@@ -239,5 +239,7 @@ private fun eventTypeToFriendlyText(type: EventType): String {
         EventType.MOON_EXITS_JUPITER_OCCLUSION -> "exits occlusion"
         EventType.MOON_SHADOW_BEGINS_JUPITER_DISK -> "shadow begins crossing"
         EventType.MOON_SHADOW_LEAVES_JUPITER_DISK -> "shadow ends crossing"
+        EventType.MOON_ENTERS_ECLIPSE_OF_JUPITER -> "enters eclipse by Jupiter's shadow"
+        EventType.MOON_EXITS_ECLIPSE_OF_JUPITER -> "exits eclipse by Jupiter's shadow"
     }
 }

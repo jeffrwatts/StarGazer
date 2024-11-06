@@ -164,7 +164,9 @@ class JupiterDetailViewModel @Inject constructor (
                 jupiterAngularRadius,
                 julianIndex,
                 events,
-                moon
+                moon,
+                moonVec.length(),
+                jupiterVec.length()
             )
 
             julianIndex += julianStep
@@ -239,26 +241,29 @@ class JupiterDetailViewModel @Inject constructor (
         jupiterAngularRadius: Double,
         julianIndex: Double,
         events: MutableList<JovianMoonEvent>,
-        moon: String
+        moon: String,
+        moonDistance: Double,   // Pass moon's distance as an additional parameter
+        jupiterDistance: Double // Pass Jupiter's distance as an additional parameter
     ): Boolean {
         return when {
             inShadowEvent == null -> {
-                // Initial state check
-                shadowAngularSeparation < jupiterAngularRadius
+                // Initial state check: only start if moon is closer to Earth than Jupiter
+                shadowAngularSeparation < jupiterAngularRadius && moonDistance < jupiterDistance
             }
-            !inShadowEvent && shadowAngularSeparation < jupiterAngularRadius -> {
+            !inShadowEvent && shadowAngularSeparation < jupiterAngularRadius && moonDistance < jupiterDistance -> {
                 // Shadow starts crossing Jupiter
                 events.add(JovianMoonEvent(EventType.MOON_SHADOW_BEGINS_JUPITER_DISK, Utils.julianDateToUTC(julianIndex), moon))
                 true
             }
-            inShadowEvent && shadowAngularSeparation >= jupiterAngularRadius -> {
-                // Shadow leaves Jupiter
+            inShadowEvent && (shadowAngularSeparation >= jupiterAngularRadius || moonDistance >= jupiterDistance) -> {
+                // Shadow leaves Jupiter or moon moves behind Jupiter
                 events.add(JovianMoonEvent(EventType.MOON_SHADOW_LEAVES_JUPITER_DISK, Utils.julianDateToUTC(julianIndex), moon))
                 false
             }
             else -> inShadowEvent
         }
     }
+
 
 
     private fun calculateMoonShadowPosition(moonVec: Vector, sunVec: Vector, jupiterVec: Vector): Vector {
