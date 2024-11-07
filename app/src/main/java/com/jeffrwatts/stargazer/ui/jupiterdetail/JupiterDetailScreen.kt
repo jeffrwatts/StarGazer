@@ -233,13 +233,13 @@ fun JovianMoonEventRow(event: JovianMoonEvent) {
 // Helper function to convert EventType to friendly text
 private fun eventTypeToFriendlyText(type: EventType): String {
     return when (type) {
-        EventType.MOON_ENTERS_JUPITER_TRANSIT -> "enters transit"
-        EventType.MOON_EXITS_JUPITER_TRANSIT -> "exits transit"
-        EventType.MOON_ENTERS_JUPITER_OCCLUSION -> "enters occlusion"
-        EventType.MOON_EXITS_JUPITER_OCCLUSION -> "exits occlusion"
-        EventType.MOON_SHADOW_BEGINS_JUPITER_DISK -> "shadow begins crossing"
-        EventType.MOON_SHADOW_LEAVES_JUPITER_DISK -> "shadow ends crossing"
-        EventType.MOON_ENTERS_ECLIPSE_OF_JUPITER -> "enters eclipse by Jupiter's shadow"
-        EventType.MOON_EXITS_ECLIPSE_OF_JUPITER -> "exits eclipse by Jupiter's shadow"
+        EventType.MOON_ENTERS_JUPITER_TRANSIT -> "begins transit of Jupiter"
+        EventType.MOON_EXITS_JUPITER_TRANSIT -> "ends transit of Jupiter"
+        EventType.MOON_ENTERS_JUPITER_OCCLUSION -> "enters occultation behind Jupiter"
+        EventType.MOON_EXITS_JUPITER_OCCLUSION -> "exits occultation behind Jupiter"
+        EventType.MOON_SHADOW_BEGINS_JUPITER_DISK -> "shadow begins to cross Jupiter"
+        EventType.MOON_SHADOW_LEAVES_JUPITER_DISK -> "shadow leaves Jupiter's disk"
+        EventType.MOON_ENTERS_ECLIPSE_OF_JUPITER -> "enters eclipse by Jupiter's shadow."
+        EventType.MOON_EXITS_ECLIPSE_OF_JUPITER -> "exits eclipse by Jupiter's shadow."
     }
 }
