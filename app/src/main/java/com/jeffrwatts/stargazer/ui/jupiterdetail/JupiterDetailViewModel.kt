@@ -135,28 +135,34 @@ class JupiterDetailViewModel @Inject constructor (
             val backdate = time.addDays(-jupiterVec.length() / C_AUDAY)
             val moonVec = calculateMoonPosition(moon, jupiterVec, backdate)
 
-            // Update event state (either transit or occultation)
-            inCrossingEvent = updateCrossingEventState(
+            // Calculate the start/end transit
+            val (crossingEventType, newInCrossingEvent) = updateCrossingEventState(
                 inCrossingEvent,
                 jupiterVec,
                 moonVec,
-                jupiterAngularRadius,
-                julianIndex,
-                events,
-                moon
+                jupiterAngularRadius
             )
 
-            // Update shadow event state
-            inShadowEvent = updateShadowEventState(
+            inCrossingEvent = newInCrossingEvent
+
+            crossingEventType?.let {
+                events.add(JovianMoonEvent(it, Utils.julianDateToUTC(julianIndex), moon))
+            }
+
+            // Calculate shadow start/end transit
+            val (shadowEventType, newInShadowEvent) = updateShadowEventState(
                 inShadowEvent,
                 jupiterVec,
                 moonVec,
                 sunVec,
-                jupiterAngularRadius,
-                julianIndex,
-                events,
-                moon
+                jupiterAngularRadius
             )
+
+            inShadowEvent = newInShadowEvent
+
+            shadowEventType?.let {
+                events.add(JovianMoonEvent(it, Utils.julianDateToUTC(julianIndex), moon))
+            }
 
             julianIndex += julianStep
         }
@@ -218,21 +224,14 @@ class JupiterDetailViewModel @Inject constructor (
         inCrossingEvent: Boolean?,
         jupiterVec: Vector,
         moonVec: Vector,
-        jupiterAngularRadius: Double,
-        julianIndex: Double,
-        events: MutableList<JovianMoonEvent>,
-        moon: String
-    ): Boolean {
+        jupiterAngularRadius: Double
+    ): Pair<EventType?, Boolean> {
         val angularSeparation = jupiterVec.angleWith(moonVec)
 
         return when {
             inCrossingEvent == null -> {
                 // Initial state check
-                if (angularSeparation < jupiterAngularRadius) {
-                    true
-                } else {
-                    false
-                }
+                Pair(null, angularSeparation < jupiterAngularRadius)
             }
             !inCrossingEvent && angularSeparation < jupiterAngularRadius -> {
                 // Moon enters a new event (either transit or occultation)
@@ -241,8 +240,7 @@ class JupiterDetailViewModel @Inject constructor (
                 } else {
                     EventType.MOON_ENTERS_JUPITER_OCCLUSION
                 }
-                events.add(JovianMoonEvent(eventType, Utils.julianDateToUTC(julianIndex), moon))
-                true
+                Pair(eventType, true)
             }
             inCrossingEvent && angularSeparation >= jupiterAngularRadius -> {
                 // Moon exits the current event
@@ -251,10 +249,9 @@ class JupiterDetailViewModel @Inject constructor (
                 } else {
                     EventType.MOON_EXITS_JUPITER_OCCLUSION
                 }
-                events.add(JovianMoonEvent(exitEventType, Utils.julianDateToUTC(julianIndex), moon))
-                false
+                Pair(exitEventType, false)
             }
-            else -> inCrossingEvent
+            else -> Pair(null, inCrossingEvent)
         }
     }
 
@@ -263,30 +260,25 @@ class JupiterDetailViewModel @Inject constructor (
         jupiterVec: Vector,
         moonVec: Vector,
         sunVec: Vector,
-        jupiterAngularRadius: Double,
-        julianIndex: Double,
-        events: MutableList<JovianMoonEvent>,
-        moon: String,
-    ): Boolean {
+        jupiterAngularRadius: Double
+    ): Pair<EventType?, Boolean> {
         val shadowPosition = calculateMoonShadowPosition(moonVec, sunVec, jupiterVec)
         val shadowAngularSeparation = jupiterVec.angleWith(shadowPosition)
 
         return when {
             inShadowEvent == null -> {
                 // Initial state check: only start if moon is closer to Earth than Jupiter
-                shadowAngularSeparation < jupiterAngularRadius && moonVec.length() < jupiterVec.length()
+                Pair(null, shadowAngularSeparation < jupiterAngularRadius && moonVec.length() < jupiterVec.length())
             }
             !inShadowEvent && shadowAngularSeparation < jupiterAngularRadius && moonVec.length() < jupiterVec.length() -> {
                 // Shadow starts crossing Jupiter
-                events.add(JovianMoonEvent(EventType.MOON_SHADOW_BEGINS_JUPITER_DISK, Utils.julianDateToUTC(julianIndex), moon))
-                true
+                Pair(EventType.MOON_SHADOW_BEGINS_JUPITER_DISK, true)
             }
             inShadowEvent && (shadowAngularSeparation >= jupiterAngularRadius || moonVec.length() >= jupiterVec.length()) -> {
                 // Shadow leaves Jupiter or moon moves behind Jupiter
-                events.add(JovianMoonEvent(EventType.MOON_SHADOW_LEAVES_JUPITER_DISK, Utils.julianDateToUTC(julianIndex), moon))
-                false
+                Pair(EventType.MOON_SHADOW_LEAVES_JUPITER_DISK, false)
             }
-            else -> inShadowEvent
+            else -> Pair(null, inShadowEvent)
         }
     }
 
