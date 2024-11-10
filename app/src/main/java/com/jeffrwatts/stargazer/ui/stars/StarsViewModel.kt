@@ -50,7 +50,7 @@ class StarsViewModel @Inject constructor(
     val uiState: StateFlow<StarsUiState> = _uiState.asStateFlow()
 
     companion object {
-        const val AZM_RANGE = 20.0
+        const val AZM_RANGE = 40.0
         const val ALT_LOW = 40.0
         const val ALT_HIGH = 70.0
         const val MAGNITUDE_LOW = 1.5
