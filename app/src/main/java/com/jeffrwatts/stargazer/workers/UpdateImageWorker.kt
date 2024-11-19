@@ -58,6 +58,7 @@ class UpdateImageWorker @AssistedInject constructor(
 
         return retrofit.create(StarGazerApi::class.java)
     }
+
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
             var succeeded = 0
@@ -68,15 +69,18 @@ class UpdateImageWorker @AssistedInject constructor(
             imageUpdates.forEachIndexed { index, image ->
                 try {
                     val imageUrl = image.url
-                    val imageStream = URL(imageUrl).openStream()
-                    val originalBitmap = BitmapFactory.decodeStream(imageStream)
 
-                    val thumbBitmap = createThumbnail(originalBitmap, image.thumbX, image.thumbY, image.thumbDim)
-
-                    val outputFile = File(applicationContext.cacheDir, "${image.objectId}.webp")
-                    outputFile.outputStream().use { fos ->
-                        originalBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 100, fos)
+                    // Save the original image directly without re-encoding
+                    val originalFile = File(applicationContext.cacheDir, "${image.objectId}.webp")
+                    URL(imageUrl).openStream().use { inputStream ->
+                        originalFile.outputStream().use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
                     }
+
+                    // Decode the original image to generate a thumbnail
+                    val originalBitmap = BitmapFactory.decodeFile(originalFile.absolutePath)
+                    val thumbBitmap = createThumbnail(originalBitmap, image.thumbX, image.thumbY, image.thumbDim)
 
                     val thumbFile = File(applicationContext.cacheDir, "${image.objectId}_thumb.webp")
                     thumbFile.outputStream().use { fos ->
@@ -84,10 +88,13 @@ class UpdateImageWorker @AssistedInject constructor(
                     }
 
                     setProgressAsync(buildStatusUpdate("Downloaded ${index + 1} of ${imageUpdates.size}: ${image.objectId}"))
-                    celestialObjImageDao.insertImage(CelestialObjImage(
-                        objectId = image.objectId,
-                        filename = outputFile.toString(),
-                        thumbFilename = thumbFile.toString()))
+                    celestialObjImageDao.insertImage(
+                        CelestialObjImage(
+                            objectId = image.objectId,
+                            filename = originalFile.toString(),
+                            thumbFilename = thumbFile.toString()
+                        )
+                    )
                     succeeded += 1
                 } catch (e: IOException) {
                     Log.e("ImageDownload", "Failed to download image for catalogId: ${image.objectId}", e)
