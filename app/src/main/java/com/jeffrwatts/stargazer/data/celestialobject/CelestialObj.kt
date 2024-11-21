@@ -9,17 +9,17 @@ enum class ObjectType {
     STAR, GALAXY, NEBULA, CLUSTER, PLANET, UNKNOWN
 }
 
-const val SUN = "Sun"
-const val MERCURY = "Mercury"
-const val VENUS = "Venus"
-const val EARTH = "Earth"
-const val MARS = "Mars"
-const val JUPITER = "Jupiter"
-const val SATURN = "Saturn"
-const val URANUS = "Uranus"
-const val NEPTUNE = "Neptune"
-const val PLUTO = "Pluto"
-const val MOON = "Moon"
+const val SUN = "sun"
+const val MERCURY = "mercury"
+const val VENUS = "venus"
+const val EARTH = "earth"
+const val MARS = "mars"
+const val JUPITER = "jupiter"
+const val SATURN = "saturn"
+const val URANUS = "uranus"
+const val NEPTUNE = "neptune"
+const val PLUTO = "pluto"
+const val MOON = "moon"
 
 @Entity(tableName = "celestial_objects")
 data class CelestialObj(

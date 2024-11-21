@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjPos
 import com.jeffrwatts.stargazer.data.celestialobject.CelestialObjRepository
+import com.jeffrwatts.stargazer.data.celestialobject.ObjectType
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import com.jeffrwatts.stargazer.utils.julianDateToAstronomyTime
@@ -27,8 +28,8 @@ class SkyTonightViewModel @Inject constructor(
     private val celestialObjRepository: CelestialObjRepository,
     private val locationRepository: LocationRepository
 ) : ViewModel() {
-    private val _recommendedFilter = MutableStateFlow(true)
-    val recommendedFilter: StateFlow<Boolean> = _recommendedFilter.asStateFlow()
+    private val _filterType = MutableStateFlow(FilterType.RECOMMENDED)
+    val filterType: StateFlow<FilterType> = _filterType.asStateFlow()
 
     private val _timeOffset = MutableStateFlow(0L)
     private val _pullToRefresh = MutableSharedFlow<Unit>(replay = 1)
@@ -42,10 +43,10 @@ class SkyTonightViewModel @Inject constructor(
             combine(
                 celestialObjRepository.getAllCelestialObjects(),
                 locationRepository.locationFlow,
-                _recommendedFilter,
+                _filterType,
                 _timeOffset,
                 _pullToRefresh
-            ) { celestialObjs, location, recommended, timeOffset, _ ->
+            ) { celestialObjs, location, filter, timeOffset, _ ->
                 try {
                     val date = if (timeOffset != 0L) {
                         LocalDateTime.now().plusHours(timeOffset).withMinute(0)
@@ -55,9 +56,17 @@ class SkyTonightViewModel @Inject constructor(
                     val julianDate = Utils.calculateJulianDateFromLocal(date)
                     location?.let {loc->
                         val celestialObjPosList = celestialObjs
-                            .filter { !recommended || it.celestialObj.recommended }
                             .map {celestialObj->
                                 CelestialObjPos.fromCelestialObjWithImage(celestialObj, julianDate, location)
+                            }
+                            .filter {
+                                when (filter) {
+                                    FilterType.RECOMMENDED -> it.celestialObjWithImage.celestialObj.recommended
+                                    FilterType.NEAR_MERIDIAN -> {
+                                        it.timeUntilMeridian< 3.0|| it.timeUntilMeridian>23.0 || it.celestialObjWithImage.celestialObj.type== ObjectType.PLANET
+                                    }
+                                    else -> true
+                                }
                             }
                             .sortedWith(compareByDescending { it.observable })
 
@@ -82,9 +91,9 @@ class SkyTonightViewModel @Inject constructor(
         locationRepository.startLocationUpdates()
     }
 
-    fun setRecommendedFilter(recommended: Boolean) {
+    fun setFilter(filterType: FilterType) {
         viewModelScope.launch {
-            _recommendedFilter.emit(recommended)
+            _filterType.emit(filterType)
         }
     }
 
@@ -111,6 +120,10 @@ class SkyTonightViewModel @Inject constructor(
             _timeOffset.emit(0L)
         }
     }
+}
+
+enum class FilterType {
+    RECOMMENDED, NEAR_MERIDIAN, ALL
 }
 
 sealed class SkyTonightUiState {

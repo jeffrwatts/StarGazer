@@ -84,7 +84,7 @@ fun SkyTonightScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val skyTonightUiState by viewModel.uiState.collectAsState()
-    val currentFilter by viewModel.recommendedFilter.collectAsState()
+    val currentFilter by viewModel.filterType.collectAsState()
     val isRefreshing = skyTonightUiState is SkyTonightUiState.Loading
     val pullRefreshState = rememberPullRefreshState(isRefreshing, { viewModel.refresh() })
 
@@ -94,7 +94,7 @@ fun SkyTonightScreen(
                 title = stringResource(R.string.sky_tonight),
                 openDrawer = openDrawer,
                 onFilterSelected = { newFilter ->
-                    viewModel.setRecommendedFilter(newFilter)
+                    viewModel.setFilter(newFilter)
                 },
                 currentFilter = currentFilter,
                 topAppBarState = topAppBarState
@@ -294,8 +294,8 @@ fun CelestialObjItem(
 fun SkyTonightTopAppBar(
     title: String,
     openDrawer: () -> Unit,
-    onFilterSelected: (Boolean) -> Unit,
-    currentFilter: Boolean,
+    onFilterSelected: (FilterType) -> Unit,
+    currentFilter: FilterType,
     modifier: Modifier = Modifier,
     topAppBarState: TopAppBarState = rememberTopAppBarState(),
     scrollBehavior: TopAppBarScrollBehavior? =
@@ -333,18 +333,26 @@ fun SkyTonightTopAppBar(
                 DropdownMenuItem(
                     text = { Text("Show Recommended") },
                     onClick = {
-                        onFilterSelected(true)
+                        onFilterSelected(FilterType.RECOMMENDED)
                         showMenu = false
                     },
-                    leadingIcon = { if (currentFilter) FilledCheckIcon() }
+                    leadingIcon = { if (currentFilter == FilterType.RECOMMENDED) FilledCheckIcon() }
+                )
+                DropdownMenuItem(
+                    text = { Text("Near Meridian") },
+                    onClick = {
+                        onFilterSelected(FilterType.NEAR_MERIDIAN)
+                        showMenu = false
+                    },
+                    leadingIcon = { if (currentFilter == FilterType.NEAR_MERIDIAN) FilledCheckIcon() }
                 )
                 DropdownMenuItem(
                     text = { Text("Show All") },
                     onClick = {
-                        onFilterSelected(false)
+                        onFilterSelected(FilterType.ALL)
                         showMenu = false
                     },
-                    leadingIcon = { if (!currentFilter) FilledCheckIcon() }
+                    leadingIcon = { if (currentFilter == FilterType.ALL) FilledCheckIcon() }
                 )
             }
         },

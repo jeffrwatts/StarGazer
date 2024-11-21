@@ -74,7 +74,7 @@ class JupiterDetailViewModel @Inject constructor (
 
                 jovianMoonEvents.forEach { event ->
                     // Log the event details
-                    Log.d("MoonEventLogger", "Event: ${event.type}, Moon: ${event.moon}, Time (UTC): ${event.time}")
+                    Log.d("MoonEventLogger", "Event: ${event.type}, Moon: ${event.moon}, Time (UTC): ${event.julianTime}")
                 }
 
 
@@ -110,8 +110,7 @@ class JupiterDetailViewModel @Inject constructor (
             allEvents.addAll(moonEvents)
         }
 
-        // Optional: Sort events by time, if needed
-        allEvents.sortBy { it.time }
+        allEvents.sortBy { it.julianTime }
 
         return allEvents
     }
@@ -146,7 +145,7 @@ class JupiterDetailViewModel @Inject constructor (
             inCrossingEvent = newInCrossingEvent
 
             crossingEventType?.let {
-                events.add(JovianMoonEvent(it, Utils.julianDateToUTC(julianIndex), moon))
+                events.add(JovianMoonEvent(it, julianIndex, moon))
             }
 
             // Calculate shadow start/end transit
@@ -161,7 +160,7 @@ class JupiterDetailViewModel @Inject constructor (
             inShadowEvent = newInShadowEvent
 
             shadowEventType?.let {
-                events.add(JovianMoonEvent(it, Utils.julianDateToUTC(julianIndex), moon))
+                events.add(JovianMoonEvent(it, julianIndex, moon))
             }
 
             julianIndex += julianStep
@@ -331,7 +330,7 @@ enum class EventType {
 
 data class JovianMoonEvent(
     val type: EventType,
-    val time: LocalDateTime, // Time in UTC
+    val julianTime: Double,
     val moon: String         // Name of the moon (e.g., "Io", "Europa", "Ganymede", "Callisto")
 )
 

@@ -37,6 +37,7 @@ import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LabeledField
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.TimeControl
+import com.jeffrwatts.stargazer.utils.Utils
 import com.jeffrwatts.stargazer.utils.decimalDecToDmsString
 import com.jeffrwatts.stargazer.utils.decimalRaToHmsString
 import io.github.cosinekitty.astronomy.Equatorial
@@ -121,8 +122,8 @@ fun JupiterCelestialGrid(
     modifier: Modifier = Modifier,
 ) {
     // Define the fixed ranges in degrees for RA and Dec around Jupiter
-    val raRange = 0.025 // ±6 arcminutes in degrees
-    val decRange = 0.02 // ±3 arcminutes in degrees
+    val raRange = 0.025 // ±6 arc minutes in degrees
+    val decRange = 0.02 // ±3 arc minutes in degrees
 
     Box(
         modifier = modifier
@@ -197,7 +198,7 @@ private fun DrawScope.drawCelestialBody(position: Offset, label: String, color: 
 }
 @Composable
 fun JovianMoonEventList(events: List<JovianMoonEvent>, modifier: Modifier = Modifier) {
-    val sortedEvents = events.sortedBy { it.time }
+    val sortedEvents = events.sortedBy { it.julianTime }
 
     LazyColumn(
         modifier = modifier
@@ -224,7 +225,11 @@ fun JovianMoonEventRow(event: JovianMoonEvent) {
             color = Color.White
         )
         Text(
-            text = "Time: ${event.time.format(AppConstants.DATE_TIME_FORMATTER_24)}",
+            text = "Local: ${Utils.julianDateToLocalTime(event.julianTime).format(AppConstants.DATE_TIME_FORMATTER)}",
+            color = Color.White
+        )
+        Text(
+            text = "UTC Time: ${Utils.julianDateToUTC(event.julianTime).format(AppConstants.DATE_TIME_FORMATTER_24)}",
             color = Color.White
         )
     }
