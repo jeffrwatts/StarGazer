@@ -1,6 +1,7 @@
 package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.stars
 
 import android.util.Log
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.data.starobj.StarObjPos
@@ -53,7 +54,7 @@ class StarsViewModel @Inject constructor(
         const val AZM_RANGE = 40.0
         const val ALT_LOW = 40.0
         const val ALT_HIGH = 70.0
-        const val MAGNITUDE_LOW = 1.5
+        const val MAGNITUDE_LOW = 1.0
         const val MAGNITUDE_HIGH = 3.0
     }
 
@@ -86,7 +87,7 @@ class StarsViewModel @Inject constructor(
                             }
                             .filter {
                                 val isInAzm = planetAzm?.let { azm -> isWithinRange(azm, it.azm, AZM_RANGE) } ?: true
-                                isInAzm && it.alt in ALT_LOW..ALT_HIGH && it.starObj.magnitude in MAGNITUDE_LOW..MAGNITUDE_HIGH}
+                                isInAzm && it.alt >= ALT_LOW && it.starObj.magnitude <= MAGNITUDE_HIGH}
                             .sortedBy { it.starObj.magnitude }
                         _uiState.value = StarsUiState.Success(starObjPosList, true, date.format(
                             AppConstants.DATE_TIME_FORMATTER
