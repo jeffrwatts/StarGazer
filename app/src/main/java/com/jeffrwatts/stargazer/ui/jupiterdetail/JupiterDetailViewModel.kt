@@ -1,6 +1,5 @@
 package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.jupiterdetail
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeffrwatts.stargazer.data.location.LocationRepository

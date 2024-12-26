@@ -1,7 +1,6 @@
 package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.jupiterdetail
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,7 +45,6 @@ import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.TimeControl
 import com.jeffrwatts.stargazer.utils.Utils
 import com.jeffrwatts.stargazer.utils.decimalDecToDmsString
-import com.jeffrwatts.stargazer.utils.decimalRaToHmsString
 import io.github.cosinekitty.astronomy.Equatorial
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -217,7 +215,7 @@ fun JovianMoonEventList(events: List<JovianMoonEvent>, modifier: Modifier = Modi
     ) {
 
         items(sortedEvents) { event ->
-            JovianMoonEventRow2(event)
+            JovianMoonEventRow(event)
             HorizontalDivider(
                 thickness = 2.dp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
@@ -228,29 +226,6 @@ fun JovianMoonEventList(events: List<JovianMoonEvent>, modifier: Modifier = Modi
 
 @Composable
 fun JovianMoonEventRow(event: JovianMoonEvent) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 2.dp) // Reduced padding for a thinner look
-            .background(Color.DarkGray) // Adjusted background transparency
-    ) {
-        Text(
-            text = "${event.moon} - ${eventTypeToFriendlyText(event.type)}",
-            color = Color.White
-        )
-        Text(
-            text = "Local: ${Utils.julianDateToLocalTime(event.julianTime).format(AppConstants.DATE_TIME_FORMATTER)}",
-            color = Color.White
-        )
-        Text(
-            text = "UTC Time: ${Utils.julianDateToUTC(event.julianTime).format(AppConstants.DATE_TIME_FORMATTER_24)}",
-            color = Color.White
-        )
-    }
-}
-
-@Composable
-fun JovianMoonEventRow2(event: JovianMoonEvent) {
     val prominenceAlpha = if (event.isNight) 1f else 0.6f
 
     Column(
