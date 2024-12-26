@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,12 +24,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jeffrwatts.stargazer.R
@@ -199,15 +206,22 @@ private fun DrawScope.drawCelestialBody(position: Offset, label: String, color: 
 @Composable
 fun JovianMoonEventList(events: List<JovianMoonEvent>, modifier: Modifier = Modifier) {
     val sortedEvents = events.sortedBy { it.julianTime }
-
+    HorizontalDivider(
+        thickness = 2.dp,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+    )
     LazyColumn(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.LightGray) // Background for visibility
             .padding(4.dp)
     ) {
+
         items(sortedEvents) { event ->
-            JovianMoonEventRow(event)
+            JovianMoonEventRow2(event)
+            HorizontalDivider(
+                thickness = 2.dp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+            )
         }
     }
 }
@@ -234,6 +248,37 @@ fun JovianMoonEventRow(event: JovianMoonEvent) {
         )
     }
 }
+
+@Composable
+fun JovianMoonEventRow2(event: JovianMoonEvent) {
+    val prominenceAlpha = if (event.isNight) 1f else 0.6f
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(prominenceAlpha)
+            .padding(8.dp)
+    ) {
+        Text(
+            text = buildAnnotatedString {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append(event.moon)
+                }
+                append(" ${eventTypeToFriendlyText(event.type)}")
+            },
+            color = Color.White
+        )
+        Text(
+            text = "Local: ${Utils.julianDateToLocalTime(event.julianTime).format(AppConstants.DATE_TIME_FORMATTER)}",
+            color = Color.White
+        )
+        Text(
+            text = "UTC Time: ${Utils.julianDateToUTC(event.julianTime).format(AppConstants.DATE_TIME_FORMATTER_24)}",
+            color = Color.White
+        )
+    }
+}
+
 
 // Helper function to convert EventType to friendly text
 private fun eventTypeToFriendlyText(type: EventType): String {
