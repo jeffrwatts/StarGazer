@@ -112,7 +112,7 @@ fun JupiterDetailScreen(
                     ) {
                         JupiterCelestialGrid(uiState = successState)
                     }
-                    JovianMoonEventList(events = successState.jovianMoonEvents)
+                    JovianMoonEventList(events = successState.jovianEvents)
 
                 }
             }
@@ -202,8 +202,8 @@ private fun DrawScope.drawCelestialBody(position: Offset, label: String, color: 
     })
 }
 @Composable
-fun JovianMoonEventList(events: List<JovianMoonEvent>, modifier: Modifier = Modifier) {
-    val sortedEvents = events.sortedBy { it.julianTime }
+fun JovianMoonEventList(events: List<JovianEvent>, modifier: Modifier = Modifier) {
+    val sortedEvents = events.sortedBy { it.eventTime }
     HorizontalDivider(
         thickness = 2.dp,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
@@ -225,7 +225,7 @@ fun JovianMoonEventList(events: List<JovianMoonEvent>, modifier: Modifier = Modi
 }
 
 @Composable
-fun JovianMoonEventRow(event: JovianMoonEvent) {
+fun JovianMoonEventRow(event: JovianEvent) {
     val prominenceAlpha = if (event.isNight) 1f else 0.6f
 
     Column(
@@ -237,18 +237,18 @@ fun JovianMoonEventRow(event: JovianMoonEvent) {
         Text(
             text = buildAnnotatedString {
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                    append(event.moon)
+                    append(event.eventObject)
                 }
-                append(" ${eventTypeToFriendlyText(event.type)}")
+                append(" ${eventTypeToFriendlyText(event.eventType)}")
             },
             color = Color.White
         )
         Text(
-            text = "Local: ${Utils.julianDateToLocalTime(event.julianTime).format(AppConstants.DATE_TIME_FORMATTER)}",
+            text = "Local: ${Utils.julianDateToLocalTime(event.eventTime).format(AppConstants.DATE_TIME_FORMATTER)}",
             color = Color.White
         )
         Text(
-            text = "UTC Time: ${Utils.julianDateToUTC(event.julianTime).format(AppConstants.DATE_TIME_FORMATTER_24)}",
+            text = "UTC Time: ${Utils.julianDateToUTC(event.eventTime).format(AppConstants.DATE_TIME_FORMATTER_24)}",
             color = Color.White
         )
     }
@@ -258,6 +258,7 @@ fun JovianMoonEventRow(event: JovianMoonEvent) {
 // Helper function to convert EventType to friendly text
 private fun eventTypeToFriendlyText(type: EventType): String {
     return when (type) {
+        EventType.GRS_TRANSIT -> "transit meridian"
         EventType.MOON_ENTERS_JUPITER_TRANSIT -> "begins transit of Jupiter"
         EventType.MOON_EXITS_JUPITER_TRANSIT -> "ends transit of Jupiter"
         EventType.MOON_ENTERS_JUPITER_OCCLUSION -> "enters occultation behind Jupiter"

@@ -55,7 +55,7 @@ class StarsViewModel @Inject constructor(
         const val ALT_LOW = 40.0
         const val ALT_HIGH = 70.0
         const val MAGNITUDE_LOW = 1.0
-        const val MAGNITUDE_HIGH = 3.0
+        const val MAGNITUDE_HIGH = 5.0
     }
 
     init {
@@ -87,7 +87,8 @@ class StarsViewModel @Inject constructor(
                             }
                             .filter {
                                 val isInAzm = planetAzm?.let { azm -> isWithinRange(azm, it.azm, AZM_RANGE) } ?: true
-                                isInAzm && it.alt >= ALT_LOW && it.starObj.magnitude <= MAGNITUDE_HIGH}
+                                val isInMag = it.starObj.magnitude in MAGNITUDE_LOW .. MAGNITUDE_HIGH
+                                isInAzm && it.alt >= ALT_LOW && isInMag}
                             .sortedBy { it.starObj.magnitude }
                         _uiState.value = StarsUiState.Success(starObjPosList, true, date.format(
                             AppConstants.DATE_TIME_FORMATTER

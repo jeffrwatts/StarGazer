@@ -2,6 +2,7 @@ package com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.ui.jupiterdetail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jeffrwatts.stargazer.com.jeffrwatts.stargazer.utils.GRSTransitUtils
 import com.jeffrwatts.stargazer.data.location.LocationRepository
 import com.jeffrwatts.stargazer.utils.Utils
 import com.jeffrwatts.stargazer.utils.julianDateToAstronomyTime
@@ -75,10 +76,10 @@ class JupiterDetailViewModel @Inject constructor (
 
                 val jm = jupiterMoons(backdate)
 
-                var jovianMoonEvents = emptyList<JovianMoonEvent>()
+                var jovianEvents = emptyList<JovianEvent>()
                 location?.let {loc->
                     val (nightStart, nightEnd, isNight) = Utils.getNight(julianDate, loc)
-                    jovianMoonEvents = predictAllJovianMoonEvents(nightStart, nightEnd)
+                    jovianEvents = predictAllJovianEvents(nightStart, nightEnd)
                 }
 
                 // Tricky: the `+` operator for adding `Vector` will throw an exception
@@ -93,7 +94,7 @@ class JupiterDetailViewModel @Inject constructor (
                     europaPos = (jv + jm.europa.position().withTime(jv.t)).toEquatorial(),
                     ganymedePos = (jv + jm.ganymede.position().withTime(jv.t)).toEquatorial(),
                     callistoPos = (jv + jm.callisto.position().withTime(jv.t)).toEquatorial(),
-                    jovianMoonEvents
+                    jovianEvents
                 )
             }.collect()
         }
@@ -104,22 +105,31 @@ class JupiterDetailViewModel @Inject constructor (
         return toDegrees(atan(radiusAU / distanceAU))
     }
 
-    private fun predictAllJovianMoonEvents(nightStart: Double, nightEnd: Double): List<JovianMoonEvent> {
-        val moons = listOf("Io", "Europa", "Ganymede", "Callisto")
-        val allEvents = mutableListOf<JovianMoonEvent>()
+    private fun predictAllJovianEvents(nightStart: Double, nightEnd: Double): List<JovianEvent> {
+        val allEvents = mutableListOf<JovianEvent>()
 
+        // Great Red Spot Transit.
+        val grsStart = nightStart - 4.0/24.0 // expand time so that there is some context for the events.
+        val (_, grsNextTransit) = GRSTransitUtils.predictGRSTransits(grsStart)
+        if (grsNextTransit in grsStart..nightEnd) {
+            val isNight = grsNextTransit in nightStart..nightEnd
+            allEvents.add(JovianEvent(EventType.GRS_TRANSIT, grsNextTransit, "Great Red Spot", isNight))
+        }
+
+        // Iterate through moons
+        val moons = listOf("Io", "Europa", "Ganymede", "Callisto")
         for (moon in moons) {
             val moonEvents = predictJovianMoonEvents(moon, nightStart, nightEnd)
             allEvents.addAll(moonEvents)
         }
 
-        allEvents.sortBy { it.julianTime }
+        allEvents.sortBy { it.eventTime }
 
         return allEvents
     }
 
-    private fun predictJovianMoonEvents(moon: String, nightStart: Double, nightEnd: Double): List<JovianMoonEvent> {
-        val events = mutableListOf<JovianMoonEvent>()
+    private fun predictJovianMoonEvents(moon: String, nightStart: Double, nightEnd: Double): List<JovianEvent> {
+        val events = mutableListOf<JovianEvent>()
         var inCrossingEvent: Boolean? = null  // Track initial state as unknown
         var inShadowEvent: Boolean? = null    // Track initial state as unknown for shadow events
 
@@ -147,7 +157,7 @@ class JupiterDetailViewModel @Inject constructor (
             inCrossingEvent = newInCrossingEvent
 
             crossingEventType?.let {
-                events.add(JovianMoonEvent(it, julianIndex, moon, julianIndex in nightStart.. nightEnd))
+                events.add(JovianEvent(it, julianIndex, moon, julianIndex in nightStart.. nightEnd))
             }
 
             // Calculate shadow start/end transit
@@ -162,7 +172,7 @@ class JupiterDetailViewModel @Inject constructor (
             inShadowEvent = newInShadowEvent
 
             shadowEventType?.let {
-                events.add(JovianMoonEvent(it, julianIndex, moon, julianIndex in nightStart.. nightEnd))
+                events.add(JovianEvent(it, julianIndex, moon, julianIndex in nightStart.. nightEnd))
             }
 
             julianIndex += julianStep
@@ -320,6 +330,7 @@ class JupiterDetailViewModel @Inject constructor (
 }
 
 enum class EventType {
+    GRS_TRANSIT,                    // Great Red Spot crosses central meridian.
     MOON_ENTERS_JUPITER_TRANSIT,    // Moon begins transit across Jupiter
     MOON_EXITS_JUPITER_TRANSIT,     // Moon ends transit across Jupiter
     MOON_ENTERS_JUPITER_OCCLUSION,  // Moon begins occlusion behind Jupiter
@@ -330,10 +341,10 @@ enum class EventType {
     MOON_EXITS_ECLIPSE_OF_JUPITER       // Moon exits eclipse
 }
 
-data class JovianMoonEvent(
-    val type: EventType,
-    val julianTime: Double,
-    val moon: String,
+data class JovianEvent(
+    val eventType: EventType,
+    val eventTime: Double,
+    val eventObject: String,
     val isNight: Boolean
 )
 
@@ -347,6 +358,6 @@ sealed class JupiterDetailUIState {
         val europaPos: Equatorial,
         val ganymedePos: Equatorial,
         val callistoPos: Equatorial,
-        val jovianMoonEvents: List<JovianMoonEvent>) : JupiterDetailUIState()
+        val jovianEvents: List<JovianEvent>) : JupiterDetailUIState()
     data class Error(val message: String) : JupiterDetailUIState()
 }
