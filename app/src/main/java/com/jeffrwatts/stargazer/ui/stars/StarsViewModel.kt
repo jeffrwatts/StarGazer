@@ -52,7 +52,7 @@ class StarsViewModel @Inject constructor(
 
     companion object {
         const val AZM_RANGE = 40.0
-        const val ALT_LOW = 40.0
+        const val ALT_LOW = 45.0
         const val ALT_HIGH = 70.0
         const val MAGNITUDE_LOW = 1.0
         const val MAGNITUDE_HIGH = 5.0
