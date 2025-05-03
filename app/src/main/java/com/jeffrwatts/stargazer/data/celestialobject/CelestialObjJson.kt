@@ -29,9 +29,6 @@ fun CelestialObjJson.toCelestialObjEntity(): CelestialObj {
         magnitude = this.magnitude,
         constellation = this.constellation,
         ngcId = this.ngcId,
-        recommended = this.recommended,
-        field = this.field,
-        UHC = this.UHC,
-        OIII = this.OIII
+        recommended = this.recommended
     )
 }

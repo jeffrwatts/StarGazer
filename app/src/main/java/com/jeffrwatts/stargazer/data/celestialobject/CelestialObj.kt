@@ -33,10 +33,7 @@ data class CelestialObj(
     val magnitude: Double?,
     val constellation: String?,
     val ngcId: String?,
-    val recommended: Boolean,
-    val field: String,
-    val UHC: Boolean,
-    val OIII: Boolean
+    val recommended: Boolean
 )
 
 fun CelestialObj.getDefaultImageResource(): Int {

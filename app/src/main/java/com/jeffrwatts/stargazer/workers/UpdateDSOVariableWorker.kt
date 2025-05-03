@@ -87,15 +87,15 @@ class UpdateDSOVariableWorker @AssistedInject constructor(
     }
 
     private val solarSystem : List<CelestialObj> = listOf (
-        CelestialObj(0, "Moon", MOON, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, "", false, false),
-        CelestialObj(0, "Mercury", MERCURY, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, "", false, false),
-        CelestialObj(0, "Venus", VENUS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, "", false, false),
-        CelestialObj(0, "Mars", MARS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, "", false, false),
-        CelestialObj(0, "Jupiter", JUPITER, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, "", false, false),
-        CelestialObj(0, "Saturn", SATURN, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, "", false, false),
-        CelestialObj(0, "Uranus", URANUS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, "", false, false),
-        CelestialObj(0, "Neptune", NEPTUNE, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, "", false, false),
-        CelestialObj(0, "Pluto", PLUTO, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true, "", false, false),
+        CelestialObj(0, "Moon", MOON, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true),
+        CelestialObj(0, "Mercury", MERCURY, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true),
+        CelestialObj(0, "Venus", VENUS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true),
+        CelestialObj(0, "Mars", MARS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true),
+        CelestialObj(0, "Jupiter", JUPITER, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true),
+        CelestialObj(0, "Saturn", SATURN, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true),
+        CelestialObj(0, "Uranus", URANUS, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true),
+        CelestialObj(0, "Neptune", NEPTUNE, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true),
+        CelestialObj(0, "Pluto", PLUTO, 0.0, 0.0, ObjectType.PLANET, "", 0.0, "", null, true),
     )
 
     private suspend fun updateDSOObjects() {
