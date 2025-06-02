@@ -74,8 +74,17 @@ class FieldOfViewViewModel @Inject constructor(
                 _cameras.value = cameras
 
                 val opticalElements = equipmentRepository.getAllOpticalElements()
-                _selectedOpticalElement.value = opticalElements.first()
+
+                val targetName = "0.63x Reducer"  // Change this to the desired name
+
+                val selectedElement = opticalElements.firstOrNull { it.displayName == targetName }
+                    ?: opticalElements.firstOrNull()  // Fallback in case the name isn't found
+                
+                _selectedOpticalElement.value = selectedElement
                 _opticalElements.value = opticalElements
+
+
+
 
                 // Set celestial object and fetch image here
                 celestialObjWithImage = celestialObjRepository.getCelestialObj(sightId).first()

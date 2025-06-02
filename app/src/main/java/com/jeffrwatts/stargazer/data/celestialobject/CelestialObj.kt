@@ -42,18 +42,8 @@ fun CelestialObj.getDefaultImageResource(): Int {
         ObjectType.GALAXY -> R.drawable.galaxy
         ObjectType.NEBULA -> R.drawable.nebula
         ObjectType.CLUSTER -> R.drawable.cluster
-        else -> when (this.objectId) {
-            MERCURY -> R.drawable.mercury
-            VENUS -> R.drawable.venus
-            MARS -> R.drawable.mars
-            JUPITER -> R.drawable.jupiter
-            SATURN -> R.drawable.saturn
-            URANUS -> R.drawable.uranus
-            NEPTUNE -> R.drawable.neptune
-            PLUTO -> R.drawable.pluto
-            MOON -> R.drawable.moon
-            else-> R.drawable.logo
-        }
+        ObjectType.PLANET -> R.drawable.planet
+        else-> R.drawable.logo
     }
 }
 

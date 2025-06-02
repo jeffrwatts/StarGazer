@@ -337,6 +337,14 @@ fun SkyTonightTopAppBar(
                     leadingIcon = { if (currentFilter == FilterType.NEAR_MERIDIAN) FilledCheckIcon() }
                 )
                 DropdownMenuItem(
+                        text = { Text("Rec & Near Meridian") },
+                onClick = {
+                    onFilterSelected(FilterType.RECOMMENDED_NEAR_MEDIAN)
+                    showMenu = false
+                },
+                leadingIcon = { if (currentFilter == FilterType.NEAR_MERIDIAN) FilledCheckIcon() }
+                )
+                DropdownMenuItem(
                     text = { Text("Show All") },
                     onClick = {
                         onFilterSelected(FilterType.ALL)

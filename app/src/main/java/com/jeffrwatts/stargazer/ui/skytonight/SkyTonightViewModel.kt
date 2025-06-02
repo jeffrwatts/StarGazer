@@ -65,6 +65,9 @@ class SkyTonightViewModel @Inject constructor(
                                     FilterType.NEAR_MERIDIAN -> {
                                         it.timeUntilMeridian< 3.0|| it.timeUntilMeridian>23.0 || it.celestialObjWithImage.celestialObj.type== ObjectType.PLANET
                                     }
+                                    FilterType.RECOMMENDED_NEAR_MEDIAN -> {
+                                        (it.timeUntilMeridian< 3.0|| it.timeUntilMeridian>23.0) && it.celestialObjWithImage.celestialObj.recommended
+                                    }
                                     else -> true
                                 }
                             }
@@ -123,7 +126,7 @@ class SkyTonightViewModel @Inject constructor(
 }
 
 enum class FilterType {
-    RECOMMENDED, NEAR_MERIDIAN, ALL
+    RECOMMENDED, NEAR_MERIDIAN, RECOMMENDED_NEAR_MEDIAN, ALL
 }
 
 sealed class SkyTonightUiState {
