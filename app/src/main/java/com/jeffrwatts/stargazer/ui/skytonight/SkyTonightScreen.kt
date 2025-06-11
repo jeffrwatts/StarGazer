@@ -65,10 +65,10 @@ import com.jeffrwatts.stargazer.utils.ErrorScreen
 import com.jeffrwatts.stargazer.utils.LoadingScreen
 import com.jeffrwatts.stargazer.utils.PermissionWrapper
 import com.jeffrwatts.stargazer.utils.TimeControl
-import com.jeffrwatts.stargazer.utils.formatHoursToHoursMinutes
 import com.jeffrwatts.stargazer.utils.formatToDegreeAndMinutes
 import java.io.File
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 
@@ -135,6 +135,7 @@ fun SkyTonightScreen(
                                 onResetTime = { viewModel.resetOffset() })
                             SkyTonightBody(
                                 celestialObjPosList = successState.data,
+                                currentTime = successState.currentTime,
                                 moonIllumination = successState.moonIllumination,
                                 locationAvailable = successState.locationAvailable,
                                 onSightClick = {objectId-> onSightClick(objectId, successState.currentTime)},
@@ -167,6 +168,7 @@ fun SkyTonightScreen(
 @Composable
 private fun SkyTonightBody(
     celestialObjPosList: List<CelestialObjPos>,
+    currentTime: LocalDateTime,
     moonIllumination: Int,
     locationAvailable: Boolean,
     onSightClick: (Int) -> Unit,
@@ -188,6 +190,7 @@ private fun SkyTonightBody(
             items(items = celestialObjPosList, key = { it.celestialObjWithImage.celestialObj.id }) { celestialObjPos ->
                 CelestialObjItem(
                     celestialObjPos = celestialObjPos,
+                    currentTime,
                     onItemClick = {onSightClick(celestialObjPos.celestialObjWithImage.celestialObj.id)},
                     modifier = Modifier
                         .padding(8.dp)
@@ -204,6 +207,7 @@ private fun SkyTonightBody(
 @Composable
 fun CelestialObjItem(
     celestialObjPos: CelestialObjPos,
+    currentTime: LocalDateTime,
     onItemClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -270,11 +274,14 @@ fun CelestialObjItem(
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
+            val meridianTime = currentTime.plusMinutes((celestialObjPos.timeUntilMeridian * 60).toLong())
+
             Text(
-                text = "Meridian: ${formatHoursToHoursMinutes(celestialObjPos.timeUntilMeridian)}",
+                text = "Meridian: ${meridianTime.format(DateTimeFormatter.ofPattern("hh:mm a"))}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
+
         }
     }
 }
@@ -342,7 +349,7 @@ fun SkyTonightTopAppBar(
                     onFilterSelected(FilterType.RECOMMENDED_NEAR_MEDIAN)
                     showMenu = false
                 },
-                leadingIcon = { if (currentFilter == FilterType.NEAR_MERIDIAN) FilledCheckIcon() }
+                leadingIcon = { if (currentFilter == FilterType.RECOMMENDED_NEAR_MEDIAN) FilledCheckIcon() }
                 )
                 DropdownMenuItem(
                     text = { Text("Show All") },
